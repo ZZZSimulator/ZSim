@@ -121,6 +121,8 @@ ASTRAYAO_REPORT: bool = _config["char_report"]["AstraYao"]
 HUGO_REPORT: bool = _config["char_report"]["Hugo"]
 YIXUAN_REPORT: bool = _config["char_report"]["Yixuan"]
 TRIGGER_REPORT: bool = _config["char_report"]["Trigger"]
+JUFUFU_REPORT: bool = _config["char_report"]["Jufufu"]
+
 
 # 开发变量
 NEW_SIM_BOOT: bool = _config.get("dev", {}).get("new_sim_boot", True)
