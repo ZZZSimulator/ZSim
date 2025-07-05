@@ -26,7 +26,10 @@ It provides a user-friendly interface to calculate the total damage output of a 
 - Edit agents equipment
 - Edit APL code
 
-## Install
+> [!TIP]
+> You can either install `ZZZ-Simulator` via `uv` or run it with dockers.
+
+## Install via UV
 
 Download the latest source code in release page or use `git clone`
 
@@ -65,7 +68,7 @@ uv venv
 uv pip install .  # there is a '.' refer to relative path
 ```
 
-## Run
+### Run
 
 Open terminal anywhere in your device:
 
@@ -83,6 +86,48 @@ uv run ./zsim/run.py run
 # or also:
 uv run zsim run
 ```
+
+Then you can access the simulator at `http://localhost:8501`.
+
+## Install via Docker
+
+You can also run `ZZZ-Simulator` with Docker.
+
+> [!NOTE]
+> Make sure you have docker installed on your machine. If you haven't installed it yet, please refer to the [official Docker installation guide](https://docs.docker.com/get-docker/).
+>
+> On macOS, it is recommended to use [Orbstack](https://orbstack.com/docs/installation/) for a better experience.
+
+### Pull the image
+
+```bash
+docker build -t zzzsimulator .
+```
+
+> [!TIP]
+> There's a pre-built image on Docker Hub, you can pull it directly with `docker pull lucas0411/zsim:latest`.
+
+### Create a container
+
+```bash
+# For self-built image
+docker create --name zzzsimulator \
+  -p 8501:8501 \
+  zzzsimulator
+
+# For pre-built image
+docker create --name zzzsimulator \
+  -p 8501:8501 \
+  lucas0411/zsim:latest
+```
+
+### Run the container
+
+```bash
+docker start zzzsimulator
+```
+
+Then you can access the simulator at `http://localhost:8501`.
 
 ## TODO LIST
 
