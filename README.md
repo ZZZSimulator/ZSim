@@ -129,6 +129,9 @@ docker start zzzsimulator
 
 Then you can access the simulator at `http://localhost:8501`.
 
+> [!TIP]
+> If you are using Orbstack, you can access the simulator at `https://zzzsimulator.orb.local/`.
+
 ## TODO LIST
 
 Go check issues for more details.
