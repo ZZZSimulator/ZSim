@@ -182,11 +182,17 @@ def enemy_selector() -> tuple[int, int]:
         current_index = config["enemy"]["index_ID"]
         current_adjust = config["enemy"]["adjust_ID"]
 
-    # 从enemy.csv获取所有唯一的IndexID
+    # 从enemy.csv获取所有唯一的IndexID和CN_enemy_ID，并按IndexID排序
     enemy_df = pl.scan_csv("zsim/data/enemy.csv")
-    index_options: list[int] = sorted(
-        enemy_df.select("IndexID").unique().collect().to_series().to_list()
-    )
+    enemy_data: list[tuple[int, str]] = enemy_df.select(["IndexID", "CN_enemy_ID"]).unique(subset=["IndexID"]).sort("IndexID").collect().to_pandas().values.tolist()
+    
+    # 创建显示选项和值的映射
+    enemy_options = []
+    enemy_values = []
+    for index_id, cn_enemy_id in enemy_data:
+        display_text = f"{index_id} ( {cn_enemy_id} )"
+        enemy_options.append(display_text)
+        enemy_values.append(index_id)
 
     # 从enemy_adjustment.csv获取所有唯一的ID
     adjust_df = pl.scan_csv("zsim/data/enemy_adjustment.csv")
@@ -198,13 +204,20 @@ def enemy_selector() -> tuple[int, int]:
     col1, col2 = st.columns(2)
 
     with col1:
-        selected_index = st.selectbox(
+        # 找到当前IndexID对应的显示选项索引
+        try:
+            current_index_pos = enemy_values.index(current_index)
+        except ValueError:
+            current_index_pos = 0
+            
+        selected_display = st.selectbox(
             "敌人IndexID",
-            index_options,
-            index=index_options.index(current_index)
-            if current_index in index_options
-            else 0,
+            enemy_options,
+            index=current_index_pos,
         )
+        
+        # 获取选中的IndexID值
+        selected_index = enemy_values[enemy_options.index(selected_display)]
 
     with col2:
         selected_adjust = st.selectbox(

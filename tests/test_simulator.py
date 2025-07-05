@@ -1,4 +1,3 @@
-import pytest
 from zsim.simulator.simulator_class import Simulator
 
 
@@ -11,5 +10,3 @@ class TestSimulator:
         sim = Simulator()
         sim.reset_simulator(sim_cfg=None)
         assert sim.init_data is not None
-
-

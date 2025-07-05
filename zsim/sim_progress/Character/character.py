@@ -486,6 +486,7 @@ class Character:
         self.sp_regen_percent += float(row.get("Regen%", 0))
         self.sp_regen_numeric += float(row.get("Regen", 0))
         self.sp_get_ratio += float(row.get("Get_ratio", 0))
+        self.PEN_ratio += float(row.get("pen%", 0))
         self.ICE_DMG_bonus += float(row.get("ICE_DMG_bonus", 0))
         self.FIRE_DMG_bonus += float(row.get("FIRE_DMG_bonus", 0))
         self.ELECTRIC_DMG_bonus += float(row.get("ELECTRIC_DMG_bonus", 0))

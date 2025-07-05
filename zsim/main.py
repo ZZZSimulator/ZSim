@@ -2,9 +2,7 @@ import argparse
 import timeit
 
 from sim_progress.Report import stop_report_threads
-# from simulator.main_loop import main_loop
 from simulator.config_classes import (
-    SimulationConfig as SimCfg,
     AttrCurveConfig,
     WeaponConfig,
 )
@@ -52,14 +50,14 @@ if __name__ == "__main__":
         default=False,
         help="移除装备 (存在此标志时移除)",
     )
-    
+
     parser.add_argument(
         "--weapon-name",
         type=str,
         default=None,
         help="要调整的武器名称 str",
     )
-    
+
     parser.add_argument(
         "--weapon-level",
         type=int,
@@ -91,7 +89,7 @@ if __name__ == "__main__":
         print(args)
         simulator_instance = Simulator()
         # 并行模式，作为子进程运行，角色的指定副词条将被设为传入值，并根据是否移除其他主副词条进行模拟
-        if func:=args.func == "attr_curve":
+        if func := args.func == "attr_curve":
             sim_cfg: AttrCurveConfig = AttrCurveConfig(
                 stop_tick=args.stop_tick,
                 mode=args.mode,
@@ -101,7 +99,7 @@ if __name__ == "__main__":
                 run_turn_uuid=args.run_turn_uuid,
                 remove_equip=args.remove_equip,
             )
-        elif func:=args.func == "weapon":
+        elif func := args.func == "weapon":
             sim_cfg: WeaponConfig = WeaponConfig(
                 stop_tick=args.stop_tick,
                 mode=args.mode,
@@ -121,5 +119,3 @@ if __name__ == "__main__":
                 f"\n主循环耗时: {timeit.timeit(lambda: simulator_instance.main_loop(sim_cfg=sim_cfg), globals=globals(), number=1):.2f} s"
             )
         stop_report_threads()
-
-

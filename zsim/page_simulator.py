@@ -101,12 +101,12 @@ def page_simulator():
                     f.seek(0)
                     json.dump(config, f, indent=4)
                     f.truncate()
-            # 新增：敌人选择器
-            st.write("")
-            st.markdown("**敌人配置**")
-            selected_index, selected_adjust = enemy_selector()
-            if st.button("保存敌人配置", disabled=st.session_state["simulation_running"]):
-                save_enemy_selection(selected_index, selected_adjust)
+        # 新增：敌人选择器
+        st.write("")
+        st.markdown("**敌人配置**")
+        selected_index, selected_adjust = enemy_selector()
+        if st.button("保存敌人配置", disabled=st.session_state["simulation_running"]):
+            save_enemy_selection(selected_index, selected_adjust)
 
         with col2:
             if st.button(

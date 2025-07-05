@@ -27,7 +27,6 @@ from simulator.dataclasses import (
 
 
 class Simulator:
-
     tick: int
     crit_seed: int
     init_data: InitData
@@ -44,7 +43,7 @@ class Simulator:
     in_parallel_mode: bool
     sim_cfg: "SimCfg | None"
 
-    def reset_simulator(self, sim_cfg: "SimCfg" | None):
+    def reset_simulator(self, sim_cfg: "SimCfg | None"):
         """重置模拟器实例为初始状态。"""
         self.reset_sim_data(sim_cfg)  # 重置所有全局变量
         start_report_threads(sim_cfg)  # 启动线程以处理日志和结果写入
