@@ -112,15 +112,9 @@ docker build -t zzzsimulator .
 ### Create a container
 
 ```bash
-# For self-built image
 docker create --name zzzsimulator \
   -p 8501:8501 \
   zzzsimulator
-
-# For pre-built image
-docker create --name zzzsimulator \
-  -p 8501:8501 \
-  lucas0411/zsim:latest
 ```
 
 ### Run the container
