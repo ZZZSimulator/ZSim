@@ -99,7 +99,7 @@ Then you can access the simulator at `http://localhost:8501`.
 You can also run `ZZZ-Simulator` with Docker.
 
 > [!NOTE]
-> Make sure you have docker installed on your machine and can access to Docker Hub. If you haven't installed it yet, please refer to the [official Docker installation guide](https://docs.docker.com/get-docker/).
+> Make sure you have docker installed on your machine. If you haven't installed it yet, please refer to the [official Docker installation guide](https://docs.docker.com/get-docker/).
 >
 > On macOS, it is recommended to use [Orbstack](https://docs.orbstack.dev/install) for a better experience.
 
@@ -108,9 +108,6 @@ You can also run `ZZZ-Simulator` with Docker.
 ```bash
 docker build -t zzzsimulator .
 ```
-
-> [!TIP]
-> There's a pre-built image on Docker Hub, you can pull it directly with `docker pull lucas0411/zsim:latest`.
 
 ### Create a container
 
