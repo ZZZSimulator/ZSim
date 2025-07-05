@@ -37,6 +37,8 @@ dist*
 *.egg-info/
 *.egg
 *.spec
+zsim/data/character_config.toml
+zsim/config.json
 
 # macOS系统文件
 .DS_Store

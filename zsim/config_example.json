@@ -88,10 +88,7 @@
         "adjust_char": 1,
         "adjust_sc": {
             "enabled": true,
-            "sc_range": [
-                0,
-                40
-            ],
+            "sc_range": [0, 40],
             "sc_list": [
                 "\u66b4\u51fb\u7387",
                 "\u653b\u51fb\u529b%",
@@ -192,10 +189,7 @@
             "adjust_char": 1,
             "adjust_sc": {
                 "enabled": true,
-                "sc_range": [
-                    0,
-                    40
-                ],
+                "sc_range": [0, 40],
                 "sc_list": [
                     "\u66b4\u51fb\u7387",
                     "\u653b\u51fb\u529b%",

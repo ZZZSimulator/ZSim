@@ -1,6 +1,8 @@
 import subprocess
 import sys
 import argparse
+import os
+import shutil
 from zsim.simulator.config_classes import SimulationConfig as SimCfg
 
 
@@ -123,7 +125,20 @@ def confirm_launch():
         sys.exit(0)
 
 
+def initialize_config_files():
+    """初始化配置文件，如果不存在则从 _example 文件复制生成"""
+    config_files = [
+        ("zsim/data/character_config.toml", "zsim/data/character_config_example.toml"),
+        ("zsim/config.json", "zsim/config_example.json"),
+    ]
+    for target, example in config_files:
+        if not os.path.exists(target):
+            shutil.copy(example, target)
+            print(f"已生成配置文件：{target}")
+
+
 def main():
+    initialize_config_files()
     parser = argparse.ArgumentParser(description="ZZZ Simulator")
     parser.add_argument(
         "command",
