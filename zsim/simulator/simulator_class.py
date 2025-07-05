@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+import sys
+
+sys.path.append("zsim")
+
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
@@ -13,10 +17,10 @@ from sim_progress.Character.skill_class import Skill
 from sim_progress.data_struct import ActionStack, Decibelmanager, ListenerManger
 from sim_progress.Enemy import Enemy
 from sim_progress.Preload import PreloadClass
+from sim_progress.RandomNumberGenerator import RNG
 from sim_progress.Report import start_report_threads
 from sim_progress.ScheduledEvent import ScheduledEvent as ScE
 from sim_progress.Update.Update_Buff import update_dynamic_bufflist
-from sim_progress.RandomNumberGenerator import RNG
 from simulator.dataclasses import (
     CharacterData,
     GlobalStats,
@@ -27,6 +31,38 @@ from simulator.dataclasses import (
 
 
 class Simulator:
+    """模拟器实例。
+
+    ## 此方法设置模拟器的初始状态，包括但不限于：
+
+    ### 常规变量
+
+    - 模拟器时间刻度（tick）每秒为60ticks
+    - 暴击种子（crit_seed）为RNG模块使用，未来接入随机功能时用于复现测试
+    - 初始化数据（init_data）包含数据库读到的大部分数据
+    - 角色数据（char_data）包含角色的实例
+
+    ### 参与tick逻辑的内部对象
+
+    - 加载数据（load_data）
+    - 调度数据（schedule_data）
+    - 全局统计数据（global_stats）
+    - 技能列表（skills）
+    - 预加载类（preload）
+    - 游戏状态（game_state）包含前面的大多数数据
+    - 喧响管理器（decibel_manager）
+    - 监听器管理器（listener_manager）
+
+    ### 其他实例
+
+    - 随机数生成器实例（rng_instance）
+    - 并行模式标志（in_parallel_mode）
+    - 模拟配置（sim_cfg）
+
+    Args:
+        sim_cfg (SimCfg | None): 模拟配置对象，包含模拟的详细参数。
+    """
+
     tick: int
     crit_seed: int
     init_data: InitData
