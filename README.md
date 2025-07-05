@@ -103,7 +103,7 @@ You can also run `ZZZ-Simulator` with Docker.
 >
 > On macOS, it is recommended to use [Orbstack](https://docs.orbstack.dev/install) for a better experience.
 
-### Pull the image
+### Build the image
 
 ```bash
 docker build -t zzzsimulator .
