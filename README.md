@@ -38,8 +38,13 @@ Download the latest source code in release page or use `git clone`
 Open terminal anywhere in your device:
 
 ```bash
-# On macOS or Linux:
+# On Linux or macOS without Homebrew:
 curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+```bash
+# On macOS with Homebrew:
+brew install uv
 ```
 
 ```bash
