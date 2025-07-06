@@ -19,5 +19,5 @@ __all__ = [
     "EtherAnomaly",
     "FrostAnomaly",
     "Disorder",
-    "AuricInkAnomaly"
+    "AuricInkAnomaly",
 ]

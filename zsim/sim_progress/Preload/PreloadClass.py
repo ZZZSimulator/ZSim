@@ -1,15 +1,25 @@
 from typing import TYPE_CHECKING
 
-from sim_progress.Preload.PreloadDataClass import PreloadData
-
+from .PreloadDataClass import PreloadData
 from .PreloadStrategy import SwapCancelStrategy
+
 if TYPE_CHECKING:
     from zsim.simulator.simulator_class import Simulator
 
 
 class PreloadClass:
-    def __init__(self, skills, *, load_data, apl_path: str | None = None, sim_instance: "Simulator" = None,**kwargs):
-        self.preload_data = PreloadData(skills, load_data=load_data, sim_instance=sim_instance)
+    def __init__(
+        self,
+        skills,
+        *,
+        load_data,
+        apl_path: str | None = None,
+        sim_instance: "Simulator" = None,
+        **kwargs,
+    ):
+        self.preload_data = PreloadData(
+            skills, load_data=load_data, sim_instance=sim_instance
+        )
         self.strategy = SwapCancelStrategy(self.preload_data, apl_path)
 
     def do_preload(self, tick, enemy, name_box, char_data):

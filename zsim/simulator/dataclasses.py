@@ -1,14 +1,15 @@
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
-from define import saved_char_config
-from sim_progress import Buff
-from sim_progress.Buff.Buff0Manager import Buff0ManagerClass, change_name_box
-from sim_progress.Character import Character, character_factory
-from sim_progress.data_struct import ActionStack
-from sim_progress.Enemy import Enemy
+from zsim.define import saved_char_config
+from zsim.sim_progress import Buff
+from zsim.sim_progress.Buff.Buff0Manager import Buff0ManagerClass, change_name_box
+from zsim.sim_progress.Character import Character, character_factory
+from zsim.sim_progress.data_struct import ActionStack
+from zsim.sim_progress.Enemy import Enemy
 
 from .config_classes import SimulationConfig as SimCfg
+
 if TYPE_CHECKING:
     from .simulator_class import Simulator
 
@@ -76,6 +77,7 @@ class InitData:
 
         self.sim_instance = sim_instance
 
+
 @dataclass
 class CharacterData:
     char_obj_list: list[Character] = field(init=False)
@@ -133,7 +135,7 @@ class LoadData:
     all_name_order_box: dict = field(default_factory=dict)
     preload_tick_stamp: dict = field(default_factory=dict)
     char_obj_dict: dict | None = None
-    sim_instance:  "Simulator" = None
+    sim_instance: "Simulator" = None
 
     def __post_init__(self):
         self.buff_0_manager = Buff0ManagerClass.Buff0Manager(
@@ -142,7 +144,7 @@ class LoadData:
             self.weapon_dict,
             self.cinema_dict,
             self.char_obj_dict,
-            sim_instance=self.sim_instance
+            sim_instance=self.sim_instance,
         )
         self.exist_buff_dict = self.buff_0_manager.exist_buff_dict
         self.all_name_order_box = change_name_box(self.name_box)
@@ -192,7 +194,7 @@ class ScheduleData:
 class GlobalStats:
     name_box: list
     DYNAMIC_BUFF_DICT: dict[str, list[Buff.Buff]] = field(default_factory=dict)
-    sim_instance:  "Simulator" = None
+    sim_instance: "Simulator" = None
 
     def __post_init__(self):
         for name in self.name_box + ["enemy"]:

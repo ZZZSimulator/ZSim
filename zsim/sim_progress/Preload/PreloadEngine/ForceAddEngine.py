@@ -1,9 +1,11 @@
-from sim_progress.Preload import SkillNode
-from sim_progress.Preload.PreloadEngine import BasePreloadEngine
-from sim_progress.Preload.APLModule.APLJudgeTools import get_game_state
 from typing import TYPE_CHECKING
+
+from .. import SkillNode
+from ..APLModule.APLJudgeTools import get_game_state
+from ..PreloadEngine import BasePreloadEngine
+
 if TYPE_CHECKING:
-    from simulator.simulator_class import Simulator
+    from zsim.simulator.simulator_class import Simulator
 
 
 class ForceAddEngine(BasePreloadEngine):
@@ -30,7 +32,10 @@ class ForceAddEngine(BasePreloadEngine):
                 continue
             conditions_unit: list = node.skill.force_add_condition_APL
             should_force_add, index = self.prcoess_force_add_apl(
-                conditions_unit, skill_tag=node.skill_tag, tick=tick, sim_instance=self.data.sim_instance
+                conditions_unit,
+                skill_tag=node.skill_tag,
+                tick=tick,
+                sim_instance=self.data.sim_instance,
             )
             if should_force_add:
                 # print(f'强制添加判定通过！该强制添加来自于{node.skill_tag}，将要添加：{follow_up[index]}')
@@ -56,11 +61,12 @@ class ForceAddEngine(BasePreloadEngine):
                     f"出现了不应该出现的情况！技能{follow_up[index]}理应在{node.skill_tag}之后、于{follow_up_skill_add_tick}执行，但是此时角色{follow_up_skill_CID}尚有动作存在。"
                 )
 
-    def prcoess_force_add_apl(self, conditions_unit, sim_instance: "Simulator", **kwargs) -> tuple[bool, int]:
+    def prcoess_force_add_apl(
+        self, conditions_unit, sim_instance: "Simulator", **kwargs
+    ) -> tuple[bool, int]:
         """强制添加动作的前置判定，有APL模块则运行模块，无APL模块则直接通过。"""
         should_force_add = True
         index = 0
-        skill_tag = kwargs.get("skill_tag", None)
         tick = kwargs.get("tick", None)
         if conditions_unit and self.game_state is None:
             self.game_state = get_game_state(sim_instance=sim_instance)
@@ -68,7 +74,10 @@ class ForceAddEngine(BasePreloadEngine):
             """存在条件类APL判定"""
             for unit in conditions_unit:
                 _apl_result, result_box = unit.check_all_sub_units(
-                    self.found_char_dict, self.game_state, tick=tick, sim_instance=sim_instance
+                    self.found_char_dict,
+                    self.game_state,
+                    tick=tick,
+                    sim_instance=sim_instance,
                 )
                 if not _apl_result:
                     """当apl单元的自运行结果为False时，意味着该条APL的条件中存在着不满足的项，所以应该continue，赶紧去检查下个Box"""

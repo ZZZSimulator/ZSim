@@ -1,12 +1,11 @@
 import argparse
 import timeit
 
-from sim_progress.Report import stop_report_threads
-from simulator.config_classes import (
+from zsim.simulator.config_classes import (
     AttrCurveConfig,
     WeaponConfig,
 )
-from simulator.simulator_class import Simulator
+from zsim.simulator.simulator_class import Simulator
 
 if __name__ == "__main__":
     # 创建命令行参数解析器
@@ -83,7 +82,6 @@ if __name__ == "__main__":
             )
 
         print("\n正在等待IO结束···")
-        stop_report_threads()
     elif args.mode == "parallel":
         print("并行模式")
         print(args)
@@ -118,4 +116,4 @@ if __name__ == "__main__":
             print(
                 f"\n主循环耗时: {timeit.timeit(lambda: simulator_instance.main_loop(sim_cfg=sim_cfg), globals=globals(), number=1):.2f} s"
             )
-        stop_report_threads()
+        

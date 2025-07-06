@@ -1,5 +1,5 @@
-from sim_progress.Buff import Buff, JudgeTools, check_preparation
-from define import HUGO_REPORT
+from zsim.sim_progress.Buff import Buff, JudgeTools, check_preparation
+from zsim.define import HUGO_REPORT
 
 
 class HugoCorePassiveSingleStunAtkBonusRecord:
@@ -19,13 +19,15 @@ class HugoCorePassiveSingleStunAtkBonus(Buff.BuffLogic):
         self.xjudge = self.special_judge_logic
 
     def get_prepared(self, **kwargs):
-        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
+        return check_preparation(
+            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
+        )
 
     def check_record_module(self):
         if self.buff_0 is None:
-            self.buff_0 = JudgeTools.find_exist_buff_dict(sim_instance=self.buff_instance.sim_instance)["雨果"][
-                self.buff_instance.ft.index
-            ]
+            self.buff_0 = JudgeTools.find_exist_buff_dict(
+                sim_instance=self.buff_instance.sim_instance
+            )["雨果"][self.buff_instance.ft.index]
         if self.buff_0.history.record is None:
             self.buff_0.history.record = HugoCorePassiveSingleStunAtkBonusRecord()
         self.record = self.buff_0.history.record
@@ -37,7 +39,7 @@ class HugoCorePassiveSingleStunAtkBonus(Buff.BuffLogic):
         if self.record.stun_char_count is None:
             self.record.stun_char_count = 0
             for char_obj in self.record.char_obj_list:
-                from sim_progress.Character import Character
+                from zsim.sim_progress.Character import Character
 
                 if not isinstance(char_obj, Character):
                     raise TypeError("char_obj_list中的对象不是Character类的实例")

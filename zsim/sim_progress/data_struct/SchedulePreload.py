@@ -1,6 +1,7 @@
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
-    from simulator.simulator_class import Simulator
+    from zsim.simulator.simulator_class import Simulator
 
 
 class SchedulePreload:
@@ -11,7 +12,7 @@ class SchedulePreload:
         preload_data=None,
         apl_priority: int = 0,
         active_generation: bool = False,
-        sim_instance: "Simulator" = None
+        sim_instance: "Simulator" = None,
     ) -> None:
         """计划Preload事件"""
         self.execute_tick = preload_tick
@@ -23,9 +24,11 @@ class SchedulePreload:
 
     def execute_myself(self):
         if self.preload_data is None:
-            from sim_progress.Buff import JudgeTools
+            from zsim.sim_progress.Buff import JudgeTools
 
-            self.preload_data = JudgeTools.find_preload_data(sim_instance=self.sim_instance)
+            self.preload_data = JudgeTools.find_preload_data(
+                sim_instance=self.sim_instance
+            )
         info_tuple = (self.skill_tag, self.active_generation, self.apl_priority)
         self.preload_data.external_add_skill(info_tuple)
 
@@ -36,11 +39,11 @@ def schedule_preload_event_factory(
     preload_data,
     apl_priority_list: list[int] = None,
     active_generation_list: list[bool] = None,
-    sim_instance: "Simulator" = None
+    sim_instance: "Simulator" = None,
 ) -> None:
     """根据传入的参数，生成SchedulePreload事件"""
     event_count = len(skill_tag_list)
-    from sim_progress.Buff import JudgeTools
+    from zsim.sim_progress.Buff import JudgeTools
 
     tick_now = JudgeTools.find_tick(sim_instance=sim_instance)
     event_list = JudgeTools.find_event_list(sim_instance=sim_instance)

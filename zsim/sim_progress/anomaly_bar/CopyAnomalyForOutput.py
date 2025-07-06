@@ -1,8 +1,10 @@
 import uuid
-from .AnomalyBarClass import AnomalyBar
 from typing import TYPE_CHECKING
+
+from .AnomalyBarClass import AnomalyBar
+
 if TYPE_CHECKING:
-    from simulator.simulator_class import Simulator
+    from zsim.simulator.simulator_class import Simulator
 
 
 class Disorder(AnomalyBar):
@@ -12,7 +14,7 @@ class Disorder(AnomalyBar):
     Disorder会打开自身的is_disorder
     """
 
-    def __init__(self, Output_bar: AnomalyBar, sim_instance: "Simulator",  **kwargs):
+    def __init__(self, Output_bar: AnomalyBar, sim_instance: "Simulator", **kwargs):
         super().__init__(sim_instance=sim_instance)
         self.__dict__.update(Output_bar.__dict__)
         self.sim_instance = sim_instance
@@ -54,7 +56,13 @@ class PolarityDisorder(Disorder):
     构造时，不仅需要提供被复制的异常条，还需要提供连击次数（用来计算极性紊乱比例），还需要提供触发者ID（CID或者enemy）
     """
 
-    def __init__(self, Output_bar: AnomalyBar, _polarity_disorder_ratio, active_by, sim_instance: "Simulator"):
+    def __init__(
+        self,
+        Output_bar: AnomalyBar,
+        _polarity_disorder_ratio,
+        active_by,
+        sim_instance: "Simulator",
+    ):
         super().__init__(Output_bar, active_by=active_by, sim_instance=sim_instance)
         self.__dict__.update(Output_bar.__dict__)
         self.sim_instance = sim_instance

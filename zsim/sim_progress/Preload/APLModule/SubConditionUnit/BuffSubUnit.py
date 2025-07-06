@@ -1,9 +1,9 @@
-from sim_progress.Preload.APLModule.APLJudgeTools import (
+from zsim.sim_progress.Preload.APLModule.APLJudgeTools import (
+    check_cid,
     find_buff,
     find_buff_0,
-    check_cid,
 )
-from sim_progress.Preload.APLModule.SubConditionUnit import BaseSubConditionUnit
+from zsim.sim_progress.Preload.APLModule.SubConditionUnit import BaseSubConditionUnit
 
 
 class BuffSubUnit(BaseSubConditionUnit):
@@ -57,7 +57,7 @@ class BuffSubUnit(BaseSubConditionUnit):
     def check_myself(self, found_char_dict, game_state, *args, **kwargs):
         check_cid(self.check_target)
         if self.char is None:
-            from sim_progress.Preload import find_char
+            from zsim.sim_progress.Preload import find_char
 
             self.char = find_char(found_char_dict, game_state, int(self.check_target))
         if self.buff_0 is None:

@@ -1,10 +1,12 @@
-from .BaseSubConditionUnit import BaseSubConditionUnit
-from sim_progress.Preload.APLModule.APLJudgeTools.FindCharacter import find_char
-from sim_progress.Buff.JudgeTools import find_tick
 from typing import TYPE_CHECKING
 
+from zsim.sim_progress.Buff.JudgeTools import find_tick
+from zsim.sim_progress.Preload.APLModule.APLJudgeTools.FindCharacter import find_char
+
+from .BaseSubConditionUnit import BaseSubConditionUnit
+
 if TYPE_CHECKING:
-    from simulator.simulator_class import Simulator
+    from zsim.simulator.simulator_class import Simulator
 
 
 class StatusSubUnit(BaseSubConditionUnit):
@@ -197,5 +199,7 @@ class StatusSubUnit(BaseSubConditionUnit):
                     f"当前检查的check_stat为：{self.check_stat}，优先级为{self.priority}，暂无处理该属性的逻辑模块！"
                 )
             return self.spawn_result(
-                handler.handler(int(self.check_target), found_char_dict, game_state, sim_instance)
+                handler.handler(
+                    int(self.check_target), found_char_dict, game_state, sim_instance
+                )
             )

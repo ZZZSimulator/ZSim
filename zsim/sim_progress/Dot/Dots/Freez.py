@@ -1,10 +1,13 @@
-from sim_progress.Dot import Dot
-import numpy as np
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
+
+import numpy as np
+
+from .. import Dot
+
 if TYPE_CHECKING:
-    from simulator.simulator_class import Simulator
-    
+    from zsim.simulator.simulator_class import Simulator
+
 
 class Freez(Dot):
     def __init__(self, bar=None, sim_instance: "Simulator" = None):

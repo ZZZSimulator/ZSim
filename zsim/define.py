@@ -123,7 +123,7 @@ YIXUAN_REPORT: bool = _config["char_report"]["Yixuan"]
 TRIGGER_REPORT: bool = _config["char_report"]["Trigger"]
 
 # 开发变量
-NEW_SIM_BOOT: bool = _config.get("dev", {}).get("new_sim_boot", False)
+NEW_SIM_BOOT: bool = _config.get("dev", {}).get("new_sim_boot", True)
 
 compare_methods_mapping: dict[str, Callable[[float | int, float | int], bool]] = {
     "<": lambda a, b: a < b,

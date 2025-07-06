@@ -1,4 +1,4 @@
-from sim_progress.Buff import Buff, JudgeTools, check_preparation
+from .. import Buff, JudgeTools, check_preparation
 
 
 class SokakuAdditionalAbilityATKRecord:
@@ -27,13 +27,15 @@ class SokakuUniqueSkillMajorATKBonus(Buff.BuffLogic):
         self.record = None
 
     def get_prepared(self, **kwargs):
-        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
+        return check_preparation(
+            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
+        )
 
     def check_record_module(self):
         if self.buff_0 is None:
-            self.buff_0 = JudgeTools.find_exist_buff_dict(sim_instance=self.buff_instance.sim_instance)["苍角"][
-                self.buff_instance.ft.index
-            ]
+            self.buff_0 = JudgeTools.find_exist_buff_dict(
+                sim_instance=self.buff_instance.sim_instance
+            )["苍角"][self.buff_instance.ft.index]
         if self.buff_0.history.record is None:
             self.buff_0.history.record = SokakuAdditionalAbilityATKRecord()
         self.record = self.buff_0.history.record
@@ -51,7 +53,10 @@ class SokakuUniqueSkillMajorATKBonus(Buff.BuffLogic):
         action_now = self.record.action_stack.peek()
         resource_now = self.record.char.get_resources()[1]
         if action_now.mission_tag == "1131_E_EX_A":
-            match_code = lambda a, b: a < b
+
+            def match_code(a, b):
+                return a < b
+
             if JudgeTools.detect_edge(
                 (resource_now, self.record.last_update_rescource), match_code
             ):

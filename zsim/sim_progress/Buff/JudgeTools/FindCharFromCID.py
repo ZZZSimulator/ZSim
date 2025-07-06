@@ -1,6 +1,7 @@
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
-    from simulator.simulator_class import Simulator
+    from zsim.simulator.simulator_class import Simulator
 
 
 def find_char_from_CID(CID: int, sim_instance: "Simulator"):

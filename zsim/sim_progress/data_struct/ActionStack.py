@@ -1,5 +1,6 @@
-from define import SWAP_CANCEL
 from collections import defaultdict
+
+from zsim.define import SWAP_CANCEL
 
 
 class ActionStack:

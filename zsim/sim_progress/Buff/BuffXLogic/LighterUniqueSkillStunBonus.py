@@ -1,4 +1,4 @@
-from sim_progress.Buff import Buff, JudgeTools, check_preparation
+from .. import Buff, JudgeTools, check_preparation
 
 
 class LighterUniqueSkillStunBonusRecord:
@@ -25,13 +25,15 @@ class LighterUniqueSkillStunBonus(Buff.BuffLogic):
         self.record = None
 
     def get_prepared(self, **kwargs):
-        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
+        return check_preparation(
+            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
+        )
 
     def check_record_module(self):
         if self.buff_0 is None:
-            self.buff_0 = JudgeTools.find_exist_buff_dict(sim_instance=self.buff_instance.sim_instance)["莱特"][
-                self.buff_instance.ft.index
-            ]
+            self.buff_0 = JudgeTools.find_exist_buff_dict(
+                sim_instance=self.buff_instance.sim_instance
+            )["莱特"][self.buff_instance.ft.index]
         if self.buff_0.history.record is None:
             self.buff_0.history.record = LighterUniqueSkillStunBonusRecord()
         self.record = self.buff_0.history.record

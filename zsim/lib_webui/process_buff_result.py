@@ -8,7 +8,7 @@ from typing import Any
 import polars as pl
 import plotly.graph_objects as go
 import streamlit as st
-from define import results_dir
+from zsim.define import results_dir
 from .constants import BUFF_EFFECT_MAPPING
 
 

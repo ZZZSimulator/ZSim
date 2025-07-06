@@ -1,7 +1,9 @@
-from .BaseListenerClass import BaseListener
 from typing import TYPE_CHECKING
+
+from .BaseListenerClass import BaseListener
+
 if TYPE_CHECKING:
-    from simulator.simulator_class import Simulator
+    from zsim.simulator.simulator_class import Simulator
 
 
 class ZanshinHerbCaseListener(BaseListener):

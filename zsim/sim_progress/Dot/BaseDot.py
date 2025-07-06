@@ -1,12 +1,19 @@
 from dataclasses import dataclass
-from sim_progress.anomaly_bar import AnomalyBar
 from typing import TYPE_CHECKING
+
+from zsim.sim_progress.anomaly_bar import AnomalyBar
+
 if TYPE_CHECKING:
-    from simulator.simulator_class import Simulator
+    from zsim.simulator.simulator_class import Simulator
 
 
 class Dot:
-    def __init__(self, bar: AnomalyBar = None, skill_tag: str | None = None, sim_instance: "Simulator" = None):
+    def __init__(
+        self,
+        bar: AnomalyBar = None,
+        skill_tag: str | None = None,
+        sim_instance: "Simulator" = None,
+    ):
         self.sim_instance = sim_instance
         self.ft = self.DotFeature(sim_instance=self.sim_instance)
         self.dy = self.DotDynamic()
@@ -19,8 +26,8 @@ class Dot:
         if bar:
             self.anomaly_data = bar
         if skill_tag:
-            from sim_progress.Preload.SkillsQueue import spawn_node
-            from Buff import JudgeTools
+            from zsim.sim_progress.Buff import JudgeTools
+            from zsim.sim_progress.Preload.SkillsQueue import spawn_node
 
             preload_data = JudgeTools.find_preload_data(sim_instance=self.sim_instance)
             tick = JudgeTools.find_tick(sim_instance=self.sim_instance)
@@ -38,6 +45,7 @@ class Dot:
         3：缓存式更新——依赖内置CD，以及Dot.Dynamic中的动态记录模块，来记录伤害积累。
         4：碎冰——只有含有重攻击的技能在end标签处才能触发。
         """
+
         sim_instance: "Simulator"
         update_cd: int | float = 0
         index: str = None

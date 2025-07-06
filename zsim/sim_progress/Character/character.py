@@ -4,21 +4,22 @@ import logging
 from typing import TYPE_CHECKING
 
 import polars as pl
-from define import (
+
+from zsim.define import (
     CHARACTER_DATA_PATH,
     EQUIP_2PC_DATA_PATH,
     SUB_STATS_MAPPING,
     WEAPON_DATA_PATH,
 )
-from sim_progress.Report import report_to_log
-from zsim.sim_progress.Preload.SkillsQueue import SkillNode
-from zsim.sim_progress.data_struct.sp_update_data import SPUpdateData
+from zsim.sim_progress.Report import report_to_log
 
 from .skill_class import Skill, lookup_name_or_cid
 from .utils.filters import _skill_node_filter, _sp_update_data_filter
 
 if TYPE_CHECKING:
-    from simulator.config_classes import AttrCurveConfig, WeaponConfig
+    from zsim.sim_progress.data_struct.sp_update_data import SPUpdateData
+    from zsim.sim_progress.Preload.SkillsQueue import SkillNode
+    from zsim.simulator.config_classes import AttrCurveConfig, WeaponConfig
 
 
 class Character:
@@ -290,7 +291,7 @@ class Character:
             "chain_level": 12 + skill_level_addon,
             "assist_level": 12 + skill_level_addon,
         }
-        
+
         self.statement = Character.Statement(self, crit_balancing=crit_balancing)
         self.skill_object: Skill = Skill(name=self.NAME, CID=self.CID, **skills_level, char_obj=self)
         self.action_list = self.skill_object.action_list 
@@ -341,27 +342,24 @@ class Character:
 
             self.NAME = char.NAME
             self.CID = char.CID
-            self.ATK = (
-                char.baseATK * (1 + char.ATK_percent)
-                + char.ATK_numeric
-            ) * (1 + char.overall_ATK_percent) + char.overall_ATK_numeric
-            self.HP = (
-                char.baseHP * (1 + char.HP_percent) + char.HP_numeric
-            ) * (1 + char.overall_HP_percent) + char.overall_HP_numeric
-            self.DEF = (
-                char.baseDEF * (1 + char.DEF_percent)
-                + char.DEF_numeric
-            ) * (1 + char.overall_DEF_percent) + char.overall_DEF_numeric
-            self.IMP = (
-                char.baseIMP * (1 + char.IMP_percent)
-                + char.IMP_numeric
-            ) * (1 + char.overall_IMP_percent) + char.overall_IMP_numeric
-            self.AP = (
-                char.baseAP * (1 + char.AP_percent) + char.AP_numeric
-            ) * (1 + char.overall_AP_percent) + char.overall_AP_numeric
-            self.AM = (
-                char.baseAM * (1 + char.AM_percent) + char.AM_numeric
-            ) * (1 + char.overall_AM_percent) + char.overall_AM_numeric
+            self.ATK = (char.baseATK * (1 + char.ATK_percent) + char.ATK_numeric) * (
+                1 + char.overall_ATK_percent
+            ) + char.overall_ATK_numeric
+            self.HP = (char.baseHP * (1 + char.HP_percent) + char.HP_numeric) * (
+                1 + char.overall_HP_percent
+            ) + char.overall_HP_numeric
+            self.DEF = (char.baseDEF * (1 + char.DEF_percent) + char.DEF_numeric) * (
+                1 + char.overall_DEF_percent
+            ) + char.overall_DEF_numeric
+            self.IMP = (char.baseIMP * (1 + char.IMP_percent) + char.IMP_numeric) * (
+                1 + char.overall_IMP_percent
+            ) + char.overall_IMP_numeric
+            self.AP = (char.baseAP * (1 + char.AP_percent) + char.AP_numeric) * (
+                1 + char.overall_AP_percent
+            ) + char.overall_AP_numeric
+            self.AM = (char.baseAM * (1 + char.AM_percent) + char.AM_numeric) * (
+                1 + char.overall_AM_percent
+            ) + char.overall_AM_numeric
             # 更换balancing参数可实现不同的逻辑，默认为True，即配平逻辑
             self.CRIT_damage, self.CRIT_rate = self._func_statement_CRIT(
                 char.baseCRIT_score,
@@ -371,8 +369,7 @@ class Character:
                 balancing=crit_balancing,
             )
             self.sp_regen = (
-                char.base_sp_regen * (1 + char.sp_regen_percent)
-                + char.sp_regen_numeric
+                char.base_sp_regen * (1 + char.sp_regen_percent) + char.sp_regen_numeric
             )
             self.sp_get_ratio = char.sp_get_ratio
             self.sp_limit = char.sp_limit
@@ -448,7 +445,7 @@ class Character:
         def __init__(self, char_instantce: Character):
             self.character = char_instantce
             self.lasting_node = LastingNode(self.character)
-            from sim_progress.data_struct.QuickAssistSystem.QuickAssistManager import (
+            from zsim.sim_progress.data_struct.QuickAssistSystem.QuickAssistManager import (
                 QuickAssistManager,
             )
 
@@ -840,7 +837,7 @@ class Character:
             self.sp_regen_percent = SP_REGEN * SUB_STATS_MAPPING["SP_REGEN"]
 
     def __init_attr_curve_config(self, parallel_config: "AttrCurveConfig"):
-        from simulator.config_classes import AttrCurveConfig
+        from zsim.simulator.config_classes import AttrCurveConfig
 
         if not isinstance(parallel_config, AttrCurveConfig):
             return

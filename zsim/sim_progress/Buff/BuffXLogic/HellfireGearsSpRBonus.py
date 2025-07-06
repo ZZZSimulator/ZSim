@@ -1,4 +1,4 @@
-from sim_progress.Buff import Buff, JudgeTools
+from .. import Buff, JudgeTools
 
 
 class HellfireGearsSpRBonus(Buff.BuffLogic):
@@ -15,8 +15,12 @@ class HellfireGearsSpRBonus(Buff.BuffLogic):
 
     def special_judge_logic(self, **kwargs):
         if self.equipper is None:
-            self.equipper = JudgeTools.find_equipper("燃狱齿轮", sim_instance=self.buff_instance.sim_instance)
-        name_box = JudgeTools.find_init_data(sim_instance=self.buff_instance.sim_instance).name_box
+            self.equipper = JudgeTools.find_equipper(
+                "燃狱齿轮", sim_instance=self.buff_instance.sim_instance
+            )
+        name_box = JudgeTools.find_init_data(
+            sim_instance=self.buff_instance.sim_instance
+        ).name_box
         if name_box[0] != self.equipper:
             return True
         else:
@@ -24,8 +28,12 @@ class HellfireGearsSpRBonus(Buff.BuffLogic):
 
     def special_exit_logic(self):
         if self.equipper is None:
-            self.equipper = JudgeTools.find_equipper("燃狱齿轮", sim_instance=self.buff_instance.sim_instance)
-        name_box = JudgeTools.find_init_data(sim_instance=self.buff_instance.sim_instance).name_box
+            self.equipper = JudgeTools.find_equipper(
+                "燃狱齿轮", sim_instance=self.buff_instance.sim_instance
+            )
+        name_box = JudgeTools.find_init_data(
+            sim_instance=self.buff_instance.sim_instance
+        ).name_box
         if name_box[0] == self.equipper:
             return True
         else:

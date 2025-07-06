@@ -1,17 +1,21 @@
+import json
 from typing import TYPE_CHECKING
+
+from zsim.define import APL_NA_ORDER_PATH
+from zsim.sim_progress.data_struct.NormalAttackManager import (
+    BaseNAManager,
+    na_manager_factory,
+)
+from zsim.sim_progress.Preload.APLModule.ActionReplaceManager import (
+    ActionReplaceManager,
+)
+
 from ..apl_unit.ActionAPLUnit import ActionAPLUnit
 from .APLOperator import APLOperator
-import json
-from define import APL_NA_ORDER_PATH
-from sim_progress.data_struct.NormalAttackManager import (
-    na_manager_factory,
-    BaseNAManager,
-)
-from sim_progress.Preload.APLModule.ActionReplaceManager import ActionReplaceManager
 
 if TYPE_CHECKING:
-    from sim_progress.Preload import PreloadData
-    from simulator.simulator_class import Simulator
+    from zsim.sim_progress.Preload import PreloadData
+    from zsim.simulator.simulator_class import Simulator
 
 
 class APLClass:
@@ -86,7 +90,6 @@ class APLClass:
         return output
 
     def action_processor(self, CID, action, tick) -> str:
-
         """用于生成动作，以及模拟游戏内的部分动作替换逻辑"""
 
         if self.action_replace_manager is None:
@@ -126,5 +129,3 @@ class APLClass:
         else:
             output = action
         return output
-
-

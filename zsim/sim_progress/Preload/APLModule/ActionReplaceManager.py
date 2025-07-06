@@ -2,10 +2,10 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from sim_progress.Preload.PreloadDataClass import PreloadData
-    from sim_progress.data_struct.EnemyAttackEvent import EnemyAttackEventManager
-    from sim_progress.Character.character import Character
-    from sim_progress.Preload import SkillNode
+    from zsim.sim_progress.Character.character import Character
+    from zsim.sim_progress.data_struct.EnemyAttackEvent import EnemyAttackEventManager
+    from zsim.sim_progress.Preload import SkillNode
+    from zsim.sim_progress.Preload.PreloadDataClass import PreloadData
 
 
 class ActionReplaceManager:
@@ -103,7 +103,6 @@ class ActionReplaceManager:
             """注意，这里传入tick-1的作用：当某些技能不能被合轴与终止时（比如QTE和Q），新动作会被SwapCancelEngine一直拦截，
             此时，就会出现1帧时间场上没有任何动作，这会导致调用该函数的一些判断出错。所以将时间提前了1帧，规避这些错误。"""
             if node_on_field is None:
-
                 # FIXME:这里还是有问题，程序中有时会出现的current_node_on_field 为None的情况，一定会干扰模拟的进行，必须找时间解决掉！
 
                 return False
@@ -138,7 +137,6 @@ class ActionReplaceManager:
                     # print(f'执行快速支援！技能{action}替换成了{manager.quick_assist_skill}！')
                     return manager.quick_assist_skill
             else:
-
                 raise ValueError(
                     f"没有找到CID为{CID}的技能对象！无法执行快速支援替换！"
                 )
@@ -152,7 +150,7 @@ class ActionReplaceManager:
             self.consecutive_parry_node: "SkillNode | None" = None  # 连续招架的技能节点
             self.parry_interaction_in_progress: bool = False  # 当前轮次招架交互正在进行
             self.parry_tag: str | None = None  # 当前轮次招架交互的招架技能标签。
-            from define import PARRY_BASE_PARAMETERS
+            from zsim.define import PARRY_BASE_PARAMETERS
 
             self.chain_parry_tick = PARRY_BASE_PARAMETERS[
                 "ChainParryActionTimeCost"
@@ -277,12 +275,12 @@ class ActionReplaceManager:
             if mode == 0:
                 return f"{CID}_Light_parry_Aid"
             elif mode == 1:
-                return f"{self.consecutive_parry_node.skill_tag.strip().split("_")[0]}_Chain_parry_Aid"
+                return f"{self.consecutive_parry_node.skill_tag.strip().split('_')[0]}_Chain_parry_Aid"
             elif mode == 2:
-                return f"{self.consecutive_parry_node.skill_tag.strip().split("_")[0]}_Heavy_parry_Aid"
+                return f"{self.consecutive_parry_node.skill_tag.strip().split('_')[0]}_Heavy_parry_Aid"
             elif mode == 3:
                 """这是衔接在招架支援后的后退动作，无法取消。"""
-                return f"{self.final_parry_node.skill_tag.strip().split("_")[0]}_knock_back_cause_parry"
+                return f"{self.final_parry_node.skill_tag.strip().split('_')[0]}_knock_back_cause_parry"
             else:
                 raise ValueError(f"不支持的招架模式：{mode}！")
 
@@ -392,5 +390,8 @@ class ActionReplaceManager:
                 ]
             ):
                 # 在检测连续招架或是重招架时，必须检测当前的命中次数，确保正确关闭连续招架状态。
-                if self.preload_data.atk_manager.hitted_count == self.preload_data.atk_manager.action.hit:
+                if (
+                    self.preload_data.atk_manager.hitted_count
+                    == self.preload_data.atk_manager.action.hit
+                ):
                     self.consecutive_parry_mode = False

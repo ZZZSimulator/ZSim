@@ -2,7 +2,7 @@ import dash
 from dash import Dash, dcc, html, Output, Input
 import dash_bootstrap_components as dbc
 import pandas as pd
-from define import CHARACTER_DATA_PATH
+from zsim.define import CHARACTER_DATA_PATH
 
 # 初始化角色数据
 char_data = pd.read_csv(CHARACTER_DATA_PATH)

@@ -1,7 +1,7 @@
-from sim_progress.Buff import Buff
-from sim_progress.Enemy import Enemy
-from sim_progress.Dot import BaseDot
-from sim_progress.Report import report_to_log, report_buff_to_queue
+from zsim.sim_progress.Buff import Buff
+from zsim.sim_progress.Dot import BaseDot
+from zsim.sim_progress.Enemy import Enemy
+from zsim.sim_progress.Report import report_buff_to_queue, report_to_log
 
 
 def update_dynamic_bufflist(

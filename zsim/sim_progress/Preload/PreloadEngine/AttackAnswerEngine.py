@@ -1,13 +1,16 @@
-from .BasePreloadEngine import BasePreloadEngine
-from sim_progress.data_struct import EnemyAttackEventManager
 from typing import TYPE_CHECKING
 
+from zsim.sim_progress.data_struct import EnemyAttackEventManager
+
+from .BasePreloadEngine import BasePreloadEngine
+
 if TYPE_CHECKING:
-    from sim_progress.Character import Character
-    from sim_progress.Enemy import Enemy
-    from simulator.simulator_class import Simulator
-    from sim_progress.Enemy.EnemyAttack.EnemyAttackClass import EnemyAttackAction
-    from sim_progress.Preload.PreloadDataClass import PreloadData
+    from zsim.sim_progress.Character import Character
+    from zsim.sim_progress.Enemy import Enemy
+    from zsim.sim_progress.Enemy.EnemyAttack.EnemyAttackClass import EnemyAttackAction
+    from zsim.simulator.simulator_class import Simulator
+
+    from ..PreloadDataClass import PreloadData
 
 
 class AttackResponseEngine(BasePreloadEngine):
@@ -22,7 +25,6 @@ class AttackResponseEngine(BasePreloadEngine):
         self.sim_instance: "Simulator | None" = sim_instance
 
     def run_myself(self, tick: int, *args, **kwargs) -> None:
-
         if self.data.atk_manager is None:
             self.data.atk_manager = EnemyAttackEventManager(
                 enemy_instance=self.sim_instance.schedule_data.enemy
@@ -39,8 +41,7 @@ class AttackResponseEngine(BasePreloadEngine):
 
         """每次运行，都要让atk_manager自检一次，以更新状态。"""
         self.data.atk_manager.check_myself(tick=tick)
-        
-        
+
     def try_spawn_enemy_attack(self) -> "EnemyAttackAction | None":
         """调用Enemy对象下的进攻模组，并且生成一次攻击，同时打包成事件存入本地"""
         if self.sim_instance is None:

@@ -1,27 +1,28 @@
-from typing import Literal, TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
-from sim_progress.anomaly_bar import (
-    PhysicalAnomaly,
-    FireAnomaly,
-    IceAnomaly,
-    ElectricAnomaly,
-    EtherAnomaly,
-    FrostAnomaly,
-    AuricInkAnomaly,
-)
 import numpy as np
 import pandas as pd
-from define import ENEMY_ADJUSTMENT_PATH, ENEMY_DATA_PATH
-from sim_progress.data_struct import SingleHit
-from sim_progress.Report import report_to_log
+
+from zsim.define import ENEMY_ADJUSTMENT_PATH, ENEMY_DATA_PATH
+from zsim.sim_progress.anomaly_bar import (
+    AuricInkAnomaly,
+    ElectricAnomaly,
+    EtherAnomaly,
+    FireAnomaly,
+    FrostAnomaly,
+    IceAnomaly,
+    PhysicalAnomaly,
+)
 from zsim.sim_progress.anomaly_bar.AnomalyBarClass import AnomalyBar
+from zsim.sim_progress.data_struct import SingleHit
+from zsim.sim_progress.Report import report_to_log
 
 from .EnemyAttack import EnemyAttackMethod
 from .EnemyUniqueMechanic import unique_mechanic_factory
 from .QTEManager import QTEManager
 
 if TYPE_CHECKING:
-    from simulator.simulator_class import Simulator
+    from zsim.simulator.simulator_class import Simulator
 
 
 class EnemySettings:

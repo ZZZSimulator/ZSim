@@ -1,4 +1,4 @@
-from sim_progress.Buff import Buff, JudgeTools, check_preparation, find_tick
+from .. import Buff, JudgeTools, check_preparation
 
 
 class ZanshinHerbCaseRecord:
@@ -21,15 +21,19 @@ class ZanshinHerbCase(Buff.BuffLogic):
         self.record = None
 
     def get_prepared(self, **kwargs):
-        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
+        return check_preparation(
+            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
+        )
 
     def check_record_module(self):
         if self.equipper is None:
-            self.equipper = JudgeTools.find_equipper("残心青囊", sim_instance=self.buff_instance.sim_instance)
+            self.equipper = JudgeTools.find_equipper(
+                "残心青囊", sim_instance=self.buff_instance.sim_instance
+            )
         if self.buff_0 is None:
-            self.buff_0 = JudgeTools.find_exist_buff_dict(sim_instance=self.buff_instance.sim_instance)[self.equipper][
-                self.buff_instance.ft.index
-            ]
+            self.buff_0 = JudgeTools.find_exist_buff_dict(
+                sim_instance=self.buff_instance.sim_instance
+            )[self.equipper][self.buff_instance.ft.index]
         if self.buff_0.history.record is None:
             self.buff_0.history.record = ZanshinHerbCaseRecord()
         self.record = self.buff_0.history.record
@@ -39,7 +43,11 @@ class ZanshinHerbCase(Buff.BuffLogic):
         self.check_record_module()
         self.get_prepared(equipper="残心青囊")
         if not self.record.listener_exist:
-            self.record.listener = self.buff_instance.sim_instance.listener_manager.get_listener(listener_owner=self.record.char, listener_id="Zanshin_Herb_Case_1")
+            self.record.listener = (
+                self.buff_instance.sim_instance.listener_manager.get_listener(
+                    listener_owner=self.record.char, listener_id="Zanshin_Herb_Case_1"
+                )
+            )
             self.record.listener_exist = True
             # print(f"为{self.record.char.NAME}创建了一个残心青囊的监听器！")
 
@@ -49,5 +57,5 @@ class ZanshinHerbCase(Buff.BuffLogic):
         else:
             """置空信号"""
             self.record.listener.listener_active()
-            print(f"检测到残心青囊 的触发信号！触发第三特效！")
+            print("检测到残心青囊 的触发信号！触发第三特效！")
             return True

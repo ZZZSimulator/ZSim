@@ -1,14 +1,14 @@
-import json
-import importlib
 import ast
+import importlib
+import json
 from functools import lru_cache
 from typing import TYPE_CHECKING
 
 import numpy as np
-from sim_progress.Report import report_to_log
-from define import EFFECT_FILE_PATH, EXIST_FILE_PATH, JUDGE_FILE_PATH, CONFIG_PATH
-import importlib.util
 import pandas as pd
+
+from zsim.define import CONFIG_PATH, EFFECT_FILE_PATH, EXIST_FILE_PATH, JUDGE_FILE_PATH
+from zsim.sim_progress.Report import report_to_log
 
 if TYPE_CHECKING:
     from zsim.simulator.simulator_class import Simulator
@@ -237,7 +237,9 @@ class Buff:
                     config_dict
                 )
 
-                __listener_id_str = config_dict.get("listener_id")     # 与Buff的伴生的监听器的ID
+                __listener_id_str = config_dict.get(
+                    "listener_id"
+                )  # 与Buff的伴生的监听器的ID
                 if __listener_id_str is None or __listener_id_str is np.nan:
                     self.listener_id = None
                 else:

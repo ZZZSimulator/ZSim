@@ -1,11 +1,22 @@
-from .DetectEdges import detect_edge
+from typing import TYPE_CHECKING
+
 from .FindCharFromCID import find_char_from_CID
-from .FindMain import *
 from .FindCharFromName import find_char_from_name
 from .FindEquipper import find_equipper
-from typing import TYPE_CHECKING
+from .FindMain import (
+    find_all_name_order_box,  # noqa: F401
+    find_char_list,
+    find_dynamic_buff_list,
+    find_enemy,
+    find_event_list,
+    find_exist_buff_dict,
+    find_preload_data,
+    find_stack,
+    find_tick,  # noqa: F401
+)
+
 if TYPE_CHECKING:
-    from sim_progress.Buff import Buff
+    from .. import Buff
 
 
 def check_preparation(buff_0, buff_instance: "Buff", **kwargs):
@@ -52,27 +63,39 @@ def check_preparation(buff_0, buff_instance: "Buff", **kwargs):
     # 函数主体部分
     if equipper:
         if record.equipper is None:
-            record.equipper = find_equipper(equipper, sim_instance=buff_instance.sim_instance)
+            record.equipper = find_equipper(
+                equipper, sim_instance=buff_instance.sim_instance
+            )
         if record.char is None:
-            record.char = find_char_from_name(record.equipper, sim_instance=buff_instance.sim_instance)
+            record.char = find_char_from_name(
+                record.equipper, sim_instance=buff_instance.sim_instance
+            )
     if char_CID:
         if record.char is None:
-            record.char = find_char_from_CID(char_CID, sim_instance=buff_instance.sim_instance)
+            record.char = find_char_from_CID(
+                char_CID, sim_instance=buff_instance.sim_instance
+            )
     if char_NAME:
         if record.char is None:
-            record.char = find_char_from_name(char_NAME, sim_instance=buff_instance.sim_instance)
+            record.char = find_char_from_name(
+                char_NAME, sim_instance=buff_instance.sim_instance
+            )
 
     if sub_exist_buff_dict:
         if record.char is None:
             raise ValueError("在buff_0.history.record 中并未读取到对应的char")
         if record.sub_exist_buff_dict is None:
-            record.sub_exist_buff_dict = find_exist_buff_dict(sim_instance=buff_instance.sim_instance)[record.char.NAME]
+            record.sub_exist_buff_dict = find_exist_buff_dict(
+                sim_instance=buff_instance.sim_instance
+            )[record.char.NAME]
     if enemy:
         if record.enemy is None:
             record.enemy = find_enemy(sim_instance=buff_instance.sim_instance)
     if dynamic_buff_list:
         if record.dynamic_buff_list is None:
-            record.dynamic_buff_list = find_dynamic_buff_list(sim_instance=buff_instance.sim_instance)
+            record.dynamic_buff_list = find_dynamic_buff_list(
+                sim_instance=buff_instance.sim_instance
+            )
     if action_stack:
         if record.action_stack is None:
             record.action_stack = find_stack(sim_instance=buff_instance.sim_instance)
@@ -84,10 +107,14 @@ def check_preparation(buff_0, buff_instance: "Buff", **kwargs):
         trigger_buff_0_handler(record, trigger_buff_0, buff_instance=buff_instance)
     if preload_data:
         if record.preload_data is None:
-            record.preload_data = find_preload_data(sim_instance=buff_instance.sim_instance)
+            record.preload_data = find_preload_data(
+                sim_instance=buff_instance.sim_instance
+            )
     if char_obj_list:
         if record.char_obj_list is None:
-            record.char_obj_list = find_char_list(sim_instance=buff_instance.sim_instance)
+            record.char_obj_list = find_char_list(
+                sim_instance=buff_instance.sim_instance
+            )
 
 
 def trigger_buff_0_handler(record, trigger_buff_0, buff_instance: "Buff"):
@@ -106,13 +133,17 @@ def trigger_buff_0_handler(record, trigger_buff_0, buff_instance: "Buff"):
         buff_index = trigger_buff_0[1]
         if operator == "equipper":
             if record.equipper is None:
-                record.equipper = find_equipper(operator, sim_instance=buff_instance.sim_instance)
+                record.equipper = find_equipper(
+                    operator, sim_instance=buff_instance.sim_instance
+                )
                 # FIXME:这里要解决传入的operator 是“equipper”字符串的问题！！！！虽然该分支不会被执行，所以从未出错（obsidian笔记详解一下）
 
             operator = record.equipper
         elif operator == "enemy":
             operator = record.char.NAME
-        sub_exist_buff_dict = find_exist_buff_dict(sim_instance=buff_instance.sim_instance)[operator]
+        sub_exist_buff_dict = find_exist_buff_dict(
+            sim_instance=buff_instance.sim_instance
+        )[operator]
         founded_list = []
         for _buff_founded in sub_exist_buff_dict.values():
             if buff_index in _buff_founded.ft.index:
