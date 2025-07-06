@@ -6,6 +6,8 @@ from zsim.sim_progress import Buff, Preload, Report
 from zsim.sim_progress.anomaly_bar import AnomalyBar as AnB
 from zsim.sim_progress.anomaly_bar.CopyAnomalyForOutput import (
     DirgeOfDestinyAnomaly as Abloom,
+)
+from zsim.sim_progress.anomaly_bar.CopyAnomalyForOutput import (
     Disorder,
     PolarityDisorder,
 )
@@ -29,7 +31,7 @@ from zsim.sim_progress.Preload import SkillNode
 from zsim.sim_progress.Update import update_anomaly
 
 from .CalAnomaly import CalAbloom, CalAnomaly, CalDisorder, CalPolarityDisorder
-from .Calculator import Calculator
+from .Calculator import Calculator, MultiplierData  # noqa: F401
 
 if TYPE_CHECKING:
     from zsim.simulator.simulator_class import Simulator
