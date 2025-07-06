@@ -7,6 +7,7 @@ class HuweiManager:
     """虎威管理器，这里有虎威所有的数据机制以及业务逻辑"""
     def __init__(self, char_instance: "Character"):
         self.char = char_instance
+        self.cd = 0  # 虎威的内置CD
 
     def check_myself(self):
         """虎威自检，内置CD啥的，若条件满足则run_myself"""
