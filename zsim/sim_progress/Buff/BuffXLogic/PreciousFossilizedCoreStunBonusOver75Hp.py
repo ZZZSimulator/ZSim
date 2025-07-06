@@ -1,4 +1,4 @@
-from sim_progress.Buff import Buff, JudgeTools
+from .. import Buff, JudgeTools
 
 
 class PreciousFossilizedCoreStunBonusOver75Hp(Buff.BuffLogic):

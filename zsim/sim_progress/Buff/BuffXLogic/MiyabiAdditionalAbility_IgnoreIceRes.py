@@ -1,4 +1,4 @@
-from sim_progress.Buff import Buff, JudgeTools, check_preparation
+from .. import Buff, JudgeTools, check_preparation
 
 anomaly_name_list = ["frostbite", "assault", "shock", "burn", "corruption"]
 

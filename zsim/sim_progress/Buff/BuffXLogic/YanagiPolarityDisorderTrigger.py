@@ -1,6 +1,6 @@
-from sim_progress.Buff import find_tick
-from sim_progress.Buff import Buff, JudgeTools, check_preparation
 from copy import deepcopy
+
+from .. import Buff, JudgeTools, check_preparation, find_tick
 
 
 class YanagiPolarityDisorderTriggerRecord:
@@ -33,13 +33,15 @@ class YanagiPolarityDisorderTrigger(Buff.BuffLogic):
         self.record = None
 
     def get_prepared(self, **kwargs):
-        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
+        return check_preparation(
+            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
+        )
 
     def check_record_module(self):
         if self.buff_0 is None:
-            self.buff_0 = JudgeTools.find_exist_buff_dict(sim_instance=self.buff_instance.sim_instance)["柳"][
-                self.buff_instance.ft.index
-            ]
+            self.buff_0 = JudgeTools.find_exist_buff_dict(
+                sim_instance=self.buff_instance.sim_instance
+            )["柳"][self.buff_instance.ft.index]
         if self.buff_0.history.record is None:
             self.buff_0.history.record = YanagiPolarityDisorderTriggerRecord()
         self.record = self.buff_0.history.record
@@ -55,8 +57,8 @@ class YanagiPolarityDisorderTrigger(Buff.BuffLogic):
         if obj_input is None:
             return False
 
-        from sim_progress.Preload import SkillNode
-        from sim_progress.Load import LoadingMission
+        from zsim.sim_progress.Load import LoadingMission
+        from zsim.sim_progress.Preload import SkillNode
 
         if not isinstance(obj_input, SkillNode | LoadingMission):
             raise TypeError(
@@ -127,18 +129,20 @@ class YanagiPolarityDisorderTrigger(Buff.BuffLogic):
         active_bar_deep_copy = deepcopy(active_anomaly_bar)
 
         # 构造极性紊乱对象
-        from sim_progress.Update import spawn_output
+        from zsim.sim_progress.Update import spawn_output
 
         polarity_disorder_output = spawn_output(
             active_bar_deep_copy,
             mode_number=2,
             polarity_ratio=final_ratio,
             skill_node=kwargs["skill_node"],
-            sim_instance=self.buff_instance.sim_instance
+            sim_instance=self.buff_instance.sim_instance,
         )
         # polarity_disorder_output = spawn_output(active_anomaly_bar, mode_number=1)
         # 置入event_list
-        event_list = JudgeTools.find_event_list(sim_instance=self.buff_instance.sim_instance)
+        event_list = JudgeTools.find_event_list(
+            sim_instance=self.buff_instance.sim_instance
+        )
         event_list.append(polarity_disorder_output)
 
         # 清空记录，回收更新信号

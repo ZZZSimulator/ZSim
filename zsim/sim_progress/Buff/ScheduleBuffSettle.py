@@ -1,11 +1,14 @@
 from __future__ import annotations
-from sim_progress.Buff.buff_class import Buff
-from sim_progress.Buff.BuffAdd import add_debuff_to_enemy
-from sim_progress.Buff import JudgeTools
+
 from typing import TYPE_CHECKING
+
+from . import JudgeTools
+from .buff_class import Buff
+from .BuffAdd import add_debuff_to_enemy
+
 if TYPE_CHECKING:
-    from simulator.simulator_class import Simulator
-    from sim_progress.Load import LoadingMission
+    from zsim.sim_progress.Load import LoadingMission
+    from zsim.simulator.simulator_class import Simulator
 
 
 def ScheduleBuffSettle(

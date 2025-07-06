@@ -1,9 +1,11 @@
-from sim_progress.Buff import Buff, JudgeTools, check_preparation
-from define import YIXUAN_REPORT
 from typing import TYPE_CHECKING
+
+from zsim.define import YIXUAN_REPORT
+
+from .. import Buff, JudgeTools, check_preparation
+
 if TYPE_CHECKING:
-    from simulator.simulator_class import Simulator
-    from sim_progress.Preload import SkillNode
+    from zsim.sim_progress.Preload import SkillNode
 
 
 class YixuanAdditionalAbilityDmgBonusRecord:
@@ -14,6 +16,7 @@ class YixuanAdditionalAbilityDmgBonusRecord:
 
 class YixuanAdditionalAbilityDmgBonus(Buff.BuffLogic):
     """仪玄组队被动的增伤效果：触发条件是：凝云术和墨烬影消命中失衡状态下的敌人时触发。"""
+
     def __init__(self, buff_instance):
         super().__init__(buff_instance)
         self.buff_instance: Buff = buff_instance
@@ -22,13 +25,15 @@ class YixuanAdditionalAbilityDmgBonus(Buff.BuffLogic):
         self.record = None
 
     def get_prepared(self, **kwargs):
-        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
+        return check_preparation(
+            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
+        )
 
     def check_record_module(self):
         if self.buff_0 is None:
-            self.buff_0 = JudgeTools.find_exist_buff_dict(sim_instance=self.buff_instance.sim_instance)["仪玄"][
-                self.buff_instance.ft.index
-            ]
+            self.buff_0 = JudgeTools.find_exist_buff_dict(
+                sim_instance=self.buff_instance.sim_instance
+            )["仪玄"][self.buff_instance.ft.index]
         if self.buff_0.history.record is None:
             self.buff_0.history.record = YixuanAdditionalAbilityDmgBonusRecord()
         self.record = self.buff_0.history.record
@@ -45,8 +50,7 @@ class YixuanAdditionalAbilityDmgBonus(Buff.BuffLogic):
         if "1371_E_EX_B_" not in skill_node.skill_tag:
             return False
         if skill_node.preload_tick == self.buff_instance.sim_instance.tick:
-            print(f"仪玄的{skill_node.skill.skill_text}命中了失衡状态下的敌人，触发了组队被动的增伤效果！") if YIXUAN_REPORT else None
+            print(
+                f"仪玄的{skill_node.skill.skill_text}命中了失衡状态下的敌人，触发了组队被动的增伤效果！"
+            ) if YIXUAN_REPORT else None
         return True
-
-
-

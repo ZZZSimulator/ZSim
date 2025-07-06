@@ -1,15 +1,17 @@
-from sim_progress.Preload.APLModule.APLJudgeTools import (
+from typing import TYPE_CHECKING
+
+from zsim.sim_progress.Preload.APLModule.APLJudgeTools import (
     check_cid,
     get_personal_node_stack,
 )
-from sim_progress.Preload.APLModule.SubConditionUnit import BaseSubConditionUnit
-from typing import TYPE_CHECKING
+from zsim.sim_progress.Preload.APLModule.SubConditionUnit import BaseSubConditionUnit
 
 if TYPE_CHECKING:
-    from simulator.simulator_class import Simulator
-    from sim_progress.Preload.PreloadDataClass import PreloadData
-    from sim_progress.Preload import PreloadClass
-    from sim_progress.Preload.APLModule.ActionReplaceManager import ActionReplaceManager
+    from zsim.simulator.simulator_class import Simulator
+
+    from ... import PreloadClass
+    from ...APLModule.ActionReplaceManager import ActionReplaceManager
+    from ...PreloadDataClass import PreloadData
 
 
 class ActionSubUnit(BaseSubConditionUnit):

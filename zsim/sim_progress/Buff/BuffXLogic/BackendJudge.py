@@ -1,4 +1,4 @@
-from sim_progress.Buff import Buff, JudgeTools
+from .. import Buff, JudgeTools
 
 
 class BackendJudge(Buff.BuffLogic):
@@ -15,8 +15,13 @@ class BackendJudge(Buff.BuffLogic):
 
     def special_judge_logic(self, **kwargs):
         if self.equipper is None:
-            self.equipper = JudgeTools.find_equipper(self.buff_instance.ft.bufffrom, sim_instance=self.buff_instance.sim_instance)
-        name_box = JudgeTools.find_init_data(sim_instance=self.buff_instance.sim_instance).name_box
+            self.equipper = JudgeTools.find_equipper(
+                self.buff_instance.ft.bufffrom,
+                sim_instance=self.buff_instance.sim_instance,
+            )
+        name_box = JudgeTools.find_init_data(
+            sim_instance=self.buff_instance.sim_instance
+        ).name_box
         if name_box[0] != self.equipper:
             return True
         else:

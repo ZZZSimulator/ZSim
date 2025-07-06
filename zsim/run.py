@@ -1,10 +1,7 @@
 import argparse
-import io
 import subprocess
 import sys
-from contextlib import redirect_stdout
 
-from zsim.simulator import Simulator
 from zsim.simulator.config_classes import SimulationConfig as SimCfg
 
 
@@ -63,23 +60,6 @@ def go_single_subprocess(stop_tick: int):
         proc = subprocess.run(command, capture_output=True, text=True)
         results.append(proc.stdout.strip())
         return "\n".join(results)
-    except Exception as e:
-        return f"错误：启动子进程失败 - {str(e)}"
-
-
-def ref_go_single_subprocess(stop_tick: int):
-    """根据提供的 stop_tick 启动单个子进程。
-
-    Args:
-        `stop_tick (int)`: 子进程运行的最大 tick 数。
-    """
-    try:
-        f = io.StringIO()
-        with redirect_stdout(f):
-            print("启动子进程")
-            sim_ins = Simulator()
-            sim_ins.main_loop(stop_tick)
-        return f.getvalue()
     except Exception as e:
         return f"错误：启动子进程失败 - {str(e)}"
 

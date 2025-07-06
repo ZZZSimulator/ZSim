@@ -2,7 +2,7 @@ import json
 import os
 
 try:
-    from define import NORMAL_MODE_ID_JSON
+    from zsim.define import NORMAL_MODE_ID_JSON
 except ModuleNotFoundError:
     pass
 

@@ -1,9 +1,11 @@
-from sim_progress.Report import report_to_log
-from define import ENABLE_WATCHDOG, WATCHDOG_LEVEL
 from typing import TYPE_CHECKING
+
+from zsim.define import ENABLE_WATCHDOG, WATCHDOG_LEVEL
+from zsim.sim_progress.Report import report_to_log
+
 if TYPE_CHECKING:
-    from sim_progress.Character.skill_class import Skill
-    from sim_progress.Preload.SkillsQueue import SkillNode
+    from zsim.sim_progress.Character.skill_class import Skill
+    from zsim.sim_progress.Preload.SkillsQueue import SkillNode
 
 if ENABLE_WATCHDOG:
     report_to_log("[INFO] Watchdog is enabled.", level=4)

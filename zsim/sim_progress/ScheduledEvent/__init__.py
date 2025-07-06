@@ -1,33 +1,38 @@
 from __future__ import annotations
-from sim_progress import Buff, Preload, Report
-from sim_progress.anomaly_bar import AnomalyBar as AnB
-from sim_progress.anomaly_bar.CopyAnomalyForOutput import (
-    Disorder,
+
+from typing import TYPE_CHECKING
+
+from zsim.sim_progress import Buff, Preload, Report
+from zsim.sim_progress.anomaly_bar import AnomalyBar as AnB
+from zsim.sim_progress.anomaly_bar.CopyAnomalyForOutput import (
     DirgeOfDestinyAnomaly as Abloom,
+    Disorder,
     PolarityDisorder,
 )
-from sim_progress.Buff import ScheduleBuffSettle
-from sim_progress.Character import Character
-from sim_progress.data_struct import (
+from zsim.sim_progress.Buff import ScheduleBuffSettle
+from zsim.sim_progress.Character import Character
+from zsim.sim_progress.data_struct import (
     ActionStack,
+    QuickAssistEvent,
+    SchedulePreload,
     ScheduleRefreshData,
     SingleHit,
     SPUpdateData,
-    QuickAssistEvent,
-    SchedulePreload,
     StunForcedTerminationEvent,
 )
-from sim_progress.Load.LoadDamageEvent import ProcessHitUpdateDots, ProcessFreezLikeDots
-from sim_progress.Load.loading_mission import LoadingMission
-from sim_progress.Preload import SkillNode
-from sim_progress.Update import update_anomaly
+from zsim.sim_progress.Load.LoadDamageEvent import (
+    ProcessFreezLikeDots,
+    ProcessHitUpdateDots,
+)
+from zsim.sim_progress.Load.loading_mission import LoadingMission
+from zsim.sim_progress.Preload import SkillNode
+from zsim.sim_progress.Update import update_anomaly
 
 from .CalAnomaly import CalAbloom, CalAnomaly, CalDisorder, CalPolarityDisorder
-from .Calculator import Calculator, MultiplierData
-from typing import TYPE_CHECKING
+from .Calculator import Calculator
 
 if TYPE_CHECKING:
-    from simulator.simulator_class import Simulator
+    from zsim.simulator.simulator_class import Simulator
 
 
 class ScConditionData:

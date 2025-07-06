@@ -1,6 +1,6 @@
-from sim_progress.Buff import Buff, JudgeTools, check_preparation
-from sim_progress.ScheduledEvent import Calculator
-from sim_progress.ScheduledEvent.Calculator import MultiplierData
+from .. import Buff, JudgeTools, check_preparation
+from zsim.sim_progress.ScheduledEvent import Calculator
+from zsim.sim_progress.ScheduledEvent.Calculator import MultiplierData
 
 
 class QingYiAdditionalSkillRecord:
@@ -24,13 +24,15 @@ class QingYiAdditionalAbilityStunConvertToATK(Buff.BuffLogic):
         self.xhit = self.special_hit_logic
 
     def get_prepared(self, **kwargs):
-        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
+        return check_preparation(
+            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
+        )
 
     def check_record_module(self):
         if self.buff_0 is None:
-            self.buff_0 = JudgeTools.find_exist_buff_dict(sim_instance=self.buff_instance.sim_instance)["青衣"][
-                self.buff_instance.ft.index
-            ]
+            self.buff_0 = JudgeTools.find_exist_buff_dict(
+                sim_instance=self.buff_instance.sim_instance
+            )["青衣"][self.buff_instance.ft.index]
         if self.buff_0.history.record is None:
             self.buff_0.history.record = QingYiAdditionalSkillRecord()
         self.record = self.buff_0.history.record

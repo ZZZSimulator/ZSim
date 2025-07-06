@@ -1,12 +1,13 @@
 import random
+import threading
 import time
 from functools import lru_cache
-import threading
-import numpy as np
 from typing import TYPE_CHECKING
 
+import numpy as np
+
 if TYPE_CHECKING:
-    from simulator.simulator_class import Simulator
+    from zsim.simulator.simulator_class import Simulator
 
 MAX_SIGNED_INT64: int = 2**63 - 1
 

@@ -1,4 +1,4 @@
-from sim_progress.Buff.buff_class import Buff
+from .buff_class import Buff
 
 
 def buff_add(timenow: float, LOADING_BUFF_DICT: dict, DYNAMIC_BUFF_DICT: dict, enemy):

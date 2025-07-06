@@ -1,7 +1,8 @@
-from sim_progress.Buff import Buff, JudgeTools, check_preparation
-from sim_progress.ScheduledEvent import Calculator
-from sim_progress.ScheduledEvent.Calculator import MultiplierData
-from sim_progress import Preload
+from zsim.sim_progress import Preload
+from zsim.sim_progress.ScheduledEvent import Calculator
+from zsim.sim_progress.ScheduledEvent.Calculator import MultiplierData
+
+from .. import Buff, JudgeTools, check_preparation
 
 
 class MiyabiCoreSkillIF:
@@ -30,13 +31,15 @@ class MiyabiCoreSkill_IceFire(Buff.BuffLogic):
         self.record = None
 
     def get_prepared(self, **kwargs):
-        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
+        return check_preparation(
+            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
+        )
 
     def check_record_module(self):
         if self.buff_0 is None:
-            self.buff_0 = JudgeTools.find_exist_buff_dict(sim_instance=self.buff_instance.sim_instance)["雅"][
-                self.buff_instance.ft.index
-            ]
+            self.buff_0 = JudgeTools.find_exist_buff_dict(
+                sim_instance=self.buff_instance.sim_instance
+            )["雅"][self.buff_instance.ft.index]
         if self.buff_0.history.record is None:
             self.buff_0.history.record = MiyabiCoreSkillIF()
         self.record = self.buff_0.history.record
@@ -77,12 +80,17 @@ class MiyabiCoreSkill_IceFire(Buff.BuffLogic):
             frostbite_now = False
 
         frostbite_statement = [self.record.last_frostbite, frostbite_now]
-        mode_func = lambda a, b: a is False and b is True
+
+        def mode_func(a, b):
+            return a is False and b is True
+
         result = JudgeTools.detect_edge(frostbite_statement, mode_func)
         self.record.last_frostbite = frostbite_now
         # print(f'当前tick，冰焰退出情况：{result}')
         if result:
-            event_list = JudgeTools.find_event_list(sim_instance=self.buff_instance.sim_instance)
+            event_list = JudgeTools.find_event_list(
+                sim_instance=self.buff_instance.sim_instance
+            )
             skill_obj = self.record.char.skills_dict["1091_Core_Passive"]
             skill_node = Preload.SkillNode(skill_obj, 0)
             event_list.append(skill_node)

@@ -1,8 +1,15 @@
-from functools import lru_cache
 import ast
+from functools import lru_cache
+
 import polars as pl
-from sim_progress import Report
-from define import CHARACTER_DATA_PATH, SKILL_DATA_PATH, DEFAULT_SKILL_PATH, ElementType
+
+from zsim.define import (
+    CHARACTER_DATA_PATH,
+    DEFAULT_SKILL_PATH,
+    SKILL_DATA_PATH,
+    ElementType,
+)
+from zsim.sim_progress import Report
 
 
 @lru_cache(maxsize=64)
@@ -435,7 +442,7 @@ class Skill:
             if condition_value is None:
                 self.force_add_condition_APL = []
             else:
-                from sim_progress.Preload.apl_unit.APLUnit import SimpleUnitForForceAdd
+                from zsim.sim_progress.Preload.apl_unit.APLUnit import SimpleUnitForForceAdd
 
                 condition_list = condition_value.strip().split(";")
                 for _cond_str in condition_list:
@@ -498,7 +505,10 @@ class Skill:
                         self.anomaly_update_rule = [anomaly_update_mode]
                 except ValueError:
                     self.anomaly_update_rule = anomaly_update_list_str.split("&")
-            if isinstance(self.anomaly_update_rule, list) and len(self.anomaly_update_rule) > self.hit_times:
+            if (
+                isinstance(self.anomaly_update_rule, list)
+                and len(self.anomaly_update_rule) > self.hit_times
+            ):
                 raise ValueError(
                     f"{self.skill_tag}的更新节点总数大于技能总帧数！请检查数据正确性"
                 )

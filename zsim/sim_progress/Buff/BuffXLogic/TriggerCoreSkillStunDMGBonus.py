@@ -1,4 +1,4 @@
-from sim_progress.Buff import Buff, JudgeTools, check_preparation
+from .. import Buff, JudgeTools, check_preparation
 
 
 class TriggerCoreSkillStunDMGBonusRecord:
@@ -18,13 +18,15 @@ class TriggerCoreSkillStunDMGBonus(Buff.BuffLogic):
         self.xjudge = self.special_judge_logic
 
     def get_prepared(self, **kwargs):
-        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
+        return check_preparation(
+            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
+        )
 
     def check_record_module(self):
         if self.buff_0 is None:
-            self.buff_0 = JudgeTools.find_exist_buff_dict(sim_instance=self.buff_instance.sim_instance)["扳机"][
-                self.buff_instance.ft.index
-            ]
+            self.buff_0 = JudgeTools.find_exist_buff_dict(
+                sim_instance=self.buff_instance.sim_instance
+            )["扳机"][self.buff_instance.ft.index]
         if self.buff_0.history.record is None:
             self.buff_0.history.record = TriggerCoreSkillStunDMGBonusRecord()
         self.record = self.buff_0.history.record
@@ -33,7 +35,7 @@ class TriggerCoreSkillStunDMGBonus(Buff.BuffLogic):
         """只要是检测到扳机释放的协同攻击，就返回True"""
         self.check_record_module()
         self.get_prepared(char_CID=1361)
-        from sim_progress.Preload import SkillNode
+        from zsim.sim_progress.Preload import SkillNode
 
         skill_node: SkillNode | None
         skill_node = kwargs.get("skill_node", None)

@@ -6,9 +6,9 @@ from typing import Any
 import aiofiles
 import plotly.graph_objects as go
 import streamlit as st
-from define import results_dir
-from lib_webui.process_buff_result import show_buff_result
-from lib_webui.process_dmg_result import show_dmg_result
+from zsim.define import results_dir
+from zsim.lib_webui.process_buff_result import show_buff_result
+from zsim.lib_webui.process_dmg_result import show_dmg_result
 
 from .constants import stats_trans_mapping
 from .process_buff_result import prepare_buff_data_and_cache
@@ -322,7 +322,15 @@ def __draw_weapon_data(
                 continue
 
             # 收集所有独特的精炼等级
-            all_levels = sorted(list(set(level for levels_data in weapons_data.values() for level in levels_data.keys())))
+            all_levels = sorted(
+                list(
+                    set(
+                        level
+                        for levels_data in weapons_data.values()
+                        for level in levels_data.keys()
+                    )
+                )
+            )
             all_weapon_names = list(weapons_data.keys())
 
             # 为每个精炼等级创建柱状图系列
@@ -333,7 +341,7 @@ def __draw_weapon_data(
                     damage = weapons_data.get(weapon_name, {}).get(level, 0.0)
                     level_damages.append(damage)
 
-                if any(d > 0 for d in level_damages): # 只添加有数据的精炼等级系列
+                if any(d > 0 for d in level_damages):  # 只添加有数据的精炼等级系列
                     fig.add_trace(
                         go.Bar(
                             x=all_weapon_names,  # 武器名称作为 X 轴

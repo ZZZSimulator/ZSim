@@ -1,9 +1,12 @@
-from .BaseUniqueMechanic import BaseUniqueMechanic
-from sim_progress.data_struct import SingleHit
-from sim_progress.Report import report_dmg_result
 from typing import TYPE_CHECKING
+
+from zsim.sim_progress.data_struct import SingleHit
+from zsim.sim_progress.Report import report_dmg_result
+
+from .BaseUniqueMechanic import BaseUniqueMechanic
+
 if TYPE_CHECKING:
-    from sim_progress.Enemy import Enemy
+    from zsim.sim_progress.Enemy import Enemy
 
 """
 FOCUS_RATIO_MAP 的存在，是为了模拟角色在破腿的过程中，
@@ -130,7 +133,9 @@ class SingleLeg(BaseUniqueMechanic):
         self.lost_leg_hp += single_hit.dmg_expect * ratio
         if self.broken_leg_judge(tick):
             self.event_active(single_hit, tick)
-            self.enemy.sim_instance.decibel_manager.update(single_hit=single_hit, key="part_break")
+            self.enemy.sim_instance.decibel_manager.update(
+                single_hit=single_hit, key="part_break"
+            )
 
     def reset_single_leg(self):
         """重置单条腿"""
@@ -150,7 +155,7 @@ class BreakingEvent:
     def active(self, single_hit: SingleHit, tick: int):
         """破腿进行时！"""
         if self.game_state is None:
-            from sim_progress.Preload import get_game_state
+            from zsim.sim_progress.Preload import get_game_state
 
             self.game_state = get_game_state()
 
@@ -181,12 +186,14 @@ class BreakingEvent:
         """向破腿的角色里更新喧响值"""
         char_cid = int(single_hit.skill_tag.strip().split("_")[0])
         if char_cid not in self.found_char_dict:
-            from sim_progress.Buff import find_char_from_CID
+            from zsim.sim_progress.Buff import find_char_from_CID
 
-            self.found_char_dict[char_cid] = find_char_from_CID(char_cid, self.enemy.sim_instance)
+            self.found_char_dict[char_cid] = find_char_from_CID(
+                char_cid, self.enemy.sim_instance
+            )
         char_obj = self.found_char_dict[char_cid]
         char_name = char_obj.NAME
-        from sim_progress.data_struct import ScheduleRefreshData
+        from zsim.sim_progress.data_struct import ScheduleRefreshData
 
         refresh_data = ScheduleRefreshData(
             sp_target=(char_name,),

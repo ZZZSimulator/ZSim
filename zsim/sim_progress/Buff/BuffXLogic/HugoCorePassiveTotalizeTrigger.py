@@ -1,6 +1,6 @@
-from sim_progress.Buff import Buff, JudgeTools, check_preparation, find_tick
-from sim_progress.Enemy import Enemy
-from define import HUGO_REPORT
+from .. import Buff, JudgeTools, check_preparation, find_tick
+from zsim.sim_progress.Enemy import Enemy
+from zsim.define import HUGO_REPORT
 
 
 class HugoCorePassiveTotalizeTriggerRecord:
@@ -45,13 +45,15 @@ class HugoCorePassiveTotalizeTrigger(Buff.BuffLogic):
         self.xhit = self.special_hit_logic
 
     def get_prepared(self, **kwargs):
-        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
+        return check_preparation(
+            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
+        )
 
     def check_record_module(self):
         if self.buff_0 is None:
-            self.buff_0 = JudgeTools.find_exist_buff_dict(sim_instance=self.buff_instance.sim_instance)["雨果"][
-                self.buff_instance.ft.index
-            ]
+            self.buff_0 = JudgeTools.find_exist_buff_dict(
+                sim_instance=self.buff_instance.sim_instance
+            )["雨果"][self.buff_instance.ft.index]
         if self.buff_0.history.record is None:
             self.buff_0.history.record = HugoCorePassiveTotalizeTriggerRecord()
         self.record = self.buff_0.history.record
@@ -63,7 +65,7 @@ class HugoCorePassiveTotalizeTrigger(Buff.BuffLogic):
         skill_node = kwargs.get("skill_node", None)
         if skill_node is None:
             return False
-        from sim_progress.Preload import SkillNode
+        from zsim.sim_progress.Preload import SkillNode
 
         if not isinstance(skill_node, SkillNode):
             raise TypeError(
@@ -85,7 +87,9 @@ class HugoCorePassiveTotalizeTrigger(Buff.BuffLogic):
                     raise ValueError(
                         f"{skill_node.skill_tag}本应该有loading_mission，但是没有"
                     )
-                if not skill_node.loading_mission.is_last_hit(find_tick(sim_instance=self.buff_instance.sim_instance)):
+                if not skill_node.loading_mission.is_last_hit(
+                    find_tick(sim_instance=self.buff_instance.sim_instance)
+                ):
                     return False
                 else:
                     self.record.active_signal = skill_node.skill.trigger_buff_level
@@ -105,7 +109,9 @@ class HugoCorePassiveTotalizeTrigger(Buff.BuffLogic):
         # 过滤不是最后一次命中的技能
         if skill_node.loading_mission is None:
             return False
-        if not skill_node.loading_mission.is_last_hit(find_tick(sim_instance=self.buff_instance.sim_instance)):
+        if not skill_node.loading_mission.is_last_hit(
+            find_tick(sim_instance=self.buff_instance.sim_instance)
+        ):
             return False
 
         if self.record.active_signal is not None:
@@ -141,7 +147,9 @@ class HugoCorePassiveTotalizeTrigger(Buff.BuffLogic):
                 f"在非6画的情况下检测到了非法的触发信号：{self.record.active_signal}"
             )
         """准备数据"""
-        event_list = JudgeTools.find_event_list(sim_instance=self.buff_instance.sim_instance)
+        event_list = JudgeTools.find_event_list(
+            sim_instance=self.buff_instance.sim_instance
+        )
         rest_tick = self.record.enemy.get_stun_rest_tick()
         ratio = (
             1000
@@ -150,7 +158,7 @@ class HugoCorePassiveTotalizeTrigger(Buff.BuffLogic):
         )
         if self.record.active_signal in [2, 6]:
             print(
-                f"雨果使用{"大招" if self.record.active_signal == 6 else "强化E"}触发了决算！本次决算结算的失衡时间为{rest_tick/60:.2f}秒，结算倍率为{ratio:.2f}%，"
+                f"雨果使用{'大招' if self.record.active_signal == 6 else '强化E'}触发了决算！本次决算结算的失衡时间为{rest_tick / 60:.2f}秒，结算倍率为{ratio:.2f}%，"
             ) if HUGO_REPORT else None
         else:
             print(
@@ -158,31 +166,52 @@ class HugoCorePassiveTotalizeTrigger(Buff.BuffLogic):
             ) if HUGO_REPORT else None
 
         """先处理Buff"""
-        from sim_progress.Buff.BuffAddStrategy import buff_add_strategy
+        from zsim.sim_progress.Buff.BuffAddStrategy import buff_add_strategy
 
         if self.record.active_signal == 0:
             abyss_reverb_buff_index = self.record.abyss_reverb_buff_index
-            buff_add_strategy(abyss_reverb_buff_index, benifit_list=["雨果"], sim_instance=self.buff_instance.sim_instance)
+            buff_add_strategy(
+                abyss_reverb_buff_index,
+                benifit_list=["雨果"],
+                sim_instance=self.buff_instance.sim_instance,
+            )
             self.record.active_signal = None
             """触发信号为0时，只添加Buff，不执行后面的逻辑。"""
             return
         else:
             buff_index = self.record.totalize_buff_index
-            buff_add_strategy(buff_index, specified_count=ratio, benifit_list=["雨果"], sim_instance=self.buff_instance.sim_instance)
+            buff_add_strategy(
+                buff_index,
+                specified_count=ratio,
+                benifit_list=["雨果"],
+                sim_instance=self.buff_instance.sim_instance,
+            )
             stun_value_feed_back_ratio = min(rest_tick / 60, 5) * 0.05
             if self.record.char.cinema >= 1:
                 cinema_1_buff_index = self.record.cinema_1_buff_index
-                buff_add_strategy(cinema_1_buff_index, benifit_list=["雨果"], sim_instance=self.buff_instance.sim_instance)
+                buff_add_strategy(
+                    cinema_1_buff_index,
+                    benifit_list=["雨果"],
+                    sim_instance=self.buff_instance.sim_instance,
+                )
             if self.record.char.cinema >= 2:
                 cinema_2_buff_index = self.record.cinema_2_buff_index
-                buff_add_strategy(cinema_2_buff_index, benifit_list=["雨果"], sim_instance=self.buff_instance.sim_instance)
+                buff_add_strategy(
+                    cinema_2_buff_index,
+                    benifit_list=["雨果"],
+                    sim_instance=self.buff_instance.sim_instance,
+                )
             if self.record.char.cinema == 6:
                 cinema_6_buff_index = self.record.cinema_6_buff_index
-                buff_add_strategy(cinema_6_buff_index, benifit_list=["雨果"], sim_instance=self.buff_instance.sim_instance)
+                buff_add_strategy(
+                    cinema_6_buff_index,
+                    benifit_list=["雨果"],
+                    sim_instance=self.buff_instance.sim_instance,
+                )
 
         """再生成决算的skill_node"""
-        from sim_progress.Preload.SkillsQueue import spawn_node
-        from sim_progress.Load import LoadingMission
+        from zsim.sim_progress.Preload.SkillsQueue import spawn_node
+        from zsim.sim_progress.Load import LoadingMission
 
         if self.record.active_signal == 2:
             node_tag = self.record.E_totalize_tag
@@ -193,15 +222,19 @@ class HugoCorePassiveTotalizeTrigger(Buff.BuffLogic):
                 "雨果的决算触发器的Xjudge函数放行了，但是给出的信号不是强化E、大招"
             )
         totalize_node = spawn_node(
-            node_tag, find_tick(sim_instance=self.buff_instance.sim_instance), self.record.preload_data.skills
+            node_tag,
+            find_tick(sim_instance=self.buff_instance.sim_instance),
+            self.record.preload_data.skills,
         )
         """给予技能节点一个loading_mission"""
         totalize_node.loading_mission = LoadingMission(totalize_node)
-        totalize_node.loading_mission.mission_start(find_tick(sim_instance=self.buff_instance.sim_instance))
+        totalize_node.loading_mission.mission_start(
+            find_tick(sim_instance=self.buff_instance.sim_instance)
+        )
         event_list.append(totalize_node)
 
         """失衡状态强制结算事件"""
-        from sim_progress.data_struct import StunForcedTerminationEvent
+        from zsim.sim_progress.data_struct import StunForcedTerminationEvent
 
         if self.record.enemy.dynamic.stun:
             if self.record.char.cinema >= 2 and self.record.active_signal == 6:
@@ -213,7 +246,9 @@ class HugoCorePassiveTotalizeTrigger(Buff.BuffLogic):
                 stun_event = StunForcedTerminationEvent(
                     self.record.enemy,
                     stun_value_feed_back_ratio,
-                    execute_tick=find_tick(sim_instance=self.buff_instance.sim_instance),
+                    execute_tick=find_tick(
+                        sim_instance=self.buff_instance.sim_instance
+                    ),
                     event_source="雨果",
                 )
         else:

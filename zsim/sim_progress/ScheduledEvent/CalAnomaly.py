@@ -1,24 +1,33 @@
+from typing import TYPE_CHECKING
+
 import numpy as np
-from define import ElementType
-from sim_progress.Character.Yanagi import Yanagi
-from sim_progress.Enemy import Enemy
-from sim_progress.Report import report_to_log
-from sim_progress.anomaly_bar import AnomalyBar
-from sim_progress.anomaly_bar.CopyAnomalyForOutput import (
-    Disorder,
+
+from zsim.define import ElementType
+from zsim.sim_progress.anomaly_bar import AnomalyBar
+from zsim.sim_progress.anomaly_bar.CopyAnomalyForOutput import (
     DirgeOfDestinyAnomaly as Abloom,
+    Disorder,
     PolarityDisorder,
 )
+from zsim.sim_progress.Character.Yanagi import Yanagi
+from zsim.sim_progress.Enemy import Enemy
+from zsim.sim_progress.Report import report_to_log
 
 from .Calculator import Calculator as Cal
 from .Calculator import MultiplierData as MulData
-from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
-    from simulator.simulator_class import Simulator
+    from zsim.simulator.simulator_class import Simulator
 
 
 class CalAnomaly:
-    def __init__(self, anomaly_obj: AnomalyBar, enemy_obj: Enemy, dynamic_buff: dict, sim_instance: "Simulator"):
+    def __init__(
+        self,
+        anomaly_obj: AnomalyBar,
+        enemy_obj: Enemy,
+        dynamic_buff: dict,
+        sim_instance: "Simulator",
+    ):
         """
         Schedule 节点对于异常伤害的分支逻辑，用于计算异常伤害
 
@@ -183,12 +192,20 @@ class CalAnomaly:
 
 
 class CalDisorder(CalAnomaly):
-    def __init__(self, disorder_obj: Disorder, enemy_obj: Enemy, dynamic_buff: dict, sim_instance: "Simulator"):
+    def __init__(
+        self,
+        disorder_obj: Disorder,
+        enemy_obj: Enemy,
+        dynamic_buff: dict,
+        sim_instance: "Simulator",
+    ):
         """
         异常伤害快照以 array 形式储存，顺序为：
         [基础伤害区、增伤区、异常精通区、等级、异常增伤区、异常暴击区、穿透率、穿透值、抗性穿透]
         """
-        super().__init__(disorder_obj, enemy_obj, dynamic_buff, sim_instance=sim_instance)
+        super().__init__(
+            disorder_obj, enemy_obj, dynamic_buff, sim_instance=sim_instance
+        )
         self.final_multipliers[0] = self.cal_disorder_base_dmg(
             np.float64(self.final_multipliers[0])
         )
@@ -218,7 +235,7 @@ class CalDisorder(CalAnomaly):
                 )
             case 5:  # 烈霜紊乱
                 disorder_base_dmg = (base_mul / 5) * (np.floor(t_s) * 0.75 + 6)
-            case 6: # 玄墨侵蚀紊乱
+            case 6:  # 玄墨侵蚀紊乱
                 disorder_base_dmg = (base_mul / 0.625) * (
                     np.floor(t_s / 0.5) * 0.625 + 4.5
                 )
@@ -252,9 +269,15 @@ class CalDisorder(CalAnomaly):
 
 class CalPolarityDisorder(CalDisorder):
     def __init__(
-        self, disorder_obj: PolarityDisorder, enemy_obj: Enemy, dynamic_buff: dict, sim_instance: "Simulator"
+        self,
+        disorder_obj: PolarityDisorder,
+        enemy_obj: Enemy,
+        dynamic_buff: dict,
+        sim_instance: "Simulator",
     ):
-        super().__init__(disorder_obj, enemy_obj, dynamic_buff, sim_instance=sim_instance)
+        super().__init__(
+            disorder_obj, enemy_obj, dynamic_buff, sim_instance=sim_instance
+        )
         yanagi_obj = self.__find_yanagi()
         yanagi_mul = MulData(
             enemy_obj=enemy_obj, dynamic_buff=dynamic_buff, character_obj=yanagi_obj
@@ -265,14 +288,21 @@ class CalPolarityDisorder(CalDisorder):
         ) + (ap * disorder_obj.additional_dmg_ap_ratio)
 
     def __find_yanagi(self) -> Yanagi | None:
-
-        yanagi_obj: Yanagi | None = self.sim_instance.char_data.char_obj_dict.get("柳", None)
+        yanagi_obj: Yanagi | None = self.sim_instance.char_data.char_obj_dict.get(
+            "柳", None
+        )
         if yanagi_obj is None:
             assert False, "没柳你哪来的极性紊乱"
         return yanagi_obj
 
 
 class CalAbloom(CalAnomaly):
-    def __init__(self, abloom_obj: Abloom, enemy_obj: Enemy, dynamic_buff: dict, sim_instance: "Simulator"):
+    def __init__(
+        self,
+        abloom_obj: Abloom,
+        enemy_obj: Enemy,
+        dynamic_buff: dict,
+        sim_instance: "Simulator",
+    ):
         super().__init__(abloom_obj, enemy_obj, dynamic_buff, sim_instance=sim_instance)
         self.final_multipliers[0] *= abloom_obj.anomaly_dmg_ratio

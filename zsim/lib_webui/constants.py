@@ -1,6 +1,6 @@
 import polars as pl
 import streamlit as st
-from define import ElementType
+from zsim.define import ElementType
 
 
 @st.cache_data
@@ -58,7 +58,11 @@ def _init_skill_tag_mapping() -> dict[str, str]:
     try:
         df = pl.scan_csv(
             "./zsim/data/skill.csv",
-            schema_overrides={"skill_tag": pl.String, "skill_text": pl.String, "INSTRUCTION": pl.String},
+            schema_overrides={
+                "skill_tag": pl.String,
+                "skill_text": pl.String,
+                "INSTRUCTION": pl.String,
+            },
         )
         mapping = (
             df.select("skill_tag", "skill_text", "INSTRUCTION")
@@ -89,6 +93,7 @@ def _init_char_mapping() -> dict[str, str]:
     except Exception as e:
         print(f"Warning: Failed to load character mapping: {e}")
         return {}
+
 
 # 角色CID和名称的映射关系
 CHAR_CID_MAPPING: dict[str, str] = _init_char_mapping()

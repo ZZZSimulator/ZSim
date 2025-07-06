@@ -1,8 +1,10 @@
-from sim_progress.Dot import Dot
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
+
+from .. import Dot
+
 if TYPE_CHECKING:
-    from simulator.simulator_class import Simulator
+    from zsim.simulator.simulator_class import Simulator
 
 
 class Corruption(Dot):

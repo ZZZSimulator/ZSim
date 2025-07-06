@@ -1,7 +1,10 @@
-from .buff_class import Buff
 from typing import TYPE_CHECKING
+
+from .buff_class import Buff
+
 if TYPE_CHECKING:
-    from simulator.simulator_class import Simulator
+    from zsim.simulator.simulator_class import Simulator
+
 
 def _buff_filter(*args, **kwargs):
     buff_name_list: list[str] = []
@@ -22,7 +25,7 @@ def buff_add_strategy(
     *added_buffs: str | Buff,
     benifit_list: list[str] | None = None,
     specified_count: int | None = None,
-    sim_instance: "Simulator" = None
+    sim_instance: "Simulator" = None,
 ):
     """
     这个函数是暴力添加buff用的，比如霜寒、畏缩等debuff，

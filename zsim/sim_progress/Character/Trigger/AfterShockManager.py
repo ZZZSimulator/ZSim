@@ -1,5 +1,6 @@
+from zsim.define import TRIGGER_REPORT
+
 from .TriggerCoordinatedSupportTrigger import CoordinatedSupportManager
-from define import TRIGGER_REPORT
 
 
 class AfterShock:
@@ -46,9 +47,11 @@ class AfterShock:
                 raise ValueError("传入的skill_node与complex_cd_manager不匹配")
             __available_result = cdm.update(tick)
             if not __available_result and TRIGGER_REPORT:
-                print(f"==========CD Warnning===========")
-                print(f"{skill_node.skill_tag}企图触发扳机的强化协同攻击，但是尚未就绪！")
-                print(f"================================")
+                print("==========CD Warnning===========")
+                print(
+                    f"{skill_node.skill_tag}企图触发扳机的强化协同攻击，但是尚未就绪！"
+                )
+                print("================================")
             return __available_result
 
 
@@ -133,9 +136,11 @@ class AfterShockManager:
                             return strong_after_shock_tag
                 else:
                     if TRIGGER_REPORT:
-                        print(f"==========warnning==========")
-                        print(f"{skill_node.skill_tag}企图触发扳机的强化协同攻击但是失败")
-                        print(f"==========warnning==========")
+                        print("==========warnning==========")
+                        print(
+                            f"{skill_node.skill_tag}企图触发扳机的强化协同攻击但是失败"
+                        )
+                        print("==========warnning==========")
                     # else:
                     #     print(f'决意值为{self.char.get_resources()[1]}，无法触发强化协同攻击！')
 

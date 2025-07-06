@@ -1,9 +1,14 @@
 from __future__ import annotations
-from .QuickAssistManager import QuickAssistManager
-from sim_progress.Buff import JudgeTools
+
 from typing import TYPE_CHECKING
+
+from zsim.sim_progress.Buff import JudgeTools
+
+from .QuickAssistManager import QuickAssistManager
+
 if TYPE_CHECKING:
-    from simulator.simulator_class import Simulator
+    from zsim.sim_progress.Character.character import Character
+    from zsim.simulator.simulator_class import Simulator
 
 
 class QuickAssistSystem:
@@ -11,7 +16,7 @@ class QuickAssistSystem:
 
     def __init__(self, char_obj_list: list, sim_instance: Simulator):
         self.sim_instance = sim_instance
-        self.char_obj_list = char_obj_list
+        self.char_obj_list: list["Character"] = char_obj_list
         self.quick_assist_manager_group: dict[str, QuickAssistManager] = {}
         for char_obj in self.char_obj_list:
             self.quick_assist_manager_group[char_obj.NAME] = (

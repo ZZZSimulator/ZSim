@@ -1,9 +1,11 @@
-from sim_progress.Buff import Buff, JudgeTools, check_preparation
-from define import YIXUAN_REPORT
 from typing import TYPE_CHECKING
+
+from zsim.define import YIXUAN_REPORT
+
+from .. import Buff, JudgeTools, check_preparation
+
 if TYPE_CHECKING:
-    from simulator.simulator_class import Simulator
-    from sim_progress.Preload import SkillNode
+    from zsim.sim_progress.Preload import SkillNode
 
 
 class YixuanCinema2StunTimeLimitBonusRecord:
@@ -15,6 +17,7 @@ class YixuanCinema2StunTimeLimitBonusRecord:
 
 class YixuanCinema2StunTimeLimitBonus(Buff.BuffLogic):
     """仪玄2画效果：增加怪物失衡时间"""
+
     def __init__(self, buff_instance):
         super().__init__(buff_instance)
         self.buff_instance: Buff = buff_instance
@@ -24,13 +27,15 @@ class YixuanCinema2StunTimeLimitBonus(Buff.BuffLogic):
         self.record = None
 
     def get_prepared(self, **kwargs):
-        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
+        return check_preparation(
+            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
+        )
 
     def check_record_module(self):
         if self.buff_0 is None:
-            self.buff_0 = JudgeTools.find_exist_buff_dict(sim_instance=self.buff_instance.sim_instance)["仪玄"][
-                self.buff_instance.ft.index
-            ]
+            self.buff_0 = JudgeTools.find_exist_buff_dict(
+                sim_instance=self.buff_instance.sim_instance
+            )["仪玄"][self.buff_instance.ft.index]
         if self.buff_0.history.record is None:
             self.buff_0.history.record = YixuanCinema2StunTimeLimitBonusRecord()
         self.record = self.buff_0.history.record
@@ -47,14 +52,17 @@ class YixuanCinema2StunTimeLimitBonus(Buff.BuffLogic):
             return False
         if skill_node.preload_tick != self.buff_instance.sim_instance.tick:
             return False
-        print(f'2画：检测到仪玄释放喧响值大招！敌人正处于失衡状态，2画效果生效，延长敌人3秒失衡时间！') if YIXUAN_REPORT else None
+        print(
+            "2画：检测到仪玄释放喧响值大招！敌人正处于失衡状态，2画效果生效，延长敌人3秒失衡时间！"
+        ) if YIXUAN_REPORT else None
         return True
 
     def special_exit_logic(self, **kwargs):
         self.check_record_module()
         self.get_prepared(char_CID=1371, enemy=1)
         if not self.record.enemy.dynamic.stun:
-            print("2画：检测到敌人从失衡状态中恢复，仪玄2画的失衡时间延长效果结束！") if YIXUAN_REPORT else None
+            print(
+                "2画：检测到敌人从失衡状态中恢复，仪玄2画的失衡时间延长效果结束！"
+            ) if YIXUAN_REPORT else None
             return True
         return False
-

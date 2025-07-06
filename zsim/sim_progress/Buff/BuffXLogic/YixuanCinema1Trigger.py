@@ -1,11 +1,13 @@
-from sim_progress.Buff import Buff, JudgeTools, check_preparation
-from define import YIXUAN_REPORT
 from typing import TYPE_CHECKING
+
+from zsim.define import YIXUAN_REPORT
+
+from .. import Buff, JudgeTools, check_preparation
+
 if TYPE_CHECKING:
-    from simulator.simulator_class import Simulator
-    from sim_progress.Preload import SkillNode
-    from sim_progress.Preload.PreloadDataClass import PreloadData
-    from sim_progress.Character.Yixuan import Yixuan
+    from zsim.sim_progress.Character.Yixuan import Yixuan
+    from zsim.sim_progress.Preload import SkillNode
+    from zsim.sim_progress.Preload.PreloadDataClass import PreloadData
 
 
 class YixuanCinema1TriggerRecord:
@@ -19,6 +21,7 @@ class YixuanCinema1TriggerRecord:
 
 class YixuanCinema1Trigger(Buff.BuffLogic):
     """仪玄1画的触发器"""
+
     def __init__(self, buff_instance):
         super().__init__(buff_instance)
         self.buff_instance: Buff = buff_instance
@@ -28,13 +31,15 @@ class YixuanCinema1Trigger(Buff.BuffLogic):
         self.record = None
 
     def get_prepared(self, **kwargs):
-        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
+        return check_preparation(
+            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
+        )
 
     def check_record_module(self):
         if self.buff_0 is None:
-            self.buff_0 = JudgeTools.find_exist_buff_dict(sim_instance=self.buff_instance.sim_instance)["仪玄"][
-                self.buff_instance.ft.index
-            ]
+            self.buff_0 = JudgeTools.find_exist_buff_dict(
+                sim_instance=self.buff_instance.sim_instance
+            )["仪玄"][self.buff_instance.ft.index]
         if self.buff_0.history.record is None:
             self.buff_0.history.record = YixuanCinema1TriggerRecord()
         self.record = self.buff_0.history.record
@@ -63,19 +68,23 @@ class YixuanCinema1Trigger(Buff.BuffLogic):
         event_list = simulator.schedule_data.event_list
         tick = simulator.tick
         # 处理落雷
-        from sim_progress.Preload.SkillsQueue import spawn_node
-        from sim_progress.Load import LoadingMission
-        lightning_strick_node: "SkillNode" = spawn_node(tag=self.record.lighting_strike_skill_tag, preload_tick=tick, skills=preload_data.skills)
+        from zsim.sim_progress.Load import LoadingMission
+        from zsim.sim_progress.Preload.SkillsQueue import spawn_node
+
+        lightning_strick_node: "SkillNode" = spawn_node(
+            tag=self.record.lighting_strike_skill_tag,
+            preload_tick=tick,
+            skills=preload_data.skills,
+        )
         loading_mission = LoadingMission(mission=lightning_strick_node)
         loading_mission.mission_start(tick)
         lightning_strick_node.loading_mission = loading_mission
         event_list.append(lightning_strick_node)
 
         char.update_adrenaline(sp_value=self.record.adrenaline_value)
-        self.buff_instance.simple_start(timenow=tick, sub_exist_buff_dict=self.record.sub_exist_buff_dict)
-        print(f"1画：生成一道落雷，并且为仪玄回复5点闪能值，仪玄当前闪能值：{char.adrenaline: .2f}") if  YIXUAN_REPORT else None
-
-
-
-
-
+        self.buff_instance.simple_start(
+            timenow=tick, sub_exist_buff_dict=self.record.sub_exist_buff_dict
+        )
+        print(
+            f"1画：生成一道落雷，并且为仪玄回复5点闪能值，仪玄当前闪能值：{char.adrenaline: .2f}"
+        ) if YIXUAN_REPORT else None

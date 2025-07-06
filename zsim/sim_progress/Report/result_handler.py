@@ -6,7 +6,8 @@ import uuid
 import aiofiles
 import numpy as np
 import polars as pl
-from define import ANOMALY_MAPPING, ElementType
+
+from zsim.define import ANOMALY_MAPPING, ElementType
 
 result_queue: queue.Queue = queue.Queue()
 

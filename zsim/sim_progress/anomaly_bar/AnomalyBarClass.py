@@ -1,10 +1,12 @@
-from dataclasses import dataclass
-import numpy as np
 import uuid
+from dataclasses import dataclass
 from typing import TYPE_CHECKING
+
+import numpy as np
+
 if TYPE_CHECKING:
-    from simulator.simulator_class import Simulator
-    from sim_progress.Preload import SkillNode
+    from zsim.sim_progress.Preload import SkillNode
+    from zsim.simulator.simulator_class import Simulator
 
 
 @dataclass
@@ -12,6 +14,7 @@ class AnomalyBar:
     """
     这是属性异常类的基类。其中包含了属性异常的基本属性，以及几个基本方法。
     """
+
     sim_instance: "Simulator"
     element_type: int = 0  # 属性种类编号(1~5)
     is_disorder: bool = False  # 是否是紊乱实例

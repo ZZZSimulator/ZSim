@@ -1,16 +1,17 @@
-from .StanceManager import StanceManager
-from sim_progress.Character.utils.filters import (
-    _skill_node_filter,
-    _anomaly_filter,
-    _sp_update_data_filter,
-)
-from sim_progress.Character import Character
-from sim_progress.anomaly_bar.CopyAnomalyForOutput import NewAnomaly
-from sim_progress.Buff.BuffAddStrategy import buff_add_strategy
-
 from typing import TYPE_CHECKING
+
+from zsim.sim_progress.anomaly_bar.CopyAnomalyForOutput import NewAnomaly
+from zsim.sim_progress.Buff.BuffAddStrategy import buff_add_strategy
+
+from ..character import Character
+from ..utils.filters import (
+    _anomaly_filter,
+    _skill_node_filter,
+)
+from .StanceManager import StanceManager
+
 if TYPE_CHECKING:
-    from sim_progress.Preload import SkillNode
+    from zsim.sim_progress.Preload import SkillNode
 
 
 class Yanagi(Character):
@@ -34,7 +35,9 @@ class Yanagi(Character):
                 for _anomaly in anomalies:
                     if isinstance(_anomaly.activate_by, SkillNode):
                         if str(self.CID) in _anomaly.activate_by.skill_tag:
-                            buff_add_strategy(self.cinema_4_buff_index, sim_instance=self.sim_instance)
+                            buff_add_strategy(
+                                self.cinema_4_buff_index, sim_instance=self.sim_instance
+                            )
                             break
 
     def update_sp_and_decibel(self, *args, **kwargs):

@@ -1,8 +1,9 @@
-from sim_progress.data_struct import SingleHit
 from typing import TYPE_CHECKING
+
+from zsim.sim_progress.data_struct import SingleHit
+
 if TYPE_CHECKING:
-    from simulator.simulator_class import Simulator
-    from sim_progress.Enemy import Enemy
+    from zsim.sim_progress.Enemy import Enemy
 
 
 class QETDataUpdater:
@@ -104,7 +105,9 @@ class QTEData:
             if self.qte_active_selector(hit):
                 # 3.1、如果是能够激发连携的hit，而此时又没有SingleHit存在，那么就是激活了新的QTE阶段，进入下一步判断。
                 self.single_qte = SingleQTE(self, single_hit=hit)
-                print(f'{hit.skill_node.char_name}  的  {hit.skill_node.skill.skill_text}  激发了连携技！当前已经激发过{self.qte_triggered_times + 1}次连携技！')
+                print(
+                    f"{hit.skill_node.char_name}  的  {hit.skill_node.skill.skill_text}  激发了连携技！当前已经激发过{self.qte_triggered_times + 1}次连携技！"
+                )
             else:
                 """
                 如果不是重攻击，那就只能是某技能的第一跳。
@@ -150,7 +153,8 @@ class QTEData:
             return False
         if self.preload_data is None:
             self.preload_data = self.enemy_instance.sim_instance.preload.preload_data
-        from sim_progress.Preload.PreloadDataClass import PreloadData
+        from zsim.sim_progress.Preload.PreloadDataClass import PreloadData
+
         if not isinstance(self.preload_data, PreloadData):
             raise TypeError("QTEData的preload_data属性不是PreloadData类！")
         if self.preload_data.operating_now is None:
@@ -192,11 +196,15 @@ class SingleQTE:
 
         if "QTE" not in _single_hit.skill_tag:
             """说明QTE被取消了"""
-            print(f"{_single_hit.skill_node.char_name}  取消第{self.qte_data.qte_triggered_times + 1}次QTE，并释放了  {_single_hit.skill_node.skill.skill_text}  ")
+            print(
+                f"{_single_hit.skill_node.char_name}  取消第{self.qte_data.qte_triggered_times + 1}次QTE，并释放了  {_single_hit.skill_node.skill.skill_text}  "
+            )
         else:
             """角色响应了QTE，释放连携技"""
             if _single_hit.skill_node.char_name == self.active_by.skill_node.char_name:
-                raise ValueError(f"{_single_hit.skill_node.char_name}  企图响应自己激发的QTE！")
+                raise ValueError(
+                    f"{_single_hit.skill_node.char_name}  企图响应自己激发的QTE！"
+                )
             self.qte_received_box.append(_single_hit.skill_tag)
 
             """QTE成功响应之后，返还1秒QTE时间"""

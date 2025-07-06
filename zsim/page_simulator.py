@@ -6,10 +6,15 @@ from typing import Literal
 
 import psutil
 import streamlit as st
-from define import NEW_SIM_BOOT, saved_char_config
-from lib_webui.constants import stats_trans_mapping, weapon_options
-from lib_webui.process_char_config import dialog_character_panels
-from lib_webui.process_simulator import (
+
+from zsim.define import NEW_SIM_BOOT, saved_char_config
+from zsim.lib_webui.constants import stats_trans_mapping, weapon_options
+from zsim.lib_webui.multiprocess_wrapper import (
+    run_parallel_simulation,
+    run_single_simulation,
+)
+from zsim.lib_webui.process_char_config import dialog_character_panels
+from zsim.lib_webui.process_simulator import (
     apl_selecter,
     enemy_selector,
     generate_parallel_args,
@@ -17,10 +22,7 @@ from lib_webui.process_simulator import (
     save_enemy_selection,
     show_apl_judge_result,
 )
-from run import go_parallel_subprocess, go_single_subprocess
-from multiprocess_wrapper import run_single_simulation
-from simulator.config_classes import AttrCurveConfig
-from simulator.config_classes import SimulationConfig as SimCfg
+from zsim.run import go_parallel_subprocess, go_single_subprocess
 
 apl_legal = False
 # --- 常量定义 ---
@@ -59,7 +61,7 @@ PARALLEL_CONFIG_SUFFIX = "/.parallel_config.json"
 def page_simulator():
     """模拟器页面函数"""
     st.title("ZZZ Simulator - 模拟器")
-    from define import CONFIG_PATH
+    from zsim.define import CONFIG_PATH
 
     # 获取当前计算机的物理核心数量
     MAX_WORKERS = psutil.cpu_count(logical=False)
@@ -446,16 +448,29 @@ def page_simulator():
                     json.dump(parallel_cfg, f, indent=4)
 
                 # 启动多进程
-                futures = {
-                    get_executor().submit(go_parallel_subprocess, args): i + 1
-                    for i, args in enumerate(
-                        generate_parallel_args(
-                            stop_tick,
-                            parallel_cfg,
-                            run_turn_uuid,
+                if not NEW_SIM_BOOT:
+                    futures = {
+                        get_executor().submit(go_parallel_subprocess, args): i + 1
+                        for i, args in enumerate(
+                            generate_parallel_args(
+                                stop_tick,
+                                parallel_cfg,
+                                run_turn_uuid,
+                            )
                         )
-                    )
-                }
+                    }
+                else:
+                    futures = {
+                        get_executor().submit(run_parallel_simulation, args): i + 1
+                        for i, args in enumerate(
+                            generate_parallel_args(
+                                stop_tick,
+                                parallel_cfg,
+                                run_turn_uuid,
+                            )
+                        )
+                    }
+
 
                 # 创建结果容器
                 result_container = st.container()

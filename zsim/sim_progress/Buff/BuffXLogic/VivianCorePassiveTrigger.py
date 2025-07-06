@@ -1,9 +1,12 @@
-from sim_progress.Buff import Buff, JudgeTools, check_preparation
-from sim_progress.ScheduledEvent.Calculator import (
-    MultiplierData as Mul,
+from zsim.define import VIVIAN_REPORT
+from zsim.sim_progress.ScheduledEvent.Calculator import (
     Calculator as Cal,
 )
-from define import VIVIAN_REPORT
+from zsim.sim_progress.ScheduledEvent.Calculator import (
+    MultiplierData as Mul,
+)
+
+from .. import Buff, JudgeTools, check_preparation
 
 
 class VivianCorePassiveTriggerRecord:
@@ -36,13 +39,15 @@ class VivianCorePassiveTrigger(Buff.BuffLogic):
         }
 
     def get_prepared(self, **kwargs):
-        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
+        return check_preparation(
+            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
+        )
 
     def check_record_module(self):
         if self.buff_0 is None:
-            self.buff_0 = JudgeTools.find_exist_buff_dict(sim_instance=self.buff_instance.sim_instance)["薇薇安"][
-                self.buff_instance.ft.index
-            ]
+            self.buff_0 = JudgeTools.find_exist_buff_dict(
+                sim_instance=self.buff_instance.sim_instance
+            )["薇薇安"][self.buff_instance.ft.index]
         if self.buff_0.history.record is None:
             self.buff_0.history.record = VivianCorePassiveTriggerRecord()
         self.record = self.buff_0.history.record
@@ -57,7 +62,7 @@ class VivianCorePassiveTrigger(Buff.BuffLogic):
         skill_node = kwargs.get("skill_node", None)
         if skill_node is None:
             return False
-        from sim_progress.Preload import SkillNode
+        from zsim.sim_progress.Preload import SkillNode
 
         if not isinstance(skill_node, SkillNode):
             raise TypeError(
@@ -87,7 +92,7 @@ class VivianCorePassiveTrigger(Buff.BuffLogic):
             enemy=1,
             sub_exist_buff_dict=1,
         )
-        from sim_progress.anomaly_bar import AnomalyBar
+        from zsim.sim_progress.anomaly_bar import AnomalyBar
 
         get_result = self.record.enemy.dynamic.get_active_anomaly()
         if not get_result:
@@ -96,15 +101,19 @@ class VivianCorePassiveTrigger(Buff.BuffLogic):
             )
         active_anomaly_bar = get_result[0]
         copyed_anomaly = AnomalyBar.create_new_from_existing(active_anomaly_bar)
-        event_list = JudgeTools.find_event_list(sim_instance=self.buff_instance.sim_instance)
+        event_list = JudgeTools.find_event_list(
+            sim_instance=self.buff_instance.sim_instance
+        )
         mul_data = Mul(
             self.record.enemy, self.record.dynamic_buff_list, self.record.char
         )
         ap = Cal.AnomalyMul.cal_ap(mul_data)
-        from sim_progress.anomaly_bar.CopyAnomalyForOutput import DirgeOfDestinyAnomaly
+        from zsim.sim_progress.anomaly_bar.CopyAnomalyForOutput import DirgeOfDestinyAnomaly
 
         dirge_of_destiny_anomaly = DirgeOfDestinyAnomaly(
-            copyed_anomaly, active_by="1331", sim_instance=self.buff_instance.sim_instance
+            copyed_anomaly,
+            active_by="1331",
+            sim_instance=self.buff_instance.sim_instance,
         )
         ratio = self.ANOMALY_RATIO_MUL.get(copyed_anomaly.element_type)
         if self.record.cinema_ratio is None:

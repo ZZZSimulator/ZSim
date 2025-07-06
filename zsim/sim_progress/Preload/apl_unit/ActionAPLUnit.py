@@ -1,8 +1,10 @@
 from typing import TYPE_CHECKING
-from sim_progress.Preload.apl_unit.APLUnit import APLUnit
+
+from .APLUnit import APLUnit
 
 if TYPE_CHECKING:
-    from simulator.simulator_class import Simulator
+    from zsimsimulator.simulator_class import Simulator
+
 
 class ActionAPLUnit(APLUnit):
     def __init__(self, apl_unit_dict: dict, sim_instance: "Simulator" = None):
@@ -13,7 +15,7 @@ class ActionAPLUnit(APLUnit):
         self.apl_unit_type = apl_unit_dict["type"]
         self.break_when_found_action = True
         self.result = apl_unit_dict["action"]
-        from sim_progress.Preload.apl_unit.APLUnit import spawn_sub_condition
+        from zsim.sim_progress.Preload.apl_unit.APLUnit import spawn_sub_condition
 
         for condition_str in apl_unit_dict["conditions"]:
             self.sub_conditions_unit_list.append(
@@ -47,7 +49,9 @@ class ActionAPLUnit(APLUnit):
         if not self.sub_conditions_unit_list:
             """无条件直接输出True"""
             return True, result_box
-        from sim_progress.Preload.APLModule.SubConditionUnit import BaseSubConditionUnit
+        from zsim.sim_progress.Preload.APLModule.SubConditionUnit import (
+            BaseSubConditionUnit,
+        )
 
         for sub_units in self.sub_conditions_unit_list:
             if not isinstance(sub_units, BaseSubConditionUnit):
@@ -62,9 +66,3 @@ class ActionAPLUnit(APLUnit):
                 return False, result_box
         else:
             return True, result_box
-
-
-    def __check_assult_aid_condition(self):
-        """检查突击支援的前置条件——是否严格衔接于Knock_back之后"""
-        pass
-

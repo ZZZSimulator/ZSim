@@ -1,8 +1,10 @@
 from abc import ABC, abstractmethod
-from sim_progress.Preload.APLModule.APLJudgeTools import check_number_type
 from typing import TYPE_CHECKING
+
+from ...APLModule.APLJudgeTools import check_number_type
+
 if TYPE_CHECKING:
-    from simulator.simulator_class import Simulator
+    from zsim.simulator.simulator_class import Simulator
 
 
 class BaseSubConditionUnit(ABC):
@@ -36,7 +38,14 @@ class BaseSubConditionUnit(ABC):
         )  # 参与计算的值 或者调用的函数名
 
     @abstractmethod
-    def check_myself(self, found_char_dict, game_state, sim_instance: "Simulator" = None,  *args, **kwargs):
+    def check_myself(
+        self,
+        found_char_dict,
+        game_state,
+        sim_instance: "Simulator" = None,
+        *args,
+        **kwargs,
+    ):
         pass
 
     def spawn_result(self, value=None, **kwargs):
