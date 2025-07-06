@@ -9,6 +9,7 @@ from sim_progress.data_struct import ActionStack
 from sim_progress.Enemy import Enemy
 
 from .config_classes import SimulationConfig as SimCfg
+
 if TYPE_CHECKING:
     from .simulator_class import Simulator
 
@@ -76,6 +77,7 @@ class InitData:
 
         self.sim_instance = sim_instance
 
+
 @dataclass
 class CharacterData:
     char_obj_list: list[Character] = field(init=False)
@@ -133,7 +135,7 @@ class LoadData:
     all_name_order_box: dict = field(default_factory=dict)
     preload_tick_stamp: dict = field(default_factory=dict)
     char_obj_dict: dict | None = None
-    sim_instance:  "Simulator" = None
+    sim_instance: "Simulator" = None
 
     def __post_init__(self):
         self.buff_0_manager = Buff0ManagerClass.Buff0Manager(
@@ -142,7 +144,7 @@ class LoadData:
             self.weapon_dict,
             self.cinema_dict,
             self.char_obj_dict,
-            sim_instance=self.sim_instance
+            sim_instance=self.sim_instance,
         )
         self.exist_buff_dict = self.buff_0_manager.exist_buff_dict
         self.all_name_order_box = change_name_box(self.name_box)
@@ -177,6 +179,10 @@ class ScheduleData:
     loading_buff: dict[str, list[Buff.Buff]] = field(default_factory=dict)
     dynamic_buff: dict[str, list[Buff.Buff]] = field(default_factory=dict)
     sim_instance: "Simulator" = None
+    # 记录已处理的事件次数, 给外部判断是否有事件发生, 便于前端跳过没有 event 的帧的 log
+    # 实际执行时, 当 event 是 Preload.SkillNode | LoadingMission 时, 大多数情况是没有 log 输出的, 所以仍然会输出大量空帧.
+    # 10800 帧的情况目前可以只打印 1500 条左右的 log. 但是打印的帧数字不规律, 可能看起来有点怪.
+    processed_times: int = field(default=0)
 
     def reset_myself(self):
         """重置ScheduleData的动态数据！"""
@@ -186,13 +192,14 @@ class ScheduleData:
         for char_name in self.loading_buff:
             self.loading_buff[char_name] = []
             self.dynamic_buff[char_name] = []
+        self.processed_times = 0
 
 
 @dataclass
 class GlobalStats:
     name_box: list
     DYNAMIC_BUFF_DICT: dict[str, list[Buff.Buff]] = field(default_factory=dict)
-    sim_instance:  "Simulator" = None
+    sim_instance: "Simulator" = None
 
     def __post_init__(self):
         for name in self.name_box + ["enemy"]:

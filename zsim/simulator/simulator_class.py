@@ -178,7 +178,11 @@ class Simulator:
             )
             sce.event_start()
             self.tick += 1
-            print(f"\r{self.tick} ", end="")
+            if sce.data.processed_times > 0:
+                # print(sce.data.processed_times, "events processed", end="")
+                seconds = self.tick // 60
+                frames = self.tick % 60
+                print(f"\r{seconds} 秒 {frames:02d} 帧 ", end="")
 
             if self.tick % 500 == 0 and self.tick != 0:
                 gc.collect()
