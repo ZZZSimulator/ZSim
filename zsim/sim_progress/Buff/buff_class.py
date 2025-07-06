@@ -84,7 +84,7 @@ class Buff:
                 class_name = config["class"]
                 # 动态加载模块
                 module = importlib.import_module(
-                    module_name, package="sim_progress.Buff"
+                    module_name, package="zsim.sim_progress.Buff"
                 )
                 logic_class = getattr(module, class_name)
                 self.logic = logic_class(self)
