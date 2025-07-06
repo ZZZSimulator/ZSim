@@ -179,6 +179,10 @@ class ScheduleData:
     loading_buff: dict[str, list[Buff.Buff]] = field(default_factory=dict)
     dynamic_buff: dict[str, list[Buff.Buff]] = field(default_factory=dict)
     sim_instance: "Simulator" = None
+    # 记录已处理的事件次数, 给外部判断是否有事件发生, 便于前端跳过没有 event 的帧的 log
+    # 实际执行时, 当 event 是 Preload.SkillNode | LoadingMission 时, 大多数情况是没有 log 输出的, 所以仍然会输出大量空帧.
+    # 10800 帧的情况目前可以只打印 1500 条左右的 log. 但是打印的帧数字不规律, 可能看起来有点怪.
+    processed_times: int = field(default=0)
 
     def reset_myself(self):
         """重置ScheduleData的动态数据！"""
@@ -188,6 +192,7 @@ class ScheduleData:
         for char_name in self.loading_buff:
             self.loading_buff[char_name] = []
             self.dynamic_buff[char_name] = []
+        self.processed_times = 0
 
 
 @dataclass

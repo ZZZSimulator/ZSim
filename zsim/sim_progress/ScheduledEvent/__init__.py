@@ -69,6 +69,7 @@ class ScheduledEvent:
     ):
         self.data = data  # ScheduleData in __main__
         self.data.dynamic_buff = dynamic_buff
+        self.data.processed_times = 0
         # self.judge_required_info_dict = data.judge_required_info_dict
         self.action_stack = action_stack
 
@@ -121,6 +122,7 @@ class ScheduledEvent:
                         f"{type(event)}，目前不应存在于 event_list"
                     )
                 elif isinstance(event, Preload.SkillNode | LoadingMission):
+                    # print("instance 分类: Preload.SkillNode | LoadingMission")
                     if event.preload_tick <= self.tick:
                         self.skill_event(event)
                         """
@@ -185,6 +187,7 @@ class ScheduledEvent:
                     )
                 # 代码运行到这一行意味着事件已经被处理完毕，所以要将其从event_list中删除
                 self.data.event_list.remove(event)
+                self.data.processed_times += 1
             # 计算过程中如果又有新的事件生成，则继续循环
             if self.data.event_list:
                 if not self.check_all_event():
