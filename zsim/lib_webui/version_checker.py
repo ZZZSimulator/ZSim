@@ -5,7 +5,8 @@ from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 import streamlit as st
-from define import GITHUB_REPO_NAME, GITHUB_REPO_OWNER, __version__
+
+from zsim.define import GITHUB_REPO_NAME, GITHUB_REPO_OWNER, __version__
 
 
 class GitHubVersionChecker:
