@@ -1,6 +1,7 @@
+import argparse
 import subprocess
 import sys
-import argparse
+
 from zsim.simulator.config_classes import SimulationConfig as SimCfg
 
 

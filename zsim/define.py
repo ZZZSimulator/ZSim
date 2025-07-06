@@ -1,4 +1,6 @@
 import json
+import os
+import shutil
 from pathlib import Path
 from typing import Callable, Literal
 
@@ -11,20 +13,35 @@ Number = int | float
 INVALID_ELEMENT_ERROR = "Invalid element type"
 NORMAL_MODE_ID_JSON = "results/id_cache.json"
 
+
+def initialize_config_files():
+    """初始化配置文件，如果不存在则从 _example 文件复制生成"""
+    config_files = [
+        (char_config_file, "zsim/data/character_config_example.toml"),
+        (CONFIG_PATH, "zsim/config_example.json"),
+    ]
+    for target, example in config_files:
+        if not os.path.exists(target):
+            shutil.copy(example, target)
+            print(f"已生成配置文件：{target}")
+
+
 results_dir = "results/"
 
 # 加载角色配置
+CONFIG_PATH = "zsim/config.json"
 data_dir = Path("./zsim/data")
 data_dir.mkdir(exist_ok=True)
 char_config_file = data_dir / "character_config.toml"
 saved_char_config = {}
+initialize_config_files()
 if char_config_file.exists():
     with open(char_config_file, "r", encoding="utf-8") as f:
         saved_char_config = toml.load(f)
 else:
     raise FileNotFoundError(f"Character config file {char_config_file} not found.")
 
-CONFIG_PATH = "zsim/config.json"
+
 _config = json.load(open(CONFIG_PATH, encoding="utf-8-sig"))
 
 # 敌人配置
@@ -169,6 +186,15 @@ SUB_STATS_MAPPING: dict[
 }
 
 DOCS_DIR = "docs"
+
+# Version Check
+GITHUB_REPO_OWNER = "ZZZSimulator"
+GITHUB_REPO_NAME = "ZSim"
+
+with open("pyproject.toml", "r", encoding="utf-8") as f:
+    pyproject_config = toml.load(f)
+    # 获取当前版本号
+    __version__ = pyproject_config.get("project", {}).get("version", "0.0.0")
 
 if __name__ == "__main__":
     # 打印全部CONSTANT变量名
