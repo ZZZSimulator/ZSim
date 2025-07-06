@@ -4,6 +4,7 @@ from sim_progress.Preload.apl_unit.APLUnit import APLUnit
 if TYPE_CHECKING:
     from simulator.simulator_class import Simulator
 
+
 class ActionAPLUnit(APLUnit):
     def __init__(self, apl_unit_dict: dict, sim_instance: "Simulator" = None):
         """动作类APL"""
