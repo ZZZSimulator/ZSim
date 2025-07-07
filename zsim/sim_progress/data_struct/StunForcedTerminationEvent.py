@@ -1,5 +1,5 @@
-from sim_progress.Enemy import Enemy
-from define import HUGO_REPORT
+from zsim.define import HUGO_REPORT
+from zsim.sim_progress.Enemy import Enemy
 
 
 class StunForcedTerminationEvent:

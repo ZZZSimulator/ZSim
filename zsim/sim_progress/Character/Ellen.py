@@ -1,9 +1,12 @@
-from sim_progress.Report import report_to_log
-from .utils.filters import _skill_node_filter
-from .character import Character
 from typing import TYPE_CHECKING
+
+from zsim.sim_progress.Report import report_to_log
+
+from .character import Character
+from .utils.filters import _skill_node_filter
+
 if TYPE_CHECKING:
-    from sim_progress.Preload import SkillNode
+    from zsim.sim_progress.Preload import SkillNode
 
 
 class Ellen(Character):

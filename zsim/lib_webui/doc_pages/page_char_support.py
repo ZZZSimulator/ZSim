@@ -2,7 +2,7 @@ from pathlib import Path
 
 import polars as pl
 import streamlit as st
-from define import DOCS_DIR
+from zsim.define import DOCS_DIR
 
 
 @st.dialog("关于：角色支持列表", width="large")

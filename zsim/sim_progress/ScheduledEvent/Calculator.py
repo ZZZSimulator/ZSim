@@ -3,16 +3,17 @@ from functools import lru_cache
 from typing import Any
 
 import numpy as np
-from define import INVALID_ELEMENT_ERROR, ElementType
-from sim_progress.Character import Character
-from sim_progress.data_struct import cal_buff_total_bonus
-from sim_progress.Enemy import Enemy
-from sim_progress.Preload import SkillNode
-from sim_progress.Report import report_to_log
+
+from zsim.define import INVALID_ELEMENT_ERROR, ElementType
+from zsim.sim_progress.Character import Character
+from zsim.sim_progress.data_struct import cal_buff_total_bonus
+from zsim.sim_progress.Enemy import Enemy
+from zsim.sim_progress.Preload import SkillNode
+from zsim.sim_progress.Report import report_to_log
 
 with open(
-    "./zsim/sim_progress/ScheduledEvent/buff_effect_trans.json",
-    "r",
+    file="./zsim/sim_progress/ScheduledEvent/buff_effect_trans.json",
+    mode="r",
     encoding="utf-8-sig",
 ) as f:
     buff_effect_trans: dict = json.load(f)
@@ -778,18 +779,6 @@ class Calculator:
                 # return 1 + ((self.crit_rate - 1) * 2 + self.crit_dmg)
             else:
                 return 1 + min(1, self.crit_rate) * self.crit_dmg
-
-        def cal_crit_expect(self, data: MultiplierData) -> float:
-            """暴击期望 = 1 + 暴击率 * 暴击伤害"""
-            if (
-                data.char_instance is not None
-                and data.char_instance.crit_balancing
-                and self.crit_rate > 1
-            ):
-                # 配平算法下的暴击溢出补偿，为了解决配平仅能适配静态面板的问题
-                return 1 + ((self.crit_rate - 1) * 2 + self.crit_dmg)
-            else:
-                return 1 + self.crit_rate * self.crit_dmg
 
         @staticmethod
         def cal_personal_crit_dmg(data: MultiplierData) -> float:

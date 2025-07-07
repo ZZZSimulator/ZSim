@@ -1,15 +1,22 @@
+import copy
 import itertools
 from typing import TYPE_CHECKING
 
-from define import saved_char_config, BUFF_0_REPORT
-from sim_progress.Buff import JudgeTools
-from sim_progress.Buff.buff_class import Buff
-from define import EXIST_FILE_PATH, JUDGE_FILE_PATH, CHARACTER_DATA_PATH
 import pandas as pd
-import copy
-import types
+
+from zsim.define import (
+    BUFF_0_REPORT,
+    CHARACTER_DATA_PATH,
+    EXIST_FILE_PATH,
+    JUDGE_FILE_PATH,
+    saved_char_config,
+)
+
+from .. import JudgeTools
+from ..buff_class import Buff
+
 if TYPE_CHECKING:
-    from simulator.simulator_class import Simulator
+    from zsim.simulator.simulator_class import Simulator
 
 
 class Buff0Manager:
@@ -20,7 +27,7 @@ class Buff0Manager:
         weapon_dict: dict[str, list],
         cinema_dict: dict,
         char_obj_dict: dict | None,
-        sim_instance: "Simulator"
+        sim_instance: "Simulator",
     ):
         # 加载文件
         self.EXIST_FILE = pd.read_csv(EXIST_FILE_PATH, index_col="BuffName")
@@ -76,8 +83,14 @@ class Buff0Manager:
                 if not isinstance(_buff_0, Buff):
                     raise TypeError(f"存在非Buff类型的对象：{_buff_0}")
                 if _buff_0.ft.listener_id is not None:
-                    _obj = self.char_obj_dict[_buff_0.ft.operator] if _buff_0.ft.operator != "enemy" else self.sim_instance.schedule_data.enemy
-                    self.sim_instance.listener_manager.listener_factory(listener_owner=_obj, initiate_signal=_buff_0.ft.listener_id)
+                    _obj = (
+                        self.char_obj_dict[_buff_0.ft.operator]
+                        if _buff_0.ft.operator != "enemy"
+                        else self.sim_instance.schedule_data.enemy
+                    )
+                    self.sim_instance.listener_manager.listener_factory(
+                        listener_owner=_obj, initiate_signal=_buff_0.ft.listener_id
+                    )
 
     def __process_label(self):
         """处理label类型的内容"""
@@ -89,7 +102,9 @@ class Buff0Manager:
                     "only_active_by" in _buff_0.ft.label
                     and _buff_0.ft.label["only_active_by"] == "self"
                 ):
-                    char_obj = JudgeTools.find_char_from_name(_buff_0.ft.operator, sim_instance=self.sim_instance)
+                    char_obj = JudgeTools.find_char_from_name(
+                        _buff_0.ft.operator, sim_instance=self.sim_instance
+                    )
                     _buff_0.ft.label["only_active_by"] = char_obj.CID
 
     def __process_judge_list_set(self):
@@ -366,7 +381,9 @@ class Buff0Manager:
                 dict_1["passively_updating"] = False
             else:
                 dict_1["passively_updating"] = True
-            buff_new = Buff(dict_1, dict_2, sim_instance=self.buff_0_manager.sim_instance)
+            buff_new = Buff(
+                dict_1, dict_2, sim_instance=self.buff_0_manager.sim_instance
+            )
             buff_new.ft.beneficiary = benifiter
             self.buff_0_manager.exist_buff_dict[benifiter][buff_name] = buff_new
 

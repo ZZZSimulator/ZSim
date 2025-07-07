@@ -1,4 +1,4 @@
-from sim_progress.Buff import Buff, JudgeTools, check_preparation, find_tick
+from .. import Buff, JudgeTools, check_preparation, find_tick
 
 
 class RiotSuppressorMarkVIRecord:
@@ -25,15 +25,19 @@ class RiotSuppressorMarkVI(Buff.BuffLogic):
         self.record = None
 
     def get_prepared(self, **kwargs):
-        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
+        return check_preparation(
+            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
+        )
 
     def check_record_module(self):
         if self.equipper is None:
-            self.equipper = JudgeTools.find_equipper("防暴者Ⅵ型", sim_instance=self.buff_instance.sim_instance)
+            self.equipper = JudgeTools.find_equipper(
+                "防暴者Ⅵ型", sim_instance=self.buff_instance.sim_instance
+            )
         if self.buff_0 is None:
-            self.buff_0 = JudgeTools.find_exist_buff_dict(sim_instance=self.buff_instance.sim_instance)[self.equipper][
-                self.buff_instance.ft.index
-            ]
+            self.buff_0 = JudgeTools.find_exist_buff_dict(
+                sim_instance=self.buff_instance.sim_instance
+            )[self.equipper][self.buff_instance.ft.index]
         if self.buff_0.history.record is None:
             self.buff_0.history.record = RiotSuppressorMarkVIRecord()
         self.record = self.buff_0.history.record
@@ -49,7 +53,7 @@ class RiotSuppressorMarkVI(Buff.BuffLogic):
         skill_node = kwargs.get("skill_node", None)
         if skill_node is None:
             return False
-        from sim_progress.Preload import SkillNode
+        from zsim.sim_progress.Preload import SkillNode
 
         if not isinstance(skill_node, SkillNode):
             raise ValueError(
@@ -61,7 +65,9 @@ class RiotSuppressorMarkVI(Buff.BuffLogic):
             return False
 
         """Buff的触发，还有生效次数的消耗，都只有在技能释放时才会执行。"""
-        if skill_node.preload_tick == find_tick(sim_instance=self.buff_instance.sim_instance):
+        if skill_node.preload_tick == find_tick(
+            sim_instance=self.buff_instance.sim_instance
+        ):
             signal = skill_node.skill.trigger_buff_level
             if skill_node.skill.trigger_buff_level == 0:
                 if not self.buff_0.dy.active:
@@ -88,7 +94,8 @@ class RiotSuppressorMarkVI(Buff.BuffLogic):
                 self.record.max_effect_times,
             )
             self.buff_instance.simple_start(
-                find_tick(sim_instance=self.buff_instance.sim_instance), self.record.sub_exist_buff_dict
+                find_tick(sim_instance=self.buff_instance.sim_instance),
+                self.record.sub_exist_buff_dict,
             )
             # print(
             #     f"防暴者VI型Buff触发了！当前可用次数为{self.record.available_effect_times}！"

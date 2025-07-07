@@ -1,8 +1,15 @@
-from functools import lru_cache
 import ast
+from functools import lru_cache
+
 import polars as pl
-from sim_progress import Report
-from define import CHARACTER_DATA_PATH, SKILL_DATA_PATH, DEFAULT_SKILL_PATH, ElementType
+
+from zsim.define import (
+    CHARACTER_DATA_PATH,
+    DEFAULT_SKILL_PATH,
+    SKILL_DATA_PATH,
+    ElementType,
+)
+from zsim.sim_progress import Report
 
 
 @lru_cache(maxsize=64)
@@ -371,9 +378,14 @@ class Skill:
             # TODO：抗打断标签；无敌标签
 
             # 技能链相关
-            self.swap_cancel_ticks: int = int(
-                _raw_skill_data["swap_cancel_ticks"]
-            )  # 可执行合轴操作的最短时间
+            __swap_cancel_ticks_value = _raw_skill_data["swap_cancel_ticks"]
+            if __swap_cancel_ticks_value is None:
+                self.swap_cancel_ticks = 0
+            else:
+                self.swap_cancel_ticks: int = int(
+                    _raw_skill_data["swap_cancel_ticks"]
+                )  # 可执行合轴操作的最短时间
+
             follow_up = _raw_skill_data["follow_up"]
             if follow_up is None:
                 self.follow_up: list = []
@@ -395,6 +407,8 @@ class Skill:
             aid_lag_ticks_value = _raw_skill_data["aid_lag_ticks"]
             if aid_lag_ticks_value == "inf":
                 self.aid_lag_ticks = self.ticks - 1
+            elif aid_lag_ticks_value is None:
+                self.aid_lag_ticks = 0
             else:
                 self.aid_lag_ticks: int = int(
                     _raw_skill_data["aid_lag_ticks"]
@@ -435,7 +449,7 @@ class Skill:
             if condition_value is None:
                 self.force_add_condition_APL = []
             else:
-                from sim_progress.Preload.apl_unit.APLUnit import SimpleUnitForForceAdd
+                from zsim.sim_progress.Preload.apl_unit.APLUnit import SimpleUnitForForceAdd
 
                 condition_list = condition_value.strip().split(";")
                 for _cond_str in condition_list:
@@ -457,9 +471,13 @@ class Skill:
                 if not attr.startswith("__") and not callable(getattr(self, attr))
             }
             self.heavy_attack: bool = bool(_raw_skill_data["heavy_attack"])
-            self.max_repeat_times: int = int(
-                _raw_skill_data["max_repeat_times"]
-            )  # 最大重复释放次数。
+            __max_repeat_times_value = _raw_skill_data["max_repeat_times"]
+            if __max_repeat_times_value is None:
+                self.max_repeat_times = 1
+            else:
+                self.max_repeat_times: int = int(
+                    _raw_skill_data["max_repeat_times"]
+                )  # 最大重复释放次数。
             """
             技能是否立刻执行，大部分技能都是False，目前只有QTE和大招具有这种属性。
             该属性会在APL部分的SwapCancelEngine中被用到，用于检测角色已有的动作是否会被新动作打断。
@@ -498,7 +516,10 @@ class Skill:
                         self.anomaly_update_rule = [anomaly_update_mode]
                 except ValueError:
                     self.anomaly_update_rule = anomaly_update_list_str.split("&")
-            if isinstance(self.anomaly_update_rule, list) and len(self.anomaly_update_rule) > self.hit_times:
+            if (
+                isinstance(self.anomaly_update_rule, list)
+                and len(self.anomaly_update_rule) > self.hit_times
+            ):
                 raise ValueError(
                     f"{self.skill_tag}的更新节点总数大于技能总帧数！请检查数据正确性"
                 )

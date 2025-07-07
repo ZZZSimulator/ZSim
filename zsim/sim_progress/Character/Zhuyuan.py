@@ -1,7 +1,7 @@
-from .utils.filters import _skill_node_filter
-from .character import Character
 from ..Preload import SkillNode
 from ..Report import report_to_log
+from .character import Character
+from .utils.filters import _skill_node_filter
 
 
 class Zhuyuan(Character):

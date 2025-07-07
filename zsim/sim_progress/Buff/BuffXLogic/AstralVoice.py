@@ -1,4 +1,4 @@
-from sim_progress.Buff import Buff, JudgeTools, check_preparation, find_tick
+from .. import Buff, JudgeTools, check_preparation, find_tick
 
 
 class AstralVoiceRecord:
@@ -28,19 +28,23 @@ class AstralVoice(Buff.BuffLogic):
         self.record = None
 
     def get_prepared(self, **kwargs):
-        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
+        return check_preparation(
+            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
+        )
 
     def check_record_module(self):
         if self.equipper is None:
-            self.equipper = JudgeTools.find_equipper("静听嘉音", sim_instance=self.buff_instance.sim_instance)
+            self.equipper = JudgeTools.find_equipper(
+                "静听嘉音", sim_instance=self.buff_instance.sim_instance
+            )
         if self.buff_0 is None:
             """
             这里的初始化，找到的buff_0实际上是佩戴者的buff_0，
             即使是在受益者的buff.history.record中存储的，也是装备佩戴者的buff_0。
             """
-            self.buff_0 = JudgeTools.find_exist_buff_dict(sim_instance=self.buff_instance.sim_instance)[self.equipper][
-                self.buff_instance.ft.index
-            ]
+            self.buff_0 = JudgeTools.find_exist_buff_dict(
+                sim_instance=self.buff_instance.sim_instance
+            )[self.equipper][self.buff_instance.ft.index]
         if self.buff_0.history.record is None:
             self.buff_0.history.record = AstralVoiceRecord()
         self.record = self.buff_0.history.record
@@ -65,8 +69,8 @@ class AstralVoice(Buff.BuffLogic):
         skill_node = kwargs.get("skill_node", None)
         if skill_node is None:
             return False
-        from sim_progress.Preload import SkillNode
-        from sim_progress.Load import LoadingMission
+        from zsim.sim_progress.Preload import SkillNode
+        from zsim.sim_progress.Load import LoadingMission
 
         if isinstance(skill_node, SkillNode):
             pass

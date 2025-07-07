@@ -118,4 +118,3 @@ class AuricInkAnomaly(AnomalyBar):
             "玄墨侵蚀时间延长百分比",
             "所有异常时间延长百分比",
         ]
-        

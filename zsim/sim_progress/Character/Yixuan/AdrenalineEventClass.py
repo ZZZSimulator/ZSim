@@ -1,14 +1,17 @@
 from abc import ABC, abstractmethod
-from define import YIXUAN_REPORT
 from typing import TYPE_CHECKING
+
+from zsim.define import YIXUAN_REPORT
+
 if TYPE_CHECKING:
-    from sim_progress.Character.Yixuan import Yixuan
-    from sim_progress.Preload import SkillNode
-    from simulator.simulator_class import Simulator
+    from zsim.sim_progress.Character.Yixuan import Yixuan
+    from zsim.sim_progress.Preload import SkillNode
+    from zsim.simulator.simulator_class import Simulator
 
 
 class BaseAdrenalineEvent(ABC):
     """管理单个闪能事件的基类"""
+
     @abstractmethod
     def __init__(self, char_instance: "Yixuan", comment: str = None):
         self.char = char_instance
@@ -35,7 +38,8 @@ class BaseAdrenalineEvent(ABC):
             if simulator.tick >= self.last_active_tick + self.max_duration:
                 self.active = False
                 print(
-                    f"第{self.active_times}次【{self.index}】结束了！总计为仪玄恢复了{self.regenerate_value_sum: .2f}点闪能！") if YIXUAN_REPORT else None
+                    f"第{self.active_times}次【{self.index}】结束了！总计为仪玄恢复了{self.regenerate_value_sum: .2f}点闪能！"
+                ) if YIXUAN_REPORT else None
                 self.regenerate_value_sum = 0
 
     @abstractmethod
@@ -46,6 +50,7 @@ class BaseAdrenalineEvent(ABC):
 
 class AuricArray(BaseAdrenalineEvent):
     """来自仪玄玄墨极阵释放过程中的回能效果的管理器对象"""
+
     def __init__(self, char_instance: "Yixuan", comment: str = None):
         super().__init__(char_instance, comment)
         self.index = "玄墨极阵回能效果"
@@ -66,12 +71,15 @@ class AuricArray(BaseAdrenalineEvent):
             if skill_node.skill_tag == "1371_SNA_B_1":
                 if self.active:
                     raise ValueError(
-                        f"仪玄在展开玄墨极阵时，检测到上一个开始于{self.last_active_tick}tick的玄墨极阵的回能Buff尚未结束，仪玄不可能在短时间内打出两次玄墨极阵，请检查逻辑！")
+                        f"仪玄在展开玄墨极阵时，检测到上一个开始于{self.last_active_tick}tick的玄墨极阵的回能Buff尚未结束，仪玄不可能在短时间内打出两次玄墨极阵，请检查逻辑！"
+                    )
                 self.active = True
                 self.active_times += 1
                 self.last_active_tick = simulator.tick
                 """激活的当前tick也需要恢复闪能，但是并不是在本方法内部执行的，而是通过Buff触发器统一在Load阶段执行。"""
-                print(f"检测到技能{skill_node.skill_tag}（玄墨极阵）！【{self.index}】激活") if YIXUAN_REPORT else None
+                print(
+                    f"检测到技能{skill_node.skill_tag}（玄墨极阵）！【{self.index}】激活"
+                ) if YIXUAN_REPORT else None
 
     def apply_effect(self):
         """事件生效，恢复一次闪能值"""
@@ -81,6 +89,7 @@ class AuricArray(BaseAdrenalineEvent):
 
 class AuricInkUndercurrent(BaseAdrenalineEvent):
     """仪玄组队被动中，队友释放大招时的回能事件的管理器对象"""
+
     def __init__(self, char_instance: "Yixuan", comment: str = None):
         super().__init__(char_instance, comment)
         self.index = "组队被动回能效果"
@@ -103,7 +112,9 @@ class AuricInkUndercurrent(BaseAdrenalineEvent):
                 self.active = True
                 self.active_times += 1
                 self.last_active_tick = simulator.tick
-                print(f"检测到队友释放大招：{skill_node.skill_tag}！【{self.index}】激活") if YIXUAN_REPORT else None
+                print(
+                    f"检测到队友释放大招：{skill_node.skill_tag}！【{self.index}】激活"
+                ) if YIXUAN_REPORT else None
 
     def apply_effect(self):
         """事件生效，恢复一次闪能值"""

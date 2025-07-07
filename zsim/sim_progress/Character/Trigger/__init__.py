@@ -1,9 +1,11 @@
-from sim_progress.Character.utils.filters import _skill_node_filter
-from ..character import Character
-from .AfterShockManager import AfterShockManager
 from typing import TYPE_CHECKING
+
+from ..character import Character
+from ..utils.filters import _skill_node_filter
+from .AfterShockManager import AfterShockManager
+
 if TYPE_CHECKING:
-    from sim_progress.Preload import SkillNode
+    from zsim.sim_progress.Preload import SkillNode
 
 
 class Trigger(Character):

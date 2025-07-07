@@ -1,11 +1,13 @@
 from dataclasses import dataclass
-
-from sim_progress.Buff import JudgeTools
-from sim_progress.Dot import Dot
-from sim_progress.Preload.SkillsQueue import spawn_node
 from typing import TYPE_CHECKING
+
+from zsim.sim_progress.Buff import JudgeTools
+from zsim.sim_progress.Preload.SkillsQueue import spawn_node
+
+from .. import Dot
+
 if TYPE_CHECKING:
-    from simulator.simulator_class import Simulator
+    from zsim.simulator.simulator_class import Simulator
 
 
 class ViviansProphecy(Dot):
@@ -36,7 +38,7 @@ class ViviansProphecy(Dot):
         enemy = kwargs.get("enemy", None)
         if enemy is None:
             return False
-        from sim_progress.Enemy import Enemy
+        from zsim.sim_progress.Enemy import Enemy
 
         if not isinstance(enemy, Enemy):
             raise TypeError("enemy参数必须是Enemy类的实例")

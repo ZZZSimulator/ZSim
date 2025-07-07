@@ -1,7 +1,9 @@
-from .BaseListenerClass import BaseListener
 from typing import TYPE_CHECKING
+
+from .BaseListenerClass import BaseListener
+
 if TYPE_CHECKING:
-    from simulator.simulator_class import Simulator
+    from zsim.simulator.simulator_class import Simulator
 
 
 class HugoCorePassiveBuffListener(BaseListener):
@@ -15,14 +17,14 @@ class HugoCorePassiveBuffListener(BaseListener):
         """监听到雨果的single_hit后，直接添加Buff"""
         if "stun_event" not in kwargs:
             return
-        from sim_progress.data_struct import SingleHit
+        from zsim.sim_progress.data_struct import SingleHit
 
         if not isinstance(event, SingleHit):
             return
         if "1291" not in event.skill_tag:
             return
         self.listener_active()
-        from define import HUGO_REPORT
+        from zsim.define import HUGO_REPORT
 
         if HUGO_REPORT:
             print(
@@ -31,6 +33,8 @@ class HugoCorePassiveBuffListener(BaseListener):
 
     def listener_active(self):
         """触发核心被动Buff，通过BuffAddStrategy来暴力添加Buff"""
-        from sim_progress.Buff.BuffAddStrategy import buff_add_strategy
+        from zsim.sim_progress.Buff.BuffAddStrategy import buff_add_strategy
 
-        buff_add_strategy(self.buff_index, benifit_list=["雨果"], sim_instance=self.sim_instance)
+        buff_add_strategy(
+            self.buff_index, benifit_list=["雨果"], sim_instance=self.sim_instance
+        )

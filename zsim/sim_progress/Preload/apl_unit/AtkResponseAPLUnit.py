@@ -1,8 +1,9 @@
 from typing import TYPE_CHECKING
-from sim_progress.Preload.apl_unit.APLUnit import APLUnit
+
+from zsim.sim_progress.Preload.apl_unit.APLUnit import APLUnit
 
 if TYPE_CHECKING:
-    from simulator.simulator_class import Simulator
+    from zsim.simulator.simulator_class import Simulator
 
 
 class AtkResponseAPLUnit(APLUnit):
@@ -25,7 +26,7 @@ class AtkResponseAPLUnit(APLUnit):
             raise ValueError("企图对非进攻响应APL构造AtkResponseAPLUnit类！")
         self.break_when_found_action = True
         self.result = apl_unit_dict["action"]
-        from sim_progress.Preload.apl_unit.APLUnit import spawn_sub_condition, logic_tree_to_expr_node
+        from zsim.sim_progress.Preload.apl_unit.APLUnit import spawn_sub_condition, logic_tree_to_expr_node
 
         for condition_str in apl_unit_dict["conditions"]:
             self.sub_conditions_unit_list.append(
@@ -118,7 +119,7 @@ class AtkResponseAPLUnit(APLUnit):
             if tick + 1 == response_window[1]:
                 return True
         elif proactive_level == 1:
-            from define import ENEMY_ATK_PARAMETER_DICT
+            from zsim.define import ENEMY_ATK_PARAMETER_DICT
 
             if skill_tick != 0 and skill_tick < ENEMY_ATK_PARAMETER_DICT["Taction"]:
                 print(

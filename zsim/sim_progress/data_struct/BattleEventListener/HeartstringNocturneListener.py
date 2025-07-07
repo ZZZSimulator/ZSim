@@ -1,7 +1,9 @@
-from .BaseListenerClass import BaseListener
 from typing import TYPE_CHECKING
+
+from .BaseListenerClass import BaseListener
+
 if TYPE_CHECKING:
-    from simulator.simulator_class import Simulator
+    from zsim.simulator.simulator_class import Simulator
 
 
 class HeartstringNocturneListener(BaseListener):
@@ -15,7 +17,7 @@ class HeartstringNocturneListener(BaseListener):
         """监听到角色入场事件，传递入场信号。"""
         if "enter_battle_event" not in kwargs:
             return
-        from sim_progress.Preload import SkillNode
+        from zsim.sim_progress.Preload import SkillNode
 
         if not isinstance(event, SkillNode):
             raise ValueError("entr_battle_event的事件对象必须是SkillNode类型！")

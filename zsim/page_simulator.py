@@ -6,19 +6,23 @@ from typing import Literal
 
 import psutil
 import streamlit as st
-from define import saved_char_config
-from lib_webui.constants import stats_trans_mapping, weapon_options
-from lib_webui.process_char_config import dialog_character_panels
-from lib_webui.process_simulator import (
+
+from zsim.define import NEW_SIM_BOOT, saved_char_config
+from zsim.lib_webui.constants import stats_trans_mapping, weapon_options
+from zsim.lib_webui.multiprocess_wrapper import (
+    run_parallel_simulation,
+    run_single_simulation,
+)
+from zsim.lib_webui.process_char_config import dialog_character_panels
+from zsim.lib_webui.process_simulator import (
     apl_selecter,
+    enemy_selector,
     generate_parallel_args,
     save_apl_selection,
+    save_enemy_selection,
     show_apl_judge_result,
-    enemy_selector,  # 新增
-    save_enemy_selection,  # 新增
 )
-from simulator.config_classes import AttrCurveConfig, SimulationConfig as SimCfg
-from run import go_parallel_subprocess, go_single_subprocess
+from zsim.run import go_parallel_subprocess, go_single_subprocess
 
 apl_legal = False
 # --- 常量定义 ---
@@ -57,7 +61,7 @@ PARALLEL_CONFIG_SUFFIX = "/.parallel_config.json"
 def page_simulator():
     """模拟器页面函数"""
     st.title("ZZZ Simulator - 模拟器")
-    from define import CONFIG_PATH
+    from zsim.define import CONFIG_PATH
 
     # 获取当前计算机的物理核心数量
     MAX_WORKERS = psutil.cpu_count(logical=False)
@@ -177,11 +181,15 @@ def page_simulator():
                     # 模拟功能
                     # TODO 添加额外功能后这里需要default_function
                     # Determine the default selected function based on config
-                    default_function_index = 0 # Default to the first function
+                    default_function_index = 0  # Default to the first function
                     if parallel_cfg["adjust_sc"]["enabled"]:
-                        default_function_index = SIMULATION_FUNCTIONS.index("属性收益曲线")
+                        default_function_index = SIMULATION_FUNCTIONS.index(
+                            "属性收益曲线"
+                        )
                     elif parallel_cfg["adjust_weapon"]["enabled"]:
-                        default_function_index = SIMULATION_FUNCTIONS.index("音擎伤害期望对比")
+                        default_function_index = SIMULATION_FUNCTIONS.index(
+                            "音擎伤害期望对比"
+                        )
 
                     selected_func = st.radio(
                         "模拟功能",
@@ -207,7 +215,7 @@ def page_simulator():
                         col_sc_select = st.columns([2, 1])
                         with col_sc_select[0]:
                             # 模拟词条种类
-                            default_sc_list_cfg = parallel_cfg["adjust_sc"]["sc_list"] # type: ignore
+                            default_sc_list_cfg = parallel_cfg["adjust_sc"]["sc_list"]  # type: ignore
                             sc_list = st.multiselect(
                                 "模拟词条种类",
                                 stats_trans_mapping.keys(),
@@ -234,44 +242,68 @@ def page_simulator():
                             remove_equip_list = list(
                                 key for key, value in tmp_dict.items() if value
                             )
-                        if '暴击率' in sc_list or '暴击伤害' in sc_list:
-                            st.warning("模拟暴击率/暴击伤害时，建议勾选角色配置中的“使用暴击配平算法”选项", icon="⚠️")
-                    elif selected_func == SIMULATION_FUNCTIONS[1]: # 音擎伤害期望对比
+                        if "暴击率" in sc_list or "暴击伤害" in sc_list:
+                            st.warning(
+                                "模拟暴击率/暴击伤害时，建议勾选角色配置中的“使用暴击配平算法”选项",
+                                icon="⚠️",
+                            )
+                    elif selected_func == SIMULATION_FUNCTIONS[1]:  # 音擎伤害期望对比
                         st.write(
                             '<p style="color: gray;">对比不同音擎的伤害期望</p>',
                             unsafe_allow_html=True,
                         )
                         # 模拟武器列表
-                        default_weapon_list_cfg = parallel_cfg["adjust_weapon"]["weapon_list"]
-                        
+                        default_weapon_list_cfg = parallel_cfg["adjust_weapon"][
+                            "weapon_list"
+                        ]
+
                         # Use a list of selectboxes and number inputs for weapon and level
                         weapon_configs = []
                         st.write("模拟音擎及等级")
-                        num_weapons = st.number_input("音擎数量", min_value=0, value=len(default_weapon_list_cfg), step=1)
+                        num_weapons = st.number_input(
+                            "音擎数量",
+                            min_value=0,
+                            value=len(default_weapon_list_cfg),
+                            step=1,
+                        )
 
                         for i in range(num_weapons):
                             col_weapon, col_level = st.columns([3, 1])
                             with col_weapon:
-                                default_weapon_name = default_weapon_list_cfg[i]["name"] if i < len(default_weapon_list_cfg) and "name" in default_weapon_list_cfg[i] else weapon_options[0]
+                                default_weapon_name = (
+                                    default_weapon_list_cfg[i]["name"]
+                                    if i < len(default_weapon_list_cfg)
+                                    and "name" in default_weapon_list_cfg[i]
+                                    else weapon_options[0]
+                                )
                                 selected_weapon = st.selectbox(
-                                    f"音擎 {i+1}",
+                                    f"音擎 {i + 1}",
                                     weapon_options,
-                                    index=weapon_options.index(default_weapon_name) if default_weapon_name in weapon_options else 0,
+                                    index=weapon_options.index(default_weapon_name)
+                                    if default_weapon_name in weapon_options
+                                    else 0,
                                     key=f"weapon_select_{i}",
-                                    label_visibility="collapsed"
+                                    label_visibility="collapsed",
                                 )
                             with col_level:
-                                default_weapon_level = default_weapon_list_cfg[i]["level"] if i < len(default_weapon_list_cfg) and "level" in default_weapon_list_cfg[i] else 1
+                                default_weapon_level = (
+                                    default_weapon_list_cfg[i]["level"]
+                                    if i < len(default_weapon_list_cfg)
+                                    and "level" in default_weapon_list_cfg[i]
+                                    else 1
+                                )
                                 selected_level = st.number_input(
-                                    f"等级 {i+1}",
+                                    f"等级 {i + 1}",
                                     min_value=1,
                                     max_value=5,
                                     value=default_weapon_level,
                                     step=1,
                                     key=f"weapon_level_{i}",
-                                    label_visibility="collapsed"
+                                    label_visibility="collapsed",
                                 )
-                            weapon_configs.append({"name": selected_weapon, "level": selected_level})
+                            weapon_configs.append(
+                                {"name": selected_weapon, "level": selected_level}
+                            )
 
                     else:
                         st.error("此功能暂未实现")
@@ -296,7 +328,9 @@ def page_simulator():
                                     "enabled": False,
                                     "weapon_list": DEFAULT_WEAPON_LIST,
                                 }
-                            elif selected_func == SIMULATION_FUNCTIONS[1]: # 音擎伤害期望对比
+                            elif (
+                                selected_func == SIMULATION_FUNCTIONS[1]
+                            ):  # 音擎伤害期望对比
                                 config["parallel_mode"]["adjust_sc"] = {
                                     "enabled": False,
                                     "sc_range": list(DEFAULT_SC_RANGE),
@@ -304,7 +338,7 @@ def page_simulator():
                                 }
                                 config["parallel_mode"]["adjust_weapon"] = {
                                     "enabled": True,
-                                    "weapon_list": weapon_configs, # Save the list of dictionaries
+                                    "weapon_list": weapon_configs,  # Save the list of dictionaries
                                 }
                             else:
                                 config["parallel_mode"]["adjust_sc"] = {
@@ -364,7 +398,11 @@ def page_simulator():
             with st.spinner(
                 "单进程模拟中，这可能会持续数十秒，请稍候...", show_time=True
             ):
-                future = get_executor().submit(go_single_subprocess, stop_tick)
+                if not NEW_SIM_BOOT:
+                    future = get_executor().submit(go_single_subprocess, stop_tick)
+                else:
+                    # 使用包装器函数来避免pickle错误
+                    future = get_executor().submit(run_single_simulation, stop_tick)
                 result = future.result()
                 st.text_area(
                     "模拟完成，请前往数据分析查看结果，进程输出：",
@@ -410,16 +448,29 @@ def page_simulator():
                     json.dump(parallel_cfg, f, indent=4)
 
                 # 启动多进程
-                futures = {
-                    get_executor().submit(go_parallel_subprocess, args): i + 1
-                    for i, args in enumerate(
-                        generate_parallel_args(
-                            stop_tick,
-                            parallel_cfg,
-                            run_turn_uuid,
+                if not NEW_SIM_BOOT:
+                    futures = {
+                        get_executor().submit(go_parallel_subprocess, args): i + 1
+                        for i, args in enumerate(
+                            generate_parallel_args(
+                                stop_tick,
+                                parallel_cfg,
+                                run_turn_uuid,
+                            )
                         )
-                    )
-                }
+                    }
+                else:
+                    futures = {
+                        get_executor().submit(run_parallel_simulation, args): i + 1
+                        for i, args in enumerate(
+                            generate_parallel_args(
+                                stop_tick,
+                                parallel_cfg,
+                                run_turn_uuid,
+                            )
+                        )
+                    }
+
 
                 # 创建结果容器
                 result_container = st.container()

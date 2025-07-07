@@ -1,8 +1,10 @@
-from sim_progress.Dot import Dot
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
+
+from .. import Dot
+
 if TYPE_CHECKING:
-    from simulator.simulator_class import Simulator
+    from zsim.simulator.simulator_class import Simulator
 
 
 class AuricInkCorruption(Dot):
@@ -32,4 +34,3 @@ class AuricInkCorruption(Dot):
             """
             if "某角色" in self.char_name_box:
                 self.max_duration: int = 600 + 180
-

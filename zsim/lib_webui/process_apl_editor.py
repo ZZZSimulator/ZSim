@@ -8,7 +8,7 @@ from typing import Sequence, Any
 import streamlit as st
 import toml
 from streamlit_ace import st_ace
-from define import (
+from zsim.define import (
     COSTOM_APL_DIR,
     DEFAULT_APL_DIR,
     saved_char_config,
@@ -243,7 +243,9 @@ class APLArchive:
                                 relative_path = os.path.basename(base_path)
                                 toml_dict_map[relative_path] = toml_dict
                     except Exception as e:
-                        st.exception(Exception(f"Error loading TOML file {base_path}: {e}"))
+                        st.exception(
+                            Exception(f"Error loading TOML file {base_path}: {e}")
+                        )
             elif os.path.isdir(base_path):
                 # 如果是目录，遍历所有toml文件
                 for root, _, files in os.walk(base_path):
@@ -263,7 +265,9 @@ class APLArchive:
                                         toml_dict_map[relative_path] = toml_dict
                             except Exception as e:
                                 st.exception(
-                                    Exception(f"Error loading TOML file {file_path}: {e}")
+                                    Exception(
+                                        f"Error loading TOML file {file_path}: {e}"
+                                    )
                                 )
             else:
                 # 如果路径既不是文件也不是目录，则记录警告或错误
@@ -596,7 +600,10 @@ def go_apl_editor():
     col1, col2, col3, col4 = st.columns([3, 1, 1, 1])
     with col1:
         selected_title = st.selectbox(
-            "APL选项", apl_archive.options, key="selected_apl_title", label_visibility="collapsed"
+            "APL选项",
+            apl_archive.options,
+            key="selected_apl_title",
+            label_visibility="collapsed",
         )
     with col2:
 

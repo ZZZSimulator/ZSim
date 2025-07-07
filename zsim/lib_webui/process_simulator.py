@@ -3,9 +3,9 @@ from typing import Any, Iterator
 
 import polars as pl
 import streamlit as st
-from define import CONFIG_PATH
-from lib_webui.process_apl_editor import APLArchive, APLJudgeTool
 
+from zsim.define import CONFIG_PATH
+from zsim.lib_webui.process_apl_editor import APLArchive, APLJudgeTool
 from zsim.simulator.config_classes import (
     AttrCurveConfig,
     WeaponConfig,
@@ -236,7 +236,7 @@ def enemy_selector() -> tuple[int, int]:
             index=adjust_options.index(current_adjust)
             if current_adjust in adjust_options
             else 0,
-            help="一般每个关卡对应一个调整ID，不知道是什么的话就不该"
+            help="一般每个关卡对应一个调整ID，不知道是什么的话就不该",
         )
 
     return selected_index, selected_adjust

@@ -1,17 +1,19 @@
-from sim_progress.Preload.APLModule.SubConditionUnit import (
-    ActionSubUnit,
-    AttributeSubUnit,
-    BuffSubUnit,
-    StatusSubUnit,
-    BaseSubConditionUnit,
-    SpecialSubUnit,
-)
-from define import compare_methods_mapping
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
+from zsim.define import compare_methods_mapping
+
+from ..APLModule.SubConditionUnit import (
+    ActionSubUnit,
+    AttributeSubUnit,
+    BaseSubConditionUnit,
+    BuffSubUnit,
+    SpecialSubUnit,
+    StatusSubUnit,
+)
+
 if TYPE_CHECKING:
-    from simulator.simulator_class import Simulator
+    from zsim.simulator.simulator_class import Simulator
 
 
 class APLUnit(ABC):
@@ -56,7 +58,7 @@ class APLUnit(ABC):
 
 
 def spawn_sub_condition(
-        priority: int, sub_condition_code: str = None
+    priority: int, sub_condition_code: str = None
 ) -> ActionSubUnit | BuffSubUnit | StatusSubUnit | AttributeSubUnit | ActionSubUnit:
     """解构apl子条件字符串，并且组建出构建sub_condition类需要的构造字典"""
     logic_mode = 0
@@ -115,9 +117,8 @@ class SimpleUnitForForceAdd(APLUnit):
             )
 
     def check_all_sub_units(
-            self, found_char_dict, game_state, sim_instance: "Simulator", **kwargs
+        self, found_char_dict, game_state, sim_instance: "Simulator", **kwargs
     ):
-
         if self.sim_instance is None:
             self.sim_instance = sim_instance
 

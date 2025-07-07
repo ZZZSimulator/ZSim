@@ -1,5 +1,5 @@
-from sim_progress.Preload.APLModule.APLJudgeTools import get_nested_value, check_cid
-from sim_progress.Preload.APLModule.SubConditionUnit import BaseSubConditionUnit
+from ...APLModule.APLJudgeTools import check_cid, get_nested_value
+from ...APLModule.SubConditionUnit import BaseSubConditionUnit
 
 
 class AttributeSubUnit(BaseSubConditionUnit):
@@ -37,7 +37,6 @@ class AttributeSubUnit(BaseSubConditionUnit):
     class SpecialStateHandler(AttributeCheckHandler):
         @classmethod
         def handler(cls, char, nested_stat_key_list: list = None, **kwargs):
-            tick = kwargs.get("tick", None)
             if nested_stat_key_list:
                 return get_nested_value(nested_stat_key_list, char.get_special_stats())
             else:
@@ -52,7 +51,7 @@ class AttributeSubUnit(BaseSubConditionUnit):
         @classmethod
         def handler(cls, char, **kwargs):
             if not hasattr(char, "adrenaline"):
-                raise AttributeError(f'尝试在角色{char.NAME}中访问闪能！')
+                raise AttributeError(f"尝试在角色{char.NAME}中访问闪能！")
             return char.adrenaline
 
     AttributeHandlerMap = {
@@ -70,7 +69,7 @@ class AttributeSubUnit(BaseSubConditionUnit):
         tick = kwargs.get("tick", None)
         check_cid(self.check_target)
         if self.char is None:
-            from sim_progress.Preload import find_char
+            from zsim.sim_progress.Preload import find_char
 
             self.char = find_char(found_char_dict, game_state, int(self.check_target))
         handler_cls = self.AttributeHandlerMap.get(self.check_stat)

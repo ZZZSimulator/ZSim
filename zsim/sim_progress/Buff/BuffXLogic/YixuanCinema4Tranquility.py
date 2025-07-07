@@ -1,11 +1,11 @@
-from sim_progress.Buff import Buff, JudgeTools, check_preparation
-from define import YIXUAN_REPORT
 from typing import TYPE_CHECKING
+
+from zsim.define import YIXUAN_REPORT
+
+from .. import Buff, JudgeTools, check_preparation
+
 if TYPE_CHECKING:
-    from simulator.simulator_class import Simulator
-    from sim_progress.Preload import SkillNode
-    from sim_progress.Preload.PreloadDataClass import PreloadData
-    from sim_progress.Character.Yixuan import Yixuan
+    from zsim.sim_progress.Preload import SkillNode
 
 
 class YixuanCinema4TranquilityRecord:
@@ -13,12 +13,13 @@ class YixuanCinema4TranquilityRecord:
         self.char = None
         self.update_signal = None
         self.sub_exist_buff_dict = None
-        self.c4_counter = 0     # 静心层数
+        self.c4_counter = 0  # 静心层数
         self.max_c4_count = 2
 
 
 class YixuanCinema4Tranquility(Buff.BuffLogic):
     """仪玄4画的静心判定逻辑"""
+
     def __init__(self, buff_instance):
         super().__init__(buff_instance)
         self.buff_instance: Buff = buff_instance
@@ -29,13 +30,15 @@ class YixuanCinema4Tranquility(Buff.BuffLogic):
         self.record: YixuanCinema4TranquilityRecord | None = None
 
     def get_prepared(self, **kwargs):
-        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
+        return check_preparation(
+            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
+        )
 
     def check_record_module(self):
         if self.buff_0 is None:
-            self.buff_0 = JudgeTools.find_exist_buff_dict(sim_instance=self.buff_instance.sim_instance)["仪玄"][
-                self.buff_instance.ft.index
-            ]
+            self.buff_0 = JudgeTools.find_exist_buff_dict(
+                sim_instance=self.buff_instance.sim_instance
+            )["仪玄"][self.buff_instance.ft.index]
         if self.buff_0.history.record is None:
             self.buff_0.history.record = YixuanCinema4TranquilityRecord()
         self.record = self.buff_0.history.record
@@ -55,7 +58,9 @@ class YixuanCinema4Tranquility(Buff.BuffLogic):
             if skill_node.preload_tick != tick:
                 return False
             if self.record.update_signal is not None:
-                raise ValueError(f"{self.buff_instance.ft.index}的Xjudge函数的【大招分支】发现record中存在尚未处理的更新信号：{self.record.update_signal}！")
+                raise ValueError(
+                    f"{self.buff_instance.ft.index}的Xjudge函数的【大招分支】发现record中存在尚未处理的更新信号：{self.record.update_signal}！"
+                )
             self.record.update_signal = 0
             return True
         else:
@@ -64,7 +69,9 @@ class YixuanCinema4Tranquility(Buff.BuffLogic):
                 if skill_node.end_tick != tick:
                     return False
                 if self.record.update_signal is not None:
-                    raise ValueError(f"{self.buff_instance.ft.index}的Xjudge函数的【凝云术分支】发现record中存在尚未处理的更新信号：{self.record.update_signal}！")
+                    raise ValueError(
+                        f"{self.buff_instance.ft.index}的Xjudge函数的【凝云术分支】发现record中存在尚未处理的更新信号：{self.record.update_signal}！"
+                    )
                 self.record.update_signal = 1
                 return True
         return False
@@ -74,18 +81,29 @@ class YixuanCinema4Tranquility(Buff.BuffLogic):
         self.check_record_module()
         self.get_prepared(char_CID=1371, sub_exist_buff_dict=1)
         if self.record.update_signal is None:
-            raise ValueError(f"{self.buff_instance.ft.index}的Xeffect函数执行时，并未检测到有效的更新信号！")
+            raise ValueError(
+                f"{self.buff_instance.ft.index}的Xeffect函数执行时，并未检测到有效的更新信号！"
+            )
         sim = self.buff_instance.sim_instance
-        self.buff_instance.simple_start(timenow=sim.tick, sub_exist_buff_dict=self.record.sub_exist_buff_dict,
-                                        no_count=1)
+        self.buff_instance.simple_start(
+            timenow=sim.tick,
+            sub_exist_buff_dict=self.record.sub_exist_buff_dict,
+            no_count=1,
+        )
         if self.record.update_signal == 0:
-            self.record.c4_counter = min(self.record.c4_counter + 1, self.record.max_c4_count)
+            self.record.c4_counter = min(
+                self.record.c4_counter + 1, self.record.max_c4_count
+            )
             self.buff_instance.dy.count = self.record.c4_counter
-            print(f"4画：检测到仪玄释放大招，为仪玄叠加一层静心，当前的静心层数为：{self.record.c4_counter}") if YIXUAN_REPORT else None
+            print(
+                f"4画：检测到仪玄释放大招，为仪玄叠加一层静心，当前的静心层数为：{self.record.c4_counter}"
+            ) if YIXUAN_REPORT else None
         elif self.record.update_signal == 1:
             # 经过实测，4画在消耗时会一次性消耗全部层数。
             if self.record.c4_counter != 0:
-                print(f"4画：检测到仪玄释放凝云术，本次凝云术消耗{self.record.c4_counter}层静心！") if YIXUAN_REPORT else None
+                print(
+                    f"4画：检测到仪玄释放凝云术，本次凝云术消耗{self.record.c4_counter}层静心！"
+                ) if YIXUAN_REPORT else None
                 self.record.c4_counter = 0
                 self.buff_instance.dy.count = self.record.c4_counter
         else:
@@ -97,11 +115,7 @@ class YixuanCinema4Tranquility(Buff.BuffLogic):
         self.check_record_module()
         self.get_prepared(char_CID=1371)
         if self.record.c4_counter == 0:
-            print(f"4画：静心层数耗尽！Buff消退！") if YIXUAN_REPORT else None
+            print("4画：静心层数耗尽！Buff消退！") if YIXUAN_REPORT else None
             return True
         else:
             return False
-
-
-
-

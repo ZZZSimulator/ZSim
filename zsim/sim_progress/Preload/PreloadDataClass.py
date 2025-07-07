@@ -1,8 +1,13 @@
 from typing import TYPE_CHECKING
 
-from sim_progress.data_struct import QuickAssistSystem
-from sim_progress.Preload import SkillNode
-from sim_progress.data_struct import NodeStack, EnemyAttackEventManager
+from zsim.sim_progress.data_struct import (
+    EnemyAttackEventManager,
+    NodeStack,
+    QuickAssistSystem,
+)
+
+from . import SkillNode
+
 if TYPE_CHECKING:
     from zsim.simulator.simulator_class import Simulator
 
@@ -14,7 +19,7 @@ class PreloadData:
         load_data = kwargs.get("load_data")
         self.sim_instance: "Simulator" = sim_instance
         self.preload_action: list[SkillNode] = []  # 最终return返回给外部申请的数据结构
-        from sim_progress.Character.skill_class import Skill
+        from zsim.sim_progress.Character.skill_class import Skill
 
         self.skills: list[Skill] = (
             skills  # 用于创建SkillNode，是SkillNode构造函数的必要参数。
@@ -60,7 +65,6 @@ class PreloadData:
             if not (
                 node.skill.labels is not None
                 and "additional_damage" in node.skill.labels  # 技能拥有附加标签
-
             ):
                 self.force_change_action(node)
         if self.personal_node_stack[char_cid].is_empty():
@@ -78,7 +82,7 @@ class PreloadData:
         self.quick_assist_system.update(tick, node, self.load_data.all_name_order_box)
         if self.atk_manager.attacking:
             self.atk_manager.answered_action.append(node)
-        from sim_progress.Preload.APLModule.ActionReplaceManager import (
+        from zsim.sim_progress.Preload.APLModule.ActionReplaceManager import (
             ActionReplaceManager,
         )
 
@@ -143,12 +147,11 @@ class PreloadData:
                 f"{skill_node.skill_tag}正在尝试顶替一个最高优先级的技能：{node_be_changed.skill_tag}"
             )
 
-
     def delete_mission_in_preload_data(self, node_be_changed):
         """在PreloadData中强制干涉Load阶段，并且执行特定任务的删除。"""
         mission_key_to_remove = []
         for mission_key, mission in self.load_mission_dict.items():
-            from sim_progress.Load import LoadingMission
+            from zsim.sim_progress.Load import LoadingMission
 
             if not isinstance(mission, LoadingMission):
                 continue

@@ -1,7 +1,9 @@
-from .BaseListenerClass import BaseListener
 from typing import TYPE_CHECKING
+
+from .BaseListenerClass import BaseListener
+
 if TYPE_CHECKING:
-    from simulator.simulator_class import Simulator
+    from zsim.simulator.simulator_class import Simulator
 
 
 class HormonePunkListener(BaseListener):
@@ -15,7 +17,7 @@ class HormonePunkListener(BaseListener):
         """监听到佩戴者的进场后，记录更新信号"""
         if "switching_in_event" not in kwargs and "enter_battle_event" not in kwargs:
             return
-        from sim_progress.Character import Character
+        from zsim.sim_progress.Character import Character
 
         if not isinstance(event_obj, Character):
             return

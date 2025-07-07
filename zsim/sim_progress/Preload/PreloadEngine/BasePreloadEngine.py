@@ -1,9 +1,11 @@
 from abc import ABC, abstractmethod
-from sim_progress.data_struct import NodeStack
 from typing import TYPE_CHECKING
 
+from zsim.sim_progress.data_struct import NodeStack
+
 if TYPE_CHECKING:
-    from sim_progress.Preload import PreloadData
+    from .. import PreloadData
+
 
 class BasePreloadEngine(ABC):
     @abstractmethod

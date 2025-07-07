@@ -1,4 +1,4 @@
-from sim_progress.Buff import Buff, JudgeTools, check_preparation, find_tick
+from .. import Buff, JudgeTools, check_preparation, find_tick
 
 
 class HeartstringNocturneRecord:
@@ -11,6 +11,7 @@ class HeartstringNocturneRecord:
 
 class HeartstringNocturne(Buff.BuffLogic):
     """心弦夜响的复杂逻辑：进入战斗或是释放连携技、大招时触发。"""
+
     def __init__(self, buff_instance):
         super().__init__(buff_instance)
         self.buff_instance: Buff = buff_instance
@@ -20,15 +21,19 @@ class HeartstringNocturne(Buff.BuffLogic):
         self.record = None
 
     def get_prepared(self, **kwargs):
-        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
+        return check_preparation(
+            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
+        )
 
     def check_record_module(self):
         if self.equipper is None:
-            self.equipper = JudgeTools.find_equipper("心弦夜响", sim_instance=self.buff_instance.sim_instance)
+            self.equipper = JudgeTools.find_equipper(
+                "心弦夜响", sim_instance=self.buff_instance.sim_instance
+            )
         if self.buff_0 is None:
-            self.buff_0 = JudgeTools.find_exist_buff_dict(sim_instance=self.buff_instance.sim_instance)[self.equipper][
-                self.buff_instance.ft.index
-            ]
+            self.buff_0 = JudgeTools.find_exist_buff_dict(
+                sim_instance=self.buff_instance.sim_instance
+            )[self.equipper][self.buff_instance.ft.index]
         if self.buff_0.history.record is None:
             self.buff_0.history.record = HeartstringNocturneRecord()
         self.record = self.buff_0.history.record
@@ -37,7 +42,12 @@ class HeartstringNocturne(Buff.BuffLogic):
         self.check_record_module()
         self.get_prepared(equipper="心弦夜响")
         if not self.record.listener_exist:
-            self.record.listener = self.buff_instance.sim_instance.listener_manager.get_listener(listener_owner=self.record.char, listener_id="Heartstring_Nocturne_1")
+            self.record.listener = (
+                self.buff_instance.sim_instance.listener_manager.get_listener(
+                    listener_owner=self.record.char,
+                    listener_id="Heartstring_Nocturne_1",
+                )
+            )
             # self.record.listener = self.buff_instance.sim_instance.listener_manager.listener_factory(
             #     initiate_signal="Heartstring_Nocturne_1", sim_instance=self.buff_instance.sim_instance
             # )
@@ -46,7 +56,7 @@ class HeartstringNocturne(Buff.BuffLogic):
         skill_node = kwargs.get("skill_node", None)
         if skill_node is None:
             return False
-        from sim_progress.Preload import SkillNode
+        from zsim.sim_progress.Preload import SkillNode
 
         if not isinstance(skill_node, SkillNode):
             raise ValueError(
@@ -59,8 +69,8 @@ class HeartstringNocturne(Buff.BuffLogic):
                 return True
         else:
             if skill_node.char_name == self.record.char.NAME:
-                if skill_node.preload_tick == find_tick(sim_instance=self.buff_instance.sim_instance) and skill_node.skill.trigger_buff_level in [5, 6]:
+                if skill_node.preload_tick == find_tick(
+                    sim_instance=self.buff_instance.sim_instance
+                ) and skill_node.skill.trigger_buff_level in [5, 6]:
                     return True
         return False
-
-        

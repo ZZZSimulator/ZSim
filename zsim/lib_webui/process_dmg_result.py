@@ -4,8 +4,8 @@ import os
 import plotly.express as px
 import polars as pl
 import streamlit as st
-from define import ANOMALY_MAPPING
-from sim_progress.Character.skill_class import lookup_name_or_cid
+from zsim.define import ANOMALY_MAPPING
+from zsim.sim_progress.Character.skill_class import lookup_name_or_cid
 
 from .constants import element_mapping, results_dir, SKILL_TAG_MAPPING
 
@@ -133,6 +133,7 @@ def draw_line_chart(chart_data: dict[str, pl.DataFrame]) -> None:
         )
         st.plotly_chart(fig_stun_eff)
 
+
 def _get_cn_skill_tag(skill_tag: str) -> str:
     """根据技能标签获取技能中文名。
 
@@ -143,6 +144,7 @@ def _get_cn_skill_tag(skill_tag: str) -> str:
         str: 技能中文名。
     """
     return SKILL_TAG_MAPPING.get(skill_tag, skill_tag)
+
 
 def sort_df_by_UUID(dmg_result_df: pl.DataFrame) -> pl.DataFrame:
     """按UUID对伤害数据进行分组和聚合。
@@ -188,7 +190,7 @@ def sort_df_by_UUID(dmg_result_df: pl.DataFrame) -> pl.DataFrame:
         skill_cn_name: str | None = None
         if skill_tag:
             cid_str = skill_tag[0:4]
-            skill_cn_name = _get_cn_skill_tag(skill_tag) # 获取技能中文名
+            skill_cn_name = _get_cn_skill_tag(skill_tag)  # 获取技能中文名
             try:
                 name, cid_lookup = lookup_name_or_cid(cid=cid_str)
                 cid = cid_lookup
@@ -196,7 +198,7 @@ def sort_df_by_UUID(dmg_result_df: pl.DataFrame) -> pl.DataFrame:
                 name = skill_tag  # 如果查找失败，使用skill_tag作为名字
                 cid = None
         else:
-            skill_cn_name = "Unknown" # 如果没有skill_tag，则设为Unknown
+            skill_cn_name = "Unknown"  # 如果没有skill_tag，则设为Unknown
 
         result_data.append(
             {
@@ -206,7 +208,7 @@ def sort_df_by_UUID(dmg_result_df: pl.DataFrame) -> pl.DataFrame:
                 "is_anomaly": is_anomaly,
                 "cid": cid,
                 "skill_tag": skill_tag,
-                "skill_cn_name": skill_cn_name, # 添加技能中文名
+                "skill_cn_name": skill_cn_name,  # 添加技能中文名
                 "dmg_expect_sum": dmg_expect_sum,
                 "stun_sum": stun_sum,
                 "buildup_sum": buildup_sum,

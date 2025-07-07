@@ -1,7 +1,9 @@
-from .NAManagerClasses import YanagiNAManager, HugoNAManager
-from .BaseNAManager import BaseNAManager
-from zsim.define import YANAGI_NA_ORDER, HUGO_NA_ORDER, APL_NA_ORDER_PATH
 import json
+
+from zsim.define import APL_NA_ORDER_PATH, HUGO_NA_ORDER, YANAGI_NA_ORDER
+
+from .BaseNAManager import BaseNAManager
+from .NAManagerClasses import HugoNAManager, YanagiNAManager
 
 NA_RULE_INVENTORY_PATH = {1221: YANAGI_NA_ORDER, 1291: HUGO_NA_ORDER}
 
