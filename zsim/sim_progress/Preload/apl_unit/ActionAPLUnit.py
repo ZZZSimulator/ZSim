@@ -13,12 +13,18 @@ class ActionAPLUnit(APLUnit):
         self.apl_unit_type = apl_unit_dict["type"]
         self.break_when_found_action = True
         self.result = apl_unit_dict["action"]
-        from sim_progress.Preload.apl_unit.APLUnit import spawn_sub_condition
+        from sim_progress.Preload.apl_unit.APLUnit import spawn_sub_condition, logic_tree_to_expr_node
 
         for condition_str in apl_unit_dict["conditions"]:
             self.sub_conditions_unit_list.append(
                 spawn_sub_condition(self.priority, condition_str)
             )
+
+        self.sub_conditions_ast = logic_tree_to_expr_node(
+            self.priority,
+            apl_unit_dict.get("conditions_tree", None)
+        )
+
         self.builtin_percond_list: list = []
         if (
             self.result == "assault_after_parry"
@@ -49,20 +55,13 @@ class ActionAPLUnit(APLUnit):
             return True, result_box
         from sim_progress.Preload.APLModule.SubConditionUnit import BaseSubConditionUnit
 
-        for sub_units in self.sub_conditions_unit_list:
-            if not isinstance(sub_units, BaseSubConditionUnit):
-                raise TypeError(
-                    "ActionAPLUnit类的sub_conditions_unit_list中的对象构建不正确！"
-                )
-            result = sub_units.check_myself(
-                found_char_dict, game_state, tick=tick, sim_instance=sim_instance
-            )
-            result_box.append(result)
-            if not result:
-                return False, result_box
-        else:
+        if self.sub_conditions_ast is None:
             return True, result_box
 
+        final_result = self.evaluate_condition_ast(
+            self.sub_conditions_ast, found_char_dict, game_state, sim_instance, tick, result_box
+        )
+        return final_result, result_box
 
     def __check_assult_aid_condition(self):
         """检查突击支援的前置条件——是否严格衔接于Knock_back之后"""

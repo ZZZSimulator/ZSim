@@ -1,4 +1,5 @@
 import os.path
+import re
 from typing import Sequence
 
 
@@ -66,6 +67,9 @@ class APLParser:
                 # 3. 提取 action_name 和条件部分
                 action_name = parts[2]
                 conditions = parts[3:]  # 从第4个元素开始作为条件列表
+                # 兼容|作为与门表达式符号的逻辑,转为一整条表达式字符串,统一解析出子条件列表
+                condition_expression = " and ".join(conditions).strip()
+                conditions, logic_tree = parse_logical_expression(condition_expression)
 
                 # 4. 记录解析后的数据
                 actions.append(
@@ -76,6 +80,7 @@ class APLParser:
                         "conditions": [
                             cond.strip() for cond in conditions if cond.strip()
                         ],
+                        "conditions_tree": logic_tree,  # dict表示的逻辑树结构
                         "priority": priority,
                     }
                 )
@@ -124,8 +129,65 @@ def renumber_priorities(data_list):
     return data_list
 
 
+def tokenize(expression):
+    # 括号、and、or 分割，保留分隔符
+    return re.findall(r'\(|\)|\band\b|\bor\b|[^()\s]+', expression)
+
+
+def extract_conditions(tokens):
+    # 提取子条件单元（非运算符和括号）
+    return sorted(set(t for t in tokens if t not in ('and', 'or', '(', ')')))
+
+
+def parse_expression(tokens):
+    """解析逻辑表达式, 返回逻辑树结构, 优先级为()>and>or"""
+    if not tokens:
+        return None
+
+    def parse_factor(index):
+        """解析基本因子：括号或单个条件"""
+        token = tokens[index]
+        if token == '(':
+            subtree, index = parse_or(index + 1)
+            if tokens[index] != ')':
+                raise ValueError("缺失右括号")
+            return subtree, index + 1
+        else:
+            return token, index + 1
+
+    def parse_and(index):
+        """解析 and 级别表达式"""
+        left, index = parse_factor(index)
+        items = [left]
+        while index < len(tokens) and tokens[index] == 'and':
+            right, index = parse_factor(index + 1)
+            items.append(right)
+        return {'and': items} if len(items) > 1 else items[0], index
+
+    def parse_or(index):
+        """解析 or 级别表达式"""
+        left, index = parse_and(index)
+        items = [left]
+        while index < len(tokens) and tokens[index] == 'or':
+            right, index = parse_and(index + 1)
+            items.append(right)
+        return {'or': items} if len(items) > 1 else items[0], index
+
+    tree, final_index = parse_or(0)  # 从最低优先级开始解析
+    if final_index != len(tokens):
+        raise ValueError("无法解析整个表达式")
+    return tree
+
+
+def parse_logical_expression(expr):
+    tokens = tokenize(expr)
+    conditions = extract_conditions(tokens)
+    logic_tree = parse_expression(tokens)
+    return conditions, logic_tree
+
+
 if __name__ == "__main__":
-    code = "1211|action+=|1211_NA_1|status.enemy:stun==True|!buff.1091:exist→Buff-角色-丽娜-核心被动-穿透率==True"
+    code = "1211|action+=|1211_NA_1|status.enemy:stun==True and !buff.1091:exist→Buff-角色-丽娜-核心被动-穿透率==True"
     # actions_list = APLParser(file_path=APL_PATH).parse(mode=0)
     actions_list = APLParser(apl_code=code).parse(mode=0)
     for sub_dict in actions_list:
