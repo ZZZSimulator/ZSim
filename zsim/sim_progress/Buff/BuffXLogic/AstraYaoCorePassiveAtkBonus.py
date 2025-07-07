@@ -92,6 +92,7 @@ class AstraYaoCorePassiveAtkBonus(Buff.BuffLogic):
         }
         self.buff_instance.update_to_buff_0(self.buff_0)
         if ASTRAYAO_REPORT:
+            self.buff_instance.sim_instance.schedule_data.change_process_state()
             print(
                 f"核心被动触发器激活！成功为{benifit}角色添加攻击力buff（{count}点）！Buff的时间节点为：{self.buff_instance.dy.startticks}--{self.buff_instance.dy.endticks}"
             )

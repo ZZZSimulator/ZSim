@@ -27,6 +27,7 @@ class HugoCorePassiveBuffListener(BaseListener):
         from zsim.define import HUGO_REPORT
 
         if HUGO_REPORT:
+            self.sim_instance.schedule_data.change_process_state()
             print(
                 f"雨果的失衡事件监听器监听到了雨果的技能{event.skill_tag}（{event.skill_node.skill.skill_text}）使怪物陷入失衡状态，根据核心被动，触发一次【暗渊回响】Buff"
             )

@@ -127,6 +127,9 @@ class VivianCorePassiveTrigger(Buff.BuffLogic):
             / dirge_of_destiny_anomaly.current_anomaly
         )
         event_list.append(dirge_of_destiny_anomaly)
-        print(
-            "核心被动：检测到【落羽生花】命中异常状态下的敌人，触发一次异放！！！"
-        ) if VIVIAN_REPORT else None
+        if VIVIAN_REPORT:
+            self.buff_instance.sim_instance.schedule_data.change_process_state()
+            print(
+                "核心被动：检测到【落羽生花】命中异常状态下的敌人，触发一次异放！！！"
+            )
+

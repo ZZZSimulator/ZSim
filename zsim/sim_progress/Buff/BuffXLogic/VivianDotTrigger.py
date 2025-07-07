@@ -84,4 +84,6 @@ class VivianDotTrigger(Buff.BuffLogic):
         )
         self.record.enemy.dynamic.dynamic_dot_list.append(dot)
         event_list.append(dot.skill_node_data)
-        print("核心被动：薇薇安对敌人施加Dot——薇薇安的预言") if VIVIAN_REPORT else None
+        if VIVIAN_REPORT:
+            self.buff_instance.sim_instance.schedule_data.change_process_state()
+            print("核心被动：薇薇安对敌人施加Dot——薇薇安的预言")

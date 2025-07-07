@@ -61,6 +61,7 @@ class AstraYaoChordManagerTrigger(Buff.BuffLogic):
             skill_node=skill_node,
         )
         if ASTRAYAO_REPORT:
+            self.buff_instance.sim_instance.schedule_data.change_process_state()
             print(
                 f"检测到入场动作{skill_node.skill_tag}，尝试调用震音管理器，触发协同攻击！"
             )

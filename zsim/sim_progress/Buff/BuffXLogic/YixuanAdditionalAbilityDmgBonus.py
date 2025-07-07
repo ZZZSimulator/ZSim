@@ -50,7 +50,9 @@ class YixuanAdditionalAbilityDmgBonus(Buff.BuffLogic):
         if "1371_E_EX_B_" not in skill_node.skill_tag:
             return False
         if skill_node.preload_tick == self.buff_instance.sim_instance.tick:
-            print(
-                f"仪玄的{skill_node.skill.skill_text}命中了失衡状态下的敌人，触发了组队被动的增伤效果！"
-            ) if YIXUAN_REPORT else None
+            if YIXUAN_REPORT:
+                self.buff_instance.sim_instance.schedule_data.change_process_state()
+                print(
+                    f"仪玄的{skill_node.skill.skill_text}命中了失衡状态下的敌人，触发了组队被动的增伤效果！"
+                )
         return True
