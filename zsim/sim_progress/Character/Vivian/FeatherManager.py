@@ -36,9 +36,11 @@ class FeatherManager:
             self.guard_feather + trans_count, self.feather_max_count
         )
         self.flight_feather = 0
-        print(
-            f"羽毛管理器：羽毛转化！当前的护羽、飞羽数量为：{self.guard_feather, self.flight_feather}"
-        ) if VIVIAN_REPORT else None
+        if VIVIAN_REPORT:
+            self.char.sim_instance.schedule_data.change_process_state()
+            print(
+                f"羽毛管理器：羽毛转化！当前的护羽、飞羽数量为：{self.guard_feather, self.flight_feather}"
+            )
 
     def gain_feather(self, skill_node: SkillNode):
         """
@@ -56,9 +58,11 @@ class FeatherManager:
         self.flight_feather = min(
             self.flight_feather + flight_feather_count, self.feather_max_count
         )
-        print(
-            f"羽毛管理器：获得{flight_feather_count}点羽毛！当前护、飞羽数量为：{self.guard_feather, self.flight_feather}"
-        ) if VIVIAN_REPORT else None
+        if VIVIAN_REPORT:
+            self.char.sim_instance.schedule_data.change_process_state()
+            print(
+                f"羽毛管理器：获得{flight_feather_count}点羽毛！当前护、飞羽数量为：{self.guard_feather, self.flight_feather}"
+            )
 
     def spawn_coattack(self) -> str | None:
         """尝试生成一次生花"""
@@ -71,9 +75,11 @@ class FeatherManager:
                         self.flight_feather + 1, self.feather_max_count
                     )
                     self.c1_counter -= 4
-            print(
-                f"羽毛管理器：落羽生花完成结算！当前的护羽、飞羽数量为：{self.guard_feather, self.flight_feather}"
-            ) if VIVIAN_REPORT else None
+            if VIVIAN_REPORT:
+                self.char.sim_instance.schedule_data.change_process_state()
+                print(
+                    f"羽毛管理器：落羽生花完成结算！当前的护羽、飞羽数量为：{self.guard_feather, self.flight_feather}"
+                )
             return self.co_attack_index
         else:
             return None

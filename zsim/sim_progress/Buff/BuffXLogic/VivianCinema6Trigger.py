@@ -79,9 +79,11 @@ class VivianCinema6Trigger(Buff.BuffLogic):
         if skill_node.skill_tag != "1331_SNA_2":
             return False
         if not self.record.enemy.dynamic.is_under_anomaly:
-            print(
-                " APL警告：怪物没异常你打什么SNA_2！豆子全没了吧傻子！"
-            ) if VIVIAN_REPORT else None
+            if VIVIAN_REPORT:
+                self.buff_instance.sim_instance.schedule_data.change_process_state()
+                print(
+                    " APL警告：怪物没异常你打什么SNA_2！豆子全没了吧傻子！"
+                )
         if self.record.last_update_node is None:
             self.c6_pre_active(skill_node)
             return True
@@ -94,9 +96,11 @@ class VivianCinema6Trigger(Buff.BuffLogic):
     def c6_pre_active(self, skill_node):
         self.record.last_update_node = skill_node
         guard_feather_cost = min(self.record.char.feather_manager.guard_feather, 5)
-        print(
-            f"6画触发器：检测到【悬落】，即将消耗全部护羽！消耗前的资源情况为：{self.record.char.get_special_stats()}"
-        ) if VIVIAN_REPORT else None
+        if VIVIAN_REPORT:
+            self.buff_instance.sim_instance.schedule_data.change_process_state()
+            print(
+                f"6画触发器：检测到【悬落】，即将消耗全部护羽！消耗前的资源情况为：{self.record.char.get_special_stats()}"
+            )
         self.record.guard_feather = guard_feather_cost
         self.record.char.feather_manager.guard_feather = 0
         self.record.char.feather_manager.c1_counter += guard_feather_cost
@@ -105,9 +109,11 @@ class VivianCinema6Trigger(Buff.BuffLogic):
             self.record.char.feather_manager.flight_feather = min(
                 self.record.char.feather_manager.flight_feather + 1, 5
             )
-            print(
-                f"6画触发器：因6画触发、联动1画，恢复一点飞羽！当前资源情况为：{self.record.char.get_special_stats()}"
-            ) if VIVIAN_REPORT else None
+            if VIVIAN_REPORT:
+                self.buff_instance.sim_instance.schedule_data.change_process_state()
+                print(
+                    f"6画触发器：因6画触发、联动1画，恢复一点飞羽！当前资源情况为：{self.record.char.get_special_stats()}"
+                )
 
     def special_effect_logic(self, **kwargs):
         """当Xjudge检测到AnomalyBar传入时通过判定，并且执行xeffect"""
@@ -124,9 +130,11 @@ class VivianCinema6Trigger(Buff.BuffLogic):
         get_result = self.record.enemy.dynamic.get_active_anomaly()
         if not get_result:
             self.record.char.feather_manager.update_myself(c6_signal=True)
-            print(
-                "6画触发器：在怪物没有异常的情况下打了【悬落】，虽然不能触发额外的异放，但是依然可以进行羽毛转化！"
-            ) if VIVIAN_REPORT else None
+            if VIVIAN_REPORT:
+                self.buff_instance.sim_instance.schedule_data.change_process_state()
+                print(
+                    "6画触发器：在怪物没有异常的情况下打了【悬落】，虽然不能触发额外的异放，但是依然可以进行羽毛转化！"
+                )
         active_anomaly_bar = get_result[0]
         copyed_anomaly = AnomalyBar.create_new_from_existing(active_anomaly_bar)
         # copyed_anomaly = self.record.last_update_anomaly
@@ -161,8 +169,10 @@ class VivianCinema6Trigger(Buff.BuffLogic):
             / dirge_of_destiny_anomaly.current_anomaly
         )
         event_list.append(dirge_of_destiny_anomaly)
-        print(
-            f"6画触发器：触发额外异放！本次触发消耗额外护羽数量为：{self.record.guard_feather}，当前资源情况为：{self.record.char.get_special_stats()}"
-        ) if VIVIAN_REPORT else None
+        if VIVIAN_REPORT:
+            self.buff_instance.sim_instance.schedule_data.change_process_state()
+            print(
+                f"6画触发器：触发额外异放！本次触发消耗额外护羽数量为：{self.record.guard_feather}，当前资源情况为：{self.record.char.get_special_stats()}"
+            )
         self.record.guard_feather = 0
         self.record.char.feather_manager.update_myself(c6_signal=True)
