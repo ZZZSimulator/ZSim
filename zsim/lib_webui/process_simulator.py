@@ -188,23 +188,21 @@ def enemy_selector() -> tuple[int, int]:
     if "enemy_adjust" not in st.session_state:
         st.session_state["enemy_adjust"] = saved_adjust
     # 获取所有可选项
-    enemy_df = pl.scan_csv("zsim/data/enemy.csv")
-    enemy_data = (
-        enemy_df.select(["IndexID", "CN_enemy_ID"])
+    enemy_lf = pl.scan_csv("zsim/data/enemy.csv")
+    enemy_data: pl.DataFrame = (
+        enemy_lf.select(["IndexID", "CN_enemy_ID"])
         .unique(subset=["IndexID"])
         .sort(by="IndexID", descending=True)
         .collect()
-        .to_pandas()
-        .values.tolist()
     )
     enemy_options = []
     enemy_values = []
-    for index_id, cn_enemy_id in enemy_data:
+    for index_id, cn_enemy_id in enemy_data.iter_rows():
         display_text = f"{index_id} - {cn_enemy_id}"
         enemy_options.append(display_text)
         enemy_values.append(index_id)
     adjust_df = pl.scan_csv("zsim/data/enemy_adjustment.csv")
-    adjust_options = sorted(
+    adjust_options: list[int] = sorted(
         adjust_df.select("ID").unique().collect().to_series().to_list()
     )
     col_enemy1, col_enemy2 = st.columns(2)
@@ -239,8 +237,8 @@ def enemy_selector() -> tuple[int, int]:
     st.session_state["enemy_adjust"] = selected_adjust
     # 检查是否有未保存的更改
     if (
-        st.session_state["enemy_index"] != saved_index or
-        st.session_state["enemy_adjust"] != saved_adjust
+        st.session_state["enemy_index"] != saved_index
+        or st.session_state["enemy_adjust"] != saved_adjust
     ):
         st.session_state["enemy_config_unsaved"] = True
     else:

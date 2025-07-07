@@ -6,7 +6,6 @@ from typing import Literal
 
 import psutil
 import streamlit as st
-import polars as pl
 
 from zsim.define import NEW_SIM_BOOT, saved_char_config
 from zsim.lib_webui.constants import stats_trans_mapping, weapon_options
