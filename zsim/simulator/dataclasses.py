@@ -183,6 +183,7 @@ class ScheduleData:
     # 实际执行时, 当 event 是 Preload.SkillNode | LoadingMission 时, 大多数情况是没有 log 输出的, 所以仍然会输出大量空帧.
     # 10800 帧的情况目前可以只打印 1500 条左右的 log. 但是打印的帧数字不规律, 可能看起来有点怪.
     processed_times: int = field(default=0)
+    processe_state_update_tick: int = field(default=0)      # process_state的更新时间
 
     def reset_myself(self):
         """重置ScheduleData的动态数据！"""
@@ -193,6 +194,15 @@ class ScheduleData:
             self.loading_buff[char_name] = []
             self.dynamic_buff[char_name] = []
         self.processed_times = 0
+
+    @property
+    def processed_state_this_tick(self):
+        """当前tick是否有新事件发生"""
+        return self.sim_instance.tick == self.processe_state_update_tick
+
+    def change_process_state(self):
+        """有新事件发生时调用，保证终端print"""
+        self.processe_state_update_tick = self.sim_instance.tick
 
 
 @dataclass

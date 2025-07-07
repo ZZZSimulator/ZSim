@@ -52,9 +52,11 @@ class VivianAdditionalAbilityCoAttackTrigger(Buff.BuffLogic):
         # 如果是VVA自己触发的异常，则不放行。
         if anomaly_bar.activated_by:
             if "1331" in anomaly_bar.activated_by.skill_tag:
-                print(
-                    "组队被动：检测到薇薇安触发的属性异常，不放行！"
-                ) if VIVIAN_REPORT else None
+                if VIVIAN_REPORT:
+                    self.buff_instance.sim_instance.schedule_data.change_process_state()
+                    print(
+                        "组队被动：检测到薇薇安触发的属性异常，不放行！"
+                    )
                 return False
         # 如果是首次传入的属性异常类，则直接放行。
         tick = find_tick(sim_instance=self.buff_instance.sim_instance)
@@ -81,12 +83,18 @@ class VivianAdditionalAbilityCoAttackTrigger(Buff.BuffLogic):
         self.get_prepared(char_CID=1361, preload_data=1)
         coattack_skill_tag = self.record.char.feather_manager.spawn_coattack()
         if coattack_skill_tag is None:
-            print(
-                f"组队被动：虽然有{self.record.last_update_anomaly.element_type}类型的新异常触发！但是豆子不够！当前资源情况为：{self.record.char.get_special_stats()}"
-            ) if VIVIAN_REPORT else None
+            self.buff_instance.sim_instance.schedule_data.change_process_state()
+            if VIVIAN_REPORT:
+                self.buff_instance.sim_instance.schedule_data.change_process_state()
+                print(
+                    f"组队被动：虽然有{self.record.last_update_anomaly.element_type}类型的新异常触发！但是豆子不够！当前资源情况为：{self.record.char.get_special_stats()}"
+                )
             return
         input_tuple = (coattack_skill_tag, False, 0)
         self.record.preload_data.external_add_skill(input_tuple)
-        print(
-            f"组队被动：监听到队友的技能{self.record.last_update_anomaly.activate_by}触发了新的异常，薇薇安触发了一次落雨生花！"
-        ) if VIVIAN_REPORT else None
+        self.buff_instance.sim_instance.schedule_data.change_process_state()
+        if VIVIAN_REPORT:
+            self.buff_instance.sim_instance.schedule_data.change_process_state()
+            print(
+                f"组队被动：监听到队友的技能{self.record.last_update_anomaly.activate_by}触发了新的异常，薇薇安触发了一次落雨生花！"
+            )

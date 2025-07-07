@@ -157,13 +157,17 @@ class HugoCorePassiveTotalizeTrigger(Buff.BuffLogic):
             + min(600, max(rest_tick - 300, 0)) / 60 * 100
         )
         if self.record.active_signal in [2, 6]:
-            print(
-                f"雨果使用{'大招' if self.record.active_signal == 6 else '强化E'}触发了决算！本次决算结算的失衡时间为{rest_tick / 60:.2f}秒，结算倍率为{ratio:.2f}%，"
-            ) if HUGO_REPORT else None
+            if HUGO_REPORT:
+                self.buff_instance.sim_instance.schedule_data.change_process_state()
+                print(
+                    f"雨果使用{'大招' if self.record.active_signal == 6 else '强化E'}触发了决算！本次决算结算的失衡时间为{rest_tick / 60:.2f}秒，结算倍率为{ratio:.2f}%，"
+                )
         else:
-            print(
-                "6画触发：检测到射击攻击命中！为雨果触发一次暗渊回响Buff！"
-            ) if HUGO_REPORT else None
+            if HUGO_REPORT:
+                self.buff_instance.sim_instance.schedule_data.change_process_state()
+                print(
+                    "6画触发：检测到射击攻击命中！为雨果触发一次暗渊回响Buff！"
+                )
 
         """先处理Buff"""
         from zsim.sim_progress.Buff.BuffAddStrategy import buff_add_strategy
@@ -238,9 +242,11 @@ class HugoCorePassiveTotalizeTrigger(Buff.BuffLogic):
 
         if self.record.enemy.dynamic.stun:
             if self.record.char.cinema >= 2 and self.record.active_signal == 6:
-                print(
-                    "2画触发：检测到雨果释放大招，根据2画效果，本次决算不终结失衡状态！"
-                ) if HUGO_REPORT else None
+                if HUGO_REPORT:
+                    self.buff_instance.sim_instance.schedule_data.change_process_state()
+                    print(
+                        "2画触发：检测到雨果释放大招，根据2画效果，本次决算不终结失衡状态！"
+                    )
                 stun_event = None
             else:
                 stun_event = StunForcedTerminationEvent(
