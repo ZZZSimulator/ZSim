@@ -236,7 +236,7 @@ def enemy_selector() -> tuple[int, int]:
             index=adjust_options.index(current_adjust)
             if current_adjust in adjust_options
             else 0,
-            help="一般每个关卡对应一个调整ID，不知道是什么的话就不该",
+            help="一般每个关卡对应一个调整ID，不知道是什么的话就不改",
         )
 
     return selected_index, selected_adjust
