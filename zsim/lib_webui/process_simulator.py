@@ -177,14 +177,19 @@ def enemy_selector() -> tuple[int, int]:
     Returns:
         tuple[int, int]: (index_ID, adjust_ID) 元组
     """
+    # 从enemy.csv获取所有唯一的IndexID和CN_enemy_ID，并按IndexID排序
     with open(CONFIG_PATH, "r", encoding="utf-8") as f:
         config = json.load(f)
-        current_index = config["enemy"]["index_ID"]
-        current_adjust = config["enemy"]["adjust_ID"]
-
-    # 从enemy.csv获取所有唯一的IndexID和CN_enemy_ID，并按IndexID排序
+        saved_index = config["enemy"]["index_ID"]
+        saved_adjust = config["enemy"]["adjust_ID"]
+    # 只在首次加载时初始化session_state
+    if "enemy_index" not in st.session_state:
+        st.session_state["enemy_index"] = saved_index
+    if "enemy_adjust" not in st.session_state:
+        st.session_state["enemy_adjust"] = saved_adjust
+    # 获取所有可选项
     enemy_df = pl.scan_csv("zsim/data/enemy.csv")
-    enemy_data: list[tuple[int, str]] = (
+    enemy_data = (
         enemy_df.select(["IndexID", "CN_enemy_ID"])
         .unique(subset=["IndexID"])
         .sort(by="IndexID", descending=True)
@@ -192,54 +197,54 @@ def enemy_selector() -> tuple[int, int]:
         .to_pandas()
         .values.tolist()
     )
-
-    # 创建显示选项和值的映射
     enemy_options = []
     enemy_values = []
     for index_id, cn_enemy_id in enemy_data:
-        display_text = (
-            f"{index_id} - {cn_enemy_id}"  # 显示格式为 "IndexID - CN_enemy_ID"
-        )
+        display_text = f"{index_id} - {cn_enemy_id}"
         enemy_options.append(display_text)
         enemy_values.append(index_id)
-
-    # 从enemy_adjustment.csv获取所有唯一的ID
     adjust_df = pl.scan_csv("zsim/data/enemy_adjustment.csv")
-    adjust_options: list[int] = sorted(
+    adjust_options = sorted(
         adjust_df.select("ID").unique().collect().to_series().to_list()
     )
-
-    # 创建两列布局
-    col1, col2 = st.columns(2)
-
-    with col1:
+    col_enemy1, col_enemy2 = st.columns(2)
+    with col_enemy1:
         # 找到当前IndexID对应的显示选项索引
         try:
-            current_index_pos = enemy_values.index(current_index)
+            current_index_pos = enemy_values.index(st.session_state["enemy_index"])
         except ValueError:
             current_index_pos = 0
-
         selected_display = st.selectbox(
             "选择敌人",
             enemy_options,
             index=current_index_pos,
             help="数值为IndexID，同一个名字的怪物可能有不同的IndexID，他们的各项属性不同，选择时请注意",
+            key="enemy_index_selectbox",
         )
-
-        # 获取选中的IndexID值
         selected_index = enemy_values[enemy_options.index(selected_display)]
-
-    with col2:
+    with col_enemy2:
+        try:
+            current_adjust_pos = adjust_options.index(st.session_state["enemy_adjust"])
+        except ValueError:
+            current_adjust_pos = 0
         selected_adjust = st.selectbox(
             "敌人属性调整ID",
             adjust_options,
-            index=adjust_options.index(current_adjust)
-            if current_adjust in adjust_options
-            else 0,
+            index=current_adjust_pos,
             help="一般每个关卡对应一个调整ID，不知道是什么的话就不改",
+            key="enemy_adjust_selectbox",
         )
-
-    return selected_index, selected_adjust
+    # 更新session_state为当前选择
+    st.session_state["enemy_index"] = selected_index
+    st.session_state["enemy_adjust"] = selected_adjust
+    # 检查是否有未保存的更改
+    if (
+        st.session_state["enemy_index"] != saved_index or
+        st.session_state["enemy_adjust"] != saved_adjust
+    ):
+        st.session_state["enemy_config_unsaved"] = True
+    else:
+        st.session_state["enemy_config_unsaved"] = False
 
 
 def save_enemy_selection(index_id: int, adjust_id: int):

@@ -6,6 +6,7 @@ from typing import Literal
 
 import psutil
 import streamlit as st
+import polars as pl
 
 from zsim.define import NEW_SIM_BOOT, saved_char_config
 from zsim.lib_webui.constants import stats_trans_mapping, weapon_options
@@ -108,9 +109,11 @@ def page_simulator():
         # 新增：敌人选择器
         st.write("")
         st.markdown("**敌人配置**")
-        selected_index, selected_adjust = enemy_selector()
+        # 读取当前保存的敌人配置
+        enemy_selector()
         if st.button("保存敌人配置", disabled=st.session_state["simulation_running"]):
-            save_enemy_selection(selected_index, selected_adjust)
+            save_enemy_selection(st.session_state["enemy_index"], st.session_state["enemy_adjust"])
+            st.session_state["enemy_config_unsaved"] = False
 
         with col2:
             if st.button(
@@ -382,7 +385,7 @@ def page_simulator():
                 if (
                     st.button(
                         "开始模拟-单进程",
-                        disabled=st.session_state["simulation_running"],
+                        disabled=st.session_state["simulation_running"] or st.session_state.get("enemy_config_unsaved", False),
                         type="primary",
                     )
                     and not st.session_state["simulation_running"]
@@ -418,7 +421,7 @@ def page_simulator():
             with col1:
                 if st.button(
                     "开始模拟-多进程",
-                    disabled=st.session_state["simulation_running"],
+                    disabled=st.session_state["simulation_running"] or st.session_state.get("enemy_config_unsaved", False),
                     type="primary",
                 ):
                     allow_simulation = show_apl_judge_result()
