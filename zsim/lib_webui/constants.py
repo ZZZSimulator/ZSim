@@ -198,7 +198,7 @@ SC_DATA_DISCRIPTION_MAPPING = {
 }
 
 # 副词条最大值
-sc_max_value = 40
+sc_max_value = 4000
 
 # 计算结果缓存文件路径
 ID_CACHE_JSON = "./results/id_cache.json"
