@@ -85,6 +85,8 @@ class YixuanCinema1Trigger(Buff.BuffLogic):
         self.buff_instance.simple_start(
             timenow=tick, sub_exist_buff_dict=self.record.sub_exist_buff_dict
         )
-        print(
-            f"1画：生成一道落雷，并且为仪玄回复5点闪能值，仪玄当前闪能值：{char.adrenaline: .2f}"
-        ) if YIXUAN_REPORT else None
+        if YIXUAN_REPORT:
+            print(
+                f"1画：生成一道落雷，并且为仪玄回复5点闪能值，仪玄当前闪能值：{char.adrenaline: .2f}"
+            )
+            self.buff_instance.sim_instance.schedule_data.change_process_state()

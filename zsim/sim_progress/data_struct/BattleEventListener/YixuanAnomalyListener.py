@@ -45,18 +45,21 @@ class YixuanAnomalyListener(BaseListener):
             )
         if event_obj:
             from zsim.define import ANOMALY_MAPPING
-
-            print(
-                f"监听到新的属性异常：{ANOMALY_MAPPING[event_obj.element_type]}！尝试激活监听事件——仪玄闪能恢复！"
-            ) if YIXUAN_REPORT else None
+            if YIXUAN_REPORT:
+                print(
+                    f"监听到新的属性异常：{ANOMALY_MAPPING[event_obj.element_type]}！尝试激活监听事件——仪玄闪能恢复！"
+                )
+                self.sim_instance.schedule_data.change_process_state()
             self.listener_active()
 
     def listener_active(self):
         """监听事件激活，检测内置Cd，通过后为仪玄恢复闪能值。"""
         if not self.ready:
-            print(
-                f"仪玄在{self.last_active_tick}tick时已经通过该效果恢复过一次闪能值了，所以此时该效果的内置CD尚未就绪！"
-            ) if YIXUAN_REPORT else None
+            if YIXUAN_REPORT:
+                print(
+                    f"仪玄在{self.last_active_tick}tick时已经通过该效果恢复过一次闪能值了，所以此时该效果的内置CD尚未就绪！"
+                )
+                self.sim_instance.schedule_data.change_process_state()
             return
         else:
             from zsim.sim_progress.Character.Yixuan import Yixuan
@@ -64,7 +67,9 @@ class YixuanAnomalyListener(BaseListener):
             if not isinstance(self.char, Yixuan):
                 raise TypeError
             self.char.update_adrenaline(self.recover_value)
-            print(
-                f"玄墨监听器事件激活！成功为仪玄恢复{self.recover_value}点闪能！"
-            ) if YIXUAN_REPORT else None
+            if YIXUAN_REPORT:
+                print(
+                    f"玄墨监听器事件激活！成功为仪玄恢复{self.recover_value}点闪能！"
+                )
+                self.sim_instance.schedule_data.change_process_state()
             self.last_active_tick = self.sim_instance.tick

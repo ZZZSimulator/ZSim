@@ -37,9 +37,11 @@ class BaseAdrenalineEvent(ABC):
             self.apply_effect()
             if simulator.tick >= self.last_active_tick + self.max_duration:
                 self.active = False
-                print(
-                    f"第{self.active_times}次【{self.index}】结束了！总计为仪玄恢复了{self.regenerate_value_sum: .2f}点闪能！"
-                ) if YIXUAN_REPORT else None
+                if YIXUAN_REPORT:
+                    print(
+                        f"第{self.active_times}次【{self.index}】结束了！总计为仪玄恢复了{self.regenerate_value_sum: .2f}点闪能！"
+                    )
+                    self.char.sim_instance.schedule_data.change_process_state()
                 self.regenerate_value_sum = 0
 
     @abstractmethod
@@ -77,9 +79,11 @@ class AuricArray(BaseAdrenalineEvent):
                 self.active_times += 1
                 self.last_active_tick = simulator.tick
                 """激活的当前tick也需要恢复闪能，但是并不是在本方法内部执行的，而是通过Buff触发器统一在Load阶段执行。"""
-                print(
-                    f"检测到技能{skill_node.skill_tag}（玄墨极阵）！【{self.index}】激活"
-                ) if YIXUAN_REPORT else None
+                if YIXUAN_REPORT:
+                    print(
+                        f"检测到技能{skill_node.skill_tag}（玄墨极阵）！【{self.index}】激活"
+                    )
+                    self.char.sim_instance.schedule_data.change_process_state()
 
     def apply_effect(self):
         """事件生效，恢复一次闪能值"""
@@ -112,9 +116,11 @@ class AuricInkUndercurrent(BaseAdrenalineEvent):
                 self.active = True
                 self.active_times += 1
                 self.last_active_tick = simulator.tick
-                print(
-                    f"检测到队友释放大招：{skill_node.skill_tag}！【{self.index}】激活"
-                ) if YIXUAN_REPORT else None
+                if YIXUAN_REPORT:
+                    print(
+                        f"检测到队友释放大招：{skill_node.skill_tag}！【{self.index}】激活"
+                    )
+                    self.char.sim_instance.schedule_data.change_process_state()
 
     def apply_effect(self):
         """事件生效，恢复一次闪能值"""
