@@ -223,6 +223,7 @@ def page_character_config():
                     key=f"{name}_main_stat6",
                 )
             from zsim.lib_webui.constants import sc_max_value
+            from zsim.lib_webui.constants import sc_max_percent
 
             st.text("副词条数量：")
             col1, col2, col3, col4, col5 = st.columns(5)
