@@ -158,6 +158,8 @@ def add_schedule_buff(
     """
     for characters in selected_characters:
         buff_new = Buff.create_new_from_existing(buff)
+        buff_new.ft.operator = buff.ft.operator
+        buff_new.ft.passively_updating = buff.ft.passively_updating
         # if buff.ft.index == 'Buff-武器-精1啜泣摇篮-全队增伤自增长':
         #     print(f'buff_0情况：{buff.dy.startticks, buff.dy.endticks}')
         #     print(f'新buff情况：{buff_new.dy.startticks, buff_new.dy.endticks}')

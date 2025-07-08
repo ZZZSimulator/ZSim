@@ -20,6 +20,7 @@ if TYPE_CHECKING:
     from zsim.sim_progress.data_struct.sp_update_data import SPUpdateData
     from zsim.sim_progress.Preload.SkillsQueue import SkillNode
     from zsim.simulator.config_classes import AttrCurveConfig, WeaponConfig
+    from zsim.sim_progress.Buff.buff_class import Buff
 
 
 class Character:
@@ -298,6 +299,7 @@ class Character:
         self.skills_dict = self.skill_object.skills_dict
         self.dynamic = self.Dynamic(self)
         self.sim_instance = None        # 模拟器实例
+        self.equip_buff_map: dict[int, "Buff"] = {}     # 来自装备的Buff0的指针
 
     # fmt: off
     def __init_all_equip_static(self, drive4, drive5, drive6, 
