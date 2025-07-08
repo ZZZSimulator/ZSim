@@ -20,6 +20,7 @@ def run_single_simulation(stop_tick: int) -> str:
         模拟结果字符串
     """
     from zsim.simulator import Simulator  # 真正启动模拟再导入，以优化启动速度
+
     f = io.StringIO()
     with redirect_stdout(f):
         print("启动子进程")
@@ -41,6 +42,7 @@ def run_parallel_simulation(sim_cfg: "SimCfg") -> str:
         模拟结果字符串
     """
     from zsim.simulator import Simulator  # 真正启动模拟再导入，以优化启动速度
+
     f = io.StringIO()
     with redirect_stdout(f):
         print("启动子进程")

@@ -328,7 +328,9 @@ def spawn_normal_dot(dot_index, sim_instance: "Simulator"):
 
 def create_dot_instance(class_name, bar=None, sim_instance: "Simulator" = None):
     # 动态导入相应模块
-    module_name = f"zsim.sim_progress.Dot.Dots.{class_name}"  # 假设你的类都在dot.DOTS模块中
+    module_name = (
+        f"zsim.sim_progress.Dot.Dots.{class_name}"  # 假设你的类都在dot.DOTS模块中
+    )
     try:
         module = importlib.import_module(module_name)  # 导入模块
         class_obj = getattr(module, class_name)  # 获取类对象
