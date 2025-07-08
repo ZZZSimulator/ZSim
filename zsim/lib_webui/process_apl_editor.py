@@ -25,7 +25,7 @@ class APLArchive:
     title_apl_map: dict[str, dict]
     title_file_name_map: dict[str, str]
 
-    def __post_init__(self):
+    def __init__(self):
         self.refresh()
 
     def refresh(self):
