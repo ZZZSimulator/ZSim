@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 @lru_cache(maxsize=128)
 def cal_buff_total_bonus(
     enabled_buff: Sequence["Buff"],
-    judge_obj: "SkillNode" | "AnomalyBar" | None = None,
+    judge_obj: "SkillNode | AnomalyBar | None" = None,
 ) -> dict[str, float]:
     """过滤并计算buff总加成。
 
@@ -66,6 +66,8 @@ def cal_buff_total_bonus(
                 if isinstance(judge_obj, AnomalyBar) and not __check_special_anomly(
                     buff_obj, judge_obj
                 ):
+                    continue
+                if not __check_activation_origin(buff_obj=buff_obj, judge_obj=judge_obj):
                     continue
             # 获取buff的层数
             count = buff_obj.dy.count
@@ -194,8 +196,6 @@ def __check_skill_node(buff: "Buff", skill_node: "SkillNode") -> bool:
             ):
                 if skill_node.skill.skill_type in label_value:
                     return True
-        else:
-            raise ValueError(f"{buff.ft.index}的标签类型 {label_key} 未定义！")
     else:
         # if buff.ft.index == "Buff-角色-仪玄-2画-强化E与终结技无视以太抗" and any([__tags in skill_node.skill_tag for __tags in ["1371_E_EX", "1371_Q"]]):
         #     print(f"data_analyzer的报告：{buff.ft.index}与{skill_node.skill_tag}不匹配！")
@@ -215,7 +215,7 @@ def __check_label_key(label_key: str, target_label_key: str):
     return base_key == target_label_key
 
 
-def __check_special_anomly(buff: "Buff", anomly_node: "AnomalyBar") -> bool:
+def __check_special_anomly(buff: "Buff", anomaly_node: "AnomalyBar") -> bool:
     """
     检查 buff 的标签是否与异常匹配。
 
@@ -249,7 +249,6 @@ def __check_special_anomly(buff: "Buff", anomly_node: "AnomalyBar") -> bool:
         "Abloom": Abloom,
         "PolarityDisorder": PolarityDisorder,
     }
-
     # 获取buff的标签列表
     buff_labels: dict[str, list[str] | str] = buff.ft.label
     # 如果buff没有标签限制，则直接返回True
@@ -266,16 +265,45 @@ def __check_special_anomly(buff: "Buff", anomly_node: "AnomalyBar") -> bool:
             # 输入为单个字符串
             if isinstance(label_value, str):
                 if label_value in SELECT_ANOMALY_MAP.keys():
-                    if isinstance(anomly_node, SELECT_ANOMALY_MAP[label_value]):
+                    if isinstance(anomaly_node, SELECT_ANOMALY_MAP[label_value]):
                         return True
             # 输入为列表
             if isinstance(label_value, list):
                 if any(
-                    isinstance(anomly_node, SELECT_ANOMALY_MAP[sig_value])
+                    isinstance(anomaly_node, SELECT_ANOMALY_MAP[sig_value])
                     for sig_value in label_value
                     if sig_value in SELECT_ANOMALY_MAP.keys()
                 ):
                     return True
+    return False
+
+
+def __check_activation_origin(buff_obj: "Buff", judge_obj: "SkillNode | AnomalyBar"):
+    """检查buff的label是否存在“only_active_by”，然后再检查当前被检项目与源头是否匹配。
+    - buff_obj: 被检查的buff
+    - judge_obj: 被检查的对象，可能是SkillNode或者异常"""
+    if buff_obj.ft.label is None:
+        return True
+    if "only_active_by" not in buff_obj.ft.label.keys():
+        return True
+    from zsim.sim_progress.Preload import SkillNode
+    from zsim.sim_progress.anomaly_bar import AnomalyBar
+    CID_list = buff_obj.ft.label.get("only_active_by")
+    if isinstance(judge_obj, SkillNode):
+        skill_result = judge_obj.skill.char_obj.CID in CID_list
+        return skill_result
+    elif isinstance(judge_obj, AnomalyBar):
+        if judge_obj.activated_by is None:
+            print(f"未检测到异常对象{judge_obj.element_type}的激活源！")
+            return False
+        anomaly_result = judge_obj.activated_by.skill.char_obj.CID in CID_list
+        # if not anomaly_result:
+        #     print(buff_obj.ft.operator, judge_obj.activated_by.char_name)
+        return anomaly_result
+    else:
+        print(f"judge_obj的类型未定义！{type(judge_obj)}")
+        return False
+
     return False
 
 

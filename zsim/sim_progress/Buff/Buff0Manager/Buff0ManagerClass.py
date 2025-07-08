@@ -100,12 +100,12 @@ class Buff0Manager:
                     continue
                 if (
                     "only_active_by" in _buff_0.ft.label
-                    and _buff_0.ft.label["only_active_by"] == "self"
+                    and _buff_0.ft.label["only_active_by"][0] == "self"
                 ):
                     char_obj = JudgeTools.find_char_from_name(
                         _buff_0.ft.operator, sim_instance=self.sim_instance
                     )
-                    _buff_0.ft.label["only_active_by"] = char_obj.CID
+                    _buff_0.ft.label["only_active_by"] = [char_obj.CID]
 
     def __process_judge_list_set(self):
         """将judge_list_set中的信息全部处理到self.char_equip_info 中"""

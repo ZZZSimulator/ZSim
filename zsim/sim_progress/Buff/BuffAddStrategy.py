@@ -65,6 +65,8 @@ def buff_add_strategy(
                         from copy import deepcopy
 
                         buff_new = deepcopy(copyed_buff)
+                        buff_new.ft.operator = copyed_buff.ft.operator
+                        buff_new.ft.passively_updating = copyed_buff.ft.passively_updating
                         # buff_new = Buff.create_new_from_existing(copyed_buff)
                         if (
                             copyed_buff.ft.simple_start_logic

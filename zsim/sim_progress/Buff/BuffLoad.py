@@ -94,6 +94,8 @@ def process_buff(
                         sub_mission,
                     )
                     if buff_new.dy.is_changed:
+                        buff_new.ft.operator = buff_0.ft.operator
+                        buff_new.ft.passively_updating = buff_0.ft.passively_updatings
                         LOADING_BUFF_DICT[char].append(buff_new)
                         """
                         这里要注意：process_buff函数中传入的buff_0，只会来自于角色，
@@ -115,6 +117,8 @@ def process_buff(
             )
             buff_new.logic.xeffect()
             if buff_new.dy.is_changed:
+                buff_new.ft.operator = buff_0.ft.operator
+                buff_new.ft.passively_updating = buff_0.ft.passively_updating
                 LOADING_BUFF_DICT[char].append(buff_new)
                 if char == "enemy":
                     enemy_buff_0 = exist_buff_dict["enemy"][buff_0.ft.index]

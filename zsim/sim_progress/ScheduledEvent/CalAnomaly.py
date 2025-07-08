@@ -47,14 +47,17 @@ class CalAnomaly:
         self.element_type: ElementType = snapshot[0]
         # self.dmg_sp 以 array 形式储存，顺序为：基础伤害区、增伤区、异常精通区、等级、异常增伤区、异常暴击区、穿透率、穿透值、抗性穿透
         self.dmg_sp: np.ndarray = snapshot[1]
-
+        if anomaly_obj.activated_by is None:
+            print(f"【CalAnomaly Warnning】:检测到异常实例(属性类型：{anomaly_obj.element_type}）的激活源为空，改异常实例将无法享受Buff加成。")
+        else:
+            char_obj = anomaly_obj.activated_by.skill.char_obj
         # 根据动态buff读取怪物面板
         self.data: MulData = MulData(
             enemy_obj=self.enemy_obj,
             dynamic_buff=self.dynamic_buff,
             judge_node=anomaly_obj,
+            character_obj=char_obj
         )
-
         # 虚拟角色等级
         v_char_level: int = int(
             np.floor(self.dmg_sp[0, 3] + 0.0000001)
