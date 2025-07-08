@@ -1,5 +1,5 @@
 from typing import TYPE_CHECKING
-
+from .DetectEdges import detect_edge
 from .FindCharFromCID import find_char_from_CID
 from .FindCharFromName import find_char_from_name
 from .FindEquipper import find_equipper

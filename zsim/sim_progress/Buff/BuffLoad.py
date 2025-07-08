@@ -95,7 +95,7 @@ def process_buff(
                     )
                     if buff_new.dy.is_changed:
                         buff_new.ft.operator = buff_0.ft.operator
-                        buff_new.ft.passively_updating = buff_0.ft.passively_updatings
+                        buff_new.ft.passively_updating = buff_0.ft.passively_updating
                         LOADING_BUFF_DICT[char].append(buff_new)
                         """
                         这里要注意：process_buff函数中传入的buff_0，只会来自于角色，

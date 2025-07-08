@@ -9,6 +9,7 @@ from zsim.sim_progress.anomaly_bar.CopyAnomalyForOutput import (
     Disorder,
     PolarityDisorder,
 )
+from zsim.sim_progress.Character.character import Character
 from zsim.sim_progress.Character.Yanagi import Yanagi
 from zsim.sim_progress.Enemy import Enemy
 from zsim.sim_progress.Report import report_to_log

@@ -1,5 +1,6 @@
 import copy
 import itertools
+import uuid
 from typing import TYPE_CHECKING
 
 import pandas as pd
@@ -17,6 +18,7 @@ from ..buff_class import Buff
 
 if TYPE_CHECKING:
     from zsim.simulator.simulator_class import Simulator
+    from zsim.sim_progress.Character.character import Character
 
 
 class Buff0Manager:
@@ -61,7 +63,11 @@ class Buff0Manager:
         self.__selector = self.__selector(self)
         self.__selector.select_buff_into_exist_buff_dict()
         self.__passively_updating_change()
-        self.__process_label()
+        # self.__process_label()
+        """
+        由于deepcopy存在问题，导致buff_0这里初始化好的only_active_by参数在后续复制的过程中可能丢失，
+        所以这里索性不做处理，直接到data_struct中现场处理。
+        """
         self.__process_additional_ability_data()
         # self.initialize_buff_listener()
 
@@ -185,6 +191,18 @@ class Buff0Manager:
                         _buff_0.ft.passively_updating = True
                     else:
                         _buff_0.ft.passively_updating = False
+
+    def search_equipper(self, equipment: str) -> str | None:
+        """
+        根据输入的装备名称寻找装备者
+        临时使用，该函数只能返回找到的第一个，
+        buff系统重构后将重写此逻辑
+        """
+        for _char_name, sub_list in self.weapon_dict.items():
+            if sub_list[0] == equipment:
+                return _char_name
+        else:
+            return None
 
     class __selector:
         def __init__(self, buff_0_manager_instance):
@@ -385,7 +403,12 @@ class Buff0Manager:
                 dict_1, dict_2, sim_instance=self.buff_0_manager.sim_instance
             )
             buff_new.ft.beneficiary = benifiter
+            # buff_new.ft.buff0_id = uuid.uuid4()
             self.buff_0_manager.exist_buff_dict[benifiter][buff_name] = buff_new
+            # if not buff_new.ft.passively_updating:
+            #     operator_obj: "Character" = self.buff_0_manager.char_obj_dict[buff_new.ft.operator]
+            #     map_key = hash((buff_new.ft.index, operator_obj.NAME))  # 由Buff的index、buff实操者的名字组成的哈希值为key
+            #     operator_obj.equip_buff_map[map_key] = buff_new     # 将这些buff0的指针存入角色的equip_buff_map
 
         def processor_equipment_buff(
             self, adding_code, buff_info_tuple, buff_name, equipment_carrier
