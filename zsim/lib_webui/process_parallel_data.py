@@ -6,6 +6,7 @@ from typing import Any
 import aiofiles
 import plotly.graph_objects as go
 import streamlit as st
+
 from zsim.define import results_dir
 from zsim.lib_webui.process_buff_result import show_buff_result
 from zsim.lib_webui.process_dmg_result import show_dmg_result
@@ -147,7 +148,7 @@ def merge_parallel_dmg_data(
 
             except Exception as e:
                 st.error(f"合并属性收益曲线数据时出错: {e}")
-        return "attr_curve", sc_merged_data
+        return func, sc_merged_data
     elif parallel_config.get("adjust_weapon", {}).get("enabled", False):
         # 武器切换功能
         func = "weapon"
@@ -169,7 +170,7 @@ def merge_parallel_dmg_data(
                     st.error(f"保存合并的武器切换数据失败: {e}")
             except Exception as e:
                 st.error(f"合并武器切换数据时出错: {e}")
-        return "weapon", weapon_merged_data
+        return func, weapon_merged_data
 
     else:
         return None
@@ -540,18 +541,23 @@ async def _merge_attr_curve_data(
             # 按 sc_value 排序
             try:
                 # 尝试将键转换为浮点数进行排序
-                sorted_items = sorted(
-                    sc_values_data.items(), key=lambda item: float(item[0])
-                )
+                # 过滤掉 sc_value 为 None 的项再排序
+                filtered_items = [
+                    (k, v) for k, v in sc_values_data.items() if k is not None
+                ]
+                sorted_items = sorted(filtered_items, key=lambda item: float(item[0]))
             except ValueError:
                 # 如果转换失败，按原始键（字符串）排序
-                sorted_items = sorted(sc_values_data.items())
+                sorted_items = [
+                    (k, v) for k, v in sc_values_data.items() if k is not None
+                ]
+                sorted_items = sorted(sorted_items, key=lambda item: str(item[0]))
 
             # 更新排序后的字典，并计算收益率
             sorted_sc_data: dict[int | float, dict[str, float | None]] = {}
             previous_result: float | None = None
             for i, (sc_val, data) in enumerate(sorted_items):
-                current_result = data["result"]
+                current_result = data["result"]  # type: ignore
                 rate = None
                 if i > 0 and previous_result is not None and previous_result != 0:
                     rate = (current_result / previous_result) - 1
@@ -560,9 +566,9 @@ async def _merge_attr_curve_data(
                 previous_result = current_result
 
             # 用包含收益率的排序后字典替换原来的字典
-            all_sc_data[char_name][sc_name_key] = sorted_sc_data
+            all_sc_data[char_name][sc_name_key] = sorted_sc_data  # type: ignore
 
-    return all_sc_data
+    return all_sc_data  # type: ignore
 
 
 async def _merge_weapon_data(

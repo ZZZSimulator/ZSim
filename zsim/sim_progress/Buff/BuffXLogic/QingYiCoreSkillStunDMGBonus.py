@@ -87,8 +87,10 @@ class QingYiCoreSkillStunDMGBonus(Buff.BuffLogic):
         """
         self.check_record_module()
         self.get_prepared(char_CID=1300, sub_exist_buff_dict=1, enemy=1)
+
         def mode_func(a, b):
             return a is True and b is False
+
         stun_statement_tuple = (
             self.record.last_update_stun,
             self.record.enemy.dynamic.stun,

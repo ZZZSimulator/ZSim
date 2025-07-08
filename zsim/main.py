@@ -116,4 +116,3 @@ if __name__ == "__main__":
             print(
                 f"\n主循环耗时: {timeit.timeit(lambda: simulator_instance.main_loop(sim_cfg=sim_cfg), globals=globals(), number=1):.2f} s"
             )
-        

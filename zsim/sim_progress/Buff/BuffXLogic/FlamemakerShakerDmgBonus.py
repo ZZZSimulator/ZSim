@@ -56,7 +56,7 @@ class FlamemakerShakerDmgBonus(Buff.BuffLogic):
         else:
             return False
         # 滤去不是自己的技能
-        if self.record.equipper != skill_node.char_name:
+        if self.record is not None and self.record.equipper != skill_node.char_name:
             return False
 
         if skill_node.skill.trigger_buff_level == 2:
@@ -72,7 +72,6 @@ class FlamemakerShakerDmgBonus(Buff.BuffLogic):
     def special_hit_logic(self, **kwargs):
         self.check_record_module()
         self.get_prepared(equipper="灼心摇壶", preload_data=1, sub_exist_buff_dict=1)
-        update_count: int
         if self.record.preload_data.operating_now != self.record.char.CID:
             # 说明此时角色正位于后台，更新两层。
             self.buff_instance.simple_start(
@@ -83,12 +82,11 @@ class FlamemakerShakerDmgBonus(Buff.BuffLogic):
             self.buff_instance.dy.count = min(
                 self.buff_instance.dy.count + 2, self.buff_instance.ft.maxcount
             )
-            update_count = 2
         else:
             self.buff_instance.simple_start(
                 find_tick(sim_instance=self.buff_instance.sim_instance),
                 self.record.sub_exist_buff_dict,
             )
-            update_count = 1
+
         self.buff_instance.update_to_buff_0(self.buff_0)
         # print(f'灼心摇壶更新了{update_count}层，当前层数为：{self.buff_0.dy.count}')

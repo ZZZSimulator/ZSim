@@ -137,7 +137,9 @@ class VivianCinema6Trigger(Buff.BuffLogic):
             self.record.enemy, self.record.dynamic_buff_list, self.record.char
         )
         ap = Cal.AnomalyMul.cal_ap(mul_data)
-        from zsim.sim_progress.anomaly_bar.CopyAnomalyForOutput import DirgeOfDestinyAnomaly
+        from zsim.sim_progress.anomaly_bar.CopyAnomalyForOutput import (
+            DirgeOfDestinyAnomaly,
+        )
 
         dirge_of_destiny_anomaly = DirgeOfDestinyAnomaly(
             copyed_anomaly,

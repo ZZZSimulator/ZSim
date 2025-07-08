@@ -54,6 +54,7 @@ class Decibelmanager:
 
     def add_decibel_to_char(self, decibel_value, char_name, output_key):
         from zsim.sim_progress.data_struct import ScheduleRefreshData
+
         refresh_data = ScheduleRefreshData(
             decibel_target=(char_name,), decibel_value=decibel_value
         )

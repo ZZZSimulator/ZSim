@@ -96,7 +96,9 @@ class APLOperator:
                 "在非进攻响应模式下，不能调用spawn_next_action_in_atk_response_mode方法！"
             )
         from zsim.sim_progress.Preload.apl_unit.ActionAPLUnit import ActionAPLUnit
-        from zsim.sim_progress.Preload.apl_unit.AtkResponseAPLUnit import AtkResponseAPLUnit
+        from zsim.sim_progress.Preload.apl_unit.AtkResponseAPLUnit import (
+            AtkResponseAPLUnit,
+        )
 
         for priority, apl_unit in self.apl_unit_inventory.items():
             if isinstance(apl_unit, ActionAPLUnit | AtkResponseAPLUnit):
@@ -122,7 +124,9 @@ class APLOperator:
     def apl_unit_factory(self, apl_unit_dict) -> "APLUnit":
         """构造APL子单元的工厂函数"""
         from zsim.sim_progress.Preload.apl_unit.ActionAPLUnit import ActionAPLUnit
-        from zsim.sim_progress.Preload.apl_unit.AtkResponseAPLUnit import AtkResponseAPLUnit
+        from zsim.sim_progress.Preload.apl_unit.AtkResponseAPLUnit import (
+            AtkResponseAPLUnit,
+        )
 
         if apl_unit_dict["type"] in ["action+=", "action.no_swap_cancel+="]:
             return ActionAPLUnit(apl_unit_dict, sim_instance=self.sim_instance)
