@@ -95,15 +95,19 @@ class YixuanCinema4Tranquility(Buff.BuffLogic):
                 self.record.c4_counter + 1, self.record.max_c4_count
             )
             self.buff_instance.dy.count = self.record.c4_counter
-            print(
-                f"4画：检测到仪玄释放大招，为仪玄叠加一层静心，当前的静心层数为：{self.record.c4_counter}"
-            ) if YIXUAN_REPORT else None
+            if YIXUAN_REPORT:
+                print(
+                    f"4画：检测到仪玄释放大招，为仪玄叠加一层静心，当前的静心层数为：{self.record.c4_counter}"
+                )
+                self.buff_instance.sim_instance.schedule_data.change_process_state()
         elif self.record.update_signal == 1:
             # 经过实测，4画在消耗时会一次性消耗全部层数。
             if self.record.c4_counter != 0:
-                print(
-                    f"4画：检测到仪玄释放凝云术，本次凝云术消耗{self.record.c4_counter}层静心！"
-                ) if YIXUAN_REPORT else None
+                if YIXUAN_REPORT:
+                    print(
+                        f"4画：检测到仪玄释放凝云术，本次凝云术消耗{self.record.c4_counter}层静心！"
+                    )
+                    self.buff_instance.sim_instance.schedule_data.change_process_state()
                 self.record.c4_counter = 0
                 self.buff_instance.dy.count = self.record.c4_counter
         else:
@@ -115,7 +119,9 @@ class YixuanCinema4Tranquility(Buff.BuffLogic):
         self.check_record_module()
         self.get_prepared(char_CID=1371)
         if self.record.c4_counter == 0:
-            print("4画：静心层数耗尽！Buff消退！") if YIXUAN_REPORT else None
+            if YIXUAN_REPORT:
+                print("4画：静心层数耗尽！Buff消退！")
+                self.buff_instance.sim_instance.schedule_data.change_process_state()
             return True
         else:
             return False

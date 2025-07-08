@@ -72,6 +72,7 @@ class Buff0Manager:
         # self.initialize_buff_listener()
 
         if BUFF_0_REPORT:
+            self.sim_instance.schedule_data.change_process_state()
             print(self)
 
     def __str__(self):

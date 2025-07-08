@@ -52,17 +52,21 @@ class YixuanCinema2StunTimeLimitBonus(Buff.BuffLogic):
             return False
         if skill_node.preload_tick != self.buff_instance.sim_instance.tick:
             return False
-        print(
-            "2画：检测到仪玄释放喧响值大招！敌人正处于失衡状态，2画效果生效，延长敌人3秒失衡时间！"
-        ) if YIXUAN_REPORT else None
+        if YIXUAN_REPORT:
+            print(
+                "2画：检测到仪玄释放喧响值大招！敌人正处于失衡状态，2画效果生效，延长敌人3秒失衡时间！"
+            )
+            self.buff_instance.sim_instance.schedule_data.change_process_state()
         return True
 
     def special_exit_logic(self, **kwargs):
         self.check_record_module()
         self.get_prepared(char_CID=1371, enemy=1)
         if not self.record.enemy.dynamic.stun:
-            print(
-                "2画：检测到敌人从失衡状态中恢复，仪玄2画的失衡时间延长效果结束！"
-            ) if YIXUAN_REPORT else None
+            if YIXUAN_REPORT:
+                print(
+                    "2画：检测到敌人从失衡状态中恢复，仪玄2画的失衡时间延长效果结束！"
+                )
+                self.buff_instance.sim_instance.schedule_data.change_process_state()
             return True
         return False

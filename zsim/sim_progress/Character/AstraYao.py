@@ -273,6 +273,7 @@ class ChordCoattackManager:
                 sim_instance=self.manager.char.sim_instance,
             )
             if ASTRAYAO_REPORT:
+                self.manager.char.sim_instance.schedule_data.change_process_state()
                 print(
                     f"核心被动触发器激活！为{benifit_list}添加了{self.core_passive_buff_index}！"
                 )

@@ -45,9 +45,11 @@ class HugoCorePassiveSingleStunAtkBonus(Buff.BuffLogic):
                     raise TypeError("char_obj_list中的对象不是Character类的实例")
                 if char_obj.speicalty == "击破":
                     self.record.stun_char_count += 1
-            print(
-                f"雨果的单击破角色攻击力Buff在初始化阶段检测到了队伍中有{self.record.stun_char_count}名击破角色"
-            ) if HUGO_REPORT else None
+            if HUGO_REPORT:
+                self.buff_instance.sim_instance.schedule_data.change_process_state()
+                print(
+                    f"雨果的单击破角色攻击力Buff在初始化阶段检测到了队伍中有{self.record.stun_char_count}名击破角色"
+                )
         stun_char_count = self.record.stun_char_count
         if stun_char_count >= 1:
             return True

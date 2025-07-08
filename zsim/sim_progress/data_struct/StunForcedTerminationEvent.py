@@ -29,6 +29,8 @@ class StunForcedTerminationEvent:
             )
         self.enemy.restore_stun()
         self.enemy.dynamic.stun_bar += self.enemy.max_stun * self.feed_back_ratio
-        print(
-            f"失衡状态重置已经执行！成功返还{self.feed_back_ratio * 100}%的失衡值！"
-        ) if HUGO_REPORT else None
+        if HUGO_REPORT:
+            self.enemy.sim_instance.schedule_data.change_process_state()
+            print(
+                f"失衡状态重置已经执行！成功返还{self.feed_back_ratio * 100}%的失衡值！"
+            )

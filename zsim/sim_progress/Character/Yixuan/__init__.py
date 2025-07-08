@@ -70,9 +70,11 @@ class Yixuan(Character):
                         )
                     self.regulated_breathing = False
                     self.regulated_breathing_last_update_tick = tick
-                    print(
-                        f"6画：仪玄释放【{__nodes.skill.skill_text}】，消耗一层调息！"
-                    ) if YIXUAN_REPORT else None
+                    if YIXUAN_REPORT:
+                        print(
+                            f"6画：仪玄释放【{__nodes.skill.skill_text}】，消耗一层调息！"
+                        )
+                        self.sim_instance.schedule_data.change_process_state()
                 else:
                     if self.technique_points < 120:
                         raise ValueError("仪玄的术法值不足！请检查APL！")
@@ -81,18 +83,22 @@ class Yixuan(Character):
             elif __nodes.skill_tag == "1371_Q":
                 if self.cinema >= 2:
                     self.condensed_ink = min(1, self.condensed_ink + 1)
-                    print(
-                        f"2画：检测到仪玄释放喧响大招【{__nodes.skill.skill_text}】，获得1点聚墨值！"
-                    ) if YIXUAN_REPORT else None
+                    if YIXUAN_REPORT:
+                        print(
+                            f"2画：检测到仪玄释放喧响大招【{__nodes.skill.skill_text}】，获得1点聚墨值！"
+                        )
+                        self.sim_instance.schedule_data.change_process_state()
                 if self.cinema == 6:
                     if (
                         tick - self.regulated_breathing_last_update_tick
                         >= self.cinema_6_cd
                     ) or self.regulated_breathing_last_update_tick == 0:
                         self.regulated_breathing = True
-                        print(
-                            f"6画：检测到技能【{__nodes.skill.skill_text}】，仪玄获得一层调息"
-                        ) if YIXUAN_REPORT else None
+                        if YIXUAN_REPORT:
+                            print(
+                                f"6画：检测到技能【{__nodes.skill.skill_text}】，仪玄获得一层调息"
+                            )
+                            self.sim_instance.schedule_data.change_process_state()
                     else:
                         print(
                             f"6画：检测到技能【{__nodes.skill.skill_text}】，但是仪玄调息的内置CD尚未转好，所以无法获得调息"
@@ -109,9 +115,11 @@ class Yixuan(Character):
                 if self.condensed_ink < 1:
                     raise ValueError("仪玄当前的聚墨点数不足！请检查APL")
                 self.condensed_ink -= 1
-                print(
-                    f"2画：仪玄追加释放【{__nodes.skill.skill_text}】，消耗1点聚墨值"
-                ) if YIXUAN_REPORT else None
+                if YIXUAN_REPORT:
+                    print(
+                        f"2画：仪玄追加释放【{__nodes.skill.skill_text}】，消耗1点聚墨值"
+                    )
+                    self.sim_instance.schedule_data.change_process_state()
 
             # 更新术法值和闪能值
             self.__update_adrenaline(skill_node=__nodes)
@@ -129,9 +137,11 @@ class Yixuan(Character):
                 self.technique_points + technique_points_delta,
                 self.max_technique_points,
             )
-            print(
-                f"仪玄消耗了{abs(sp_value):.2f}点闪能值，转化为{technique_points_delta:.2f}点术法值！当前术法值为：{self.technique_points:.2f}"
-            ) if YIXUAN_REPORT else None
+            if YIXUAN_REPORT:
+                print(
+                    f"仪玄消耗了{abs(sp_value):.2f}点闪能值，转化为{technique_points_delta:.2f}点术法值！当前术法值为：{self.technique_points:.2f}"
+                )
+                self.sim_instance.schedule_data.change_process_state()
         self.adrenaline += sp_value
         self.adrenaline = max(0.0, min(self.adrenaline, self.adrenaline_limit))
         # if abs(sp_value) >= 0.1:
