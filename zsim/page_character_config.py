@@ -230,7 +230,7 @@ def page_character_config():
                 st.number_input(
                     "攻击力%",
                     min_value=0,
-                    max_value=sc_max_value,
+                    max_value=sc_max_percent,
                     value=saved_char_config[name].get("scATK_percent", 0)
                     if name in saved_char_config
                     else 0,
@@ -249,7 +249,7 @@ def page_character_config():
                 st.number_input(
                     "生命值%",
                     min_value=0,
-                    max_value=sc_max_value,
+                    max_value=sc_max_percent,
                     value=saved_char_config[name].get("scHP_percent", 0)
                     if name in saved_char_config
                     else 0,
@@ -268,7 +268,7 @@ def page_character_config():
                 st.number_input(
                     "防御力%",
                     min_value=0,
-                    max_value=sc_max_value,
+                    max_value=sc_max_percent,
                     value=saved_char_config[name].get("scDEF_percent", 0)
                     if name in saved_char_config
                     else 0,
@@ -287,7 +287,7 @@ def page_character_config():
                 st.number_input(
                     "暴击率",
                     min_value=0,
-                    max_value=sc_max_value,
+                    max_value=sc_max_percent,
                     value=saved_char_config[name].get("scCRIT", 0)
                     if name in saved_char_config
                     else 0,
@@ -296,7 +296,7 @@ def page_character_config():
                 st.number_input(
                     "暴击伤害",
                     min_value=0,
-                    max_value=sc_max_value,
+                    max_value=sc_max_percent,
                     value=saved_char_config[name].get("scCRIT_DMG", 0)
                     if name in saved_char_config
                     else 0,
@@ -306,7 +306,7 @@ def page_character_config():
                 st.number_input(
                     "异常精通",
                     min_value=0,
-                    max_value=sc_max_value,
+                    max_value=sc_max_percent,
                     value=saved_char_config[name].get("scAnomalyProficiency", 0)
                     if name in saved_char_config
                     else 0,
@@ -315,7 +315,7 @@ def page_character_config():
                 st.number_input(
                     "穿透值",
                     min_value=0,
-                    max_value=sc_max_value,
+                    max_value=sc_max_percent,
                     value=saved_char_config[name].get("scPEN", 0)
                     if name in saved_char_config
                     else 0,
