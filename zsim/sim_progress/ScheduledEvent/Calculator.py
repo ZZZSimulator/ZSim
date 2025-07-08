@@ -110,7 +110,7 @@ class MultiplierData:
                 )
                 enemy_buff = []
         enabled_buff: tuple = tuple(char_buff + enemy_buff)
-        dynamic_statement: dict = cal_buff_total_bonus(enabled_buff, node)
+        dynamic_statement: dict = cal_buff_total_bonus(enabled_buff, node, sim_instance=self.enemy_obj.sim_instance)
         return dynamic_statement
 
     class StaticStatement:
