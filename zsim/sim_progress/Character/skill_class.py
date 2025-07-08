@@ -449,7 +449,9 @@ class Skill:
             if condition_value is None:
                 self.force_add_condition_APL = []
             else:
-                from zsim.sim_progress.Preload.apl_unit.APLUnit import SimpleUnitForForceAdd
+                from zsim.sim_progress.Preload.apl_unit.APLUnit import (
+                    SimpleUnitForForceAdd,
+                )
 
                 condition_list = condition_value.strip().split(";")
                 for _cond_str in condition_list:

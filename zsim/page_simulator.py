@@ -473,7 +473,6 @@ def page_simulator():
                         )
                     }
 
-
                 # 创建结果容器
                 result_container = st.container()
 

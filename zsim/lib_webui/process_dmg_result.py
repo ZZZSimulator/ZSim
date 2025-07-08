@@ -20,7 +20,7 @@ def _load_dmg_data(rid: int | str) -> pl.DataFrame | None:
         Optional[pd.DataFrame]: 加载的伤害数据DataFrame，如果文件未找到则返回None。
     """
     try:
-        csv_file_path = os.path.join(results_dir, rid, "damage.csv")
+        csv_file_path = os.path.join(results_dir, str(rid), "damage.csv")
         df = pl.scan_csv(csv_file_path)
         # 去除列名中的特殊字符
         schema_names = df.collect_schema().names()
@@ -537,7 +537,7 @@ def calculate_and_save_anomaly_attribution(
     ).union(set(char_element_df["name"]))
 
     # 初始化角色伤害数据
-    attribution_data: dict[str, str] = {
+    attribution_data: dict[str, dict[str, float]] = {
         name: {"direct_damage": 0, "anomaly_damage": 0} for name in all_characters
     }
 
@@ -586,7 +586,9 @@ def calculate_and_save_anomaly_attribution(
         json.dump(attribution_data, f, ensure_ascii=False, indent=4)
 
 
-def prepare_dmg_data_and_cache(rid: int | str) -> dict[str, pl.DataFrame] | None:
+def prepare_dmg_data_and_cache(
+    rid: int | str,
+) -> dict[str, pl.DataFrame | dict[str, pl.DataFrame]] | None:
     """准备并缓存伤害分析所需的数据。
 
     Args:
@@ -603,7 +605,7 @@ def prepare_dmg_data_and_cache(rid: int | str) -> dict[str, pl.DataFrame] | None
     char_chart_data = prepare_char_chart_data(uuid_df)
     # st.write(char_chart_data)
     calculate_and_save_anomaly_attribution(
-        rid, char_chart_data["char_dmg_df"], char_chart_data["char_element_df"]
+        int(rid), char_chart_data["char_dmg_df"], char_chart_data["char_element_df"]
     )
     return {
         "dmg_result_df": dmg_result_df,
@@ -636,12 +638,12 @@ def show_dmg_result(rid: int | str) -> None:
     with st.expander("按UUID排序后的数据："):
         st.dataframe(uuid_df)
     # 准备并绘制折线图
-    line_chart_data = prepare_line_chart_data(dmg_result_df)
+    line_chart_data = prepare_line_chart_data(dmg_result_df)  # type: ignore
     draw_line_chart(line_chart_data)
 
     # 准备并绘制角色分布图
-    draw_char_chart(char_chart_data)
+    draw_char_chart(char_chart_data)  # type: ignore
 
     # 准备并绘制时间线图
-    timeline_data = prepare_timeline_data(dmg_result_df)
+    timeline_data = prepare_timeline_data(dmg_result_df)  # type: ignore
     draw_char_timeline(timeline_data)
