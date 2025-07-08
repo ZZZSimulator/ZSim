@@ -2,7 +2,8 @@ import os
 from collections import defaultdict
 
 import pandas as pd
-from define import DEBUG, DEBUG_LEVEL
+
+from zsim.define import DEBUG, DEBUG_LEVEL
 
 buffered_data: dict = defaultdict(lambda: defaultdict(lambda: defaultdict(int)))
 

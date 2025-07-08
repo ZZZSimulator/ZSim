@@ -1,10 +1,11 @@
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from simulator.simulator_class import Simulator
-    from sim_progress.Preload.PreloadDataClass import PreloadData
-    from sim_progress.Preload.apl_unit.ActionAPLUnit import ActionAPLUnit
-    from sim_progress.Preload.apl_unit.APLUnit import APLUnit
+    from zsim.simulator.simulator_class import Simulator
+
+    from ..apl_unit.ActionAPLUnit import ActionAPLUnit
+    from ..apl_unit.APLUnit import APLUnit
+    from ..PreloadDataClass import PreloadData
 
 
 class APLOperator:
@@ -23,13 +24,11 @@ class APLOperator:
         self.leagal_apl_type_list = [
             "action+=",
             "action.no_swap_cancel+=",
-
             "action.atk_response_positive+=",
             "action.atk_response_balance+=",
-
         ]
         self.sim_instance = simulator_instance
-        from sim_progress.Preload.apl_unit.APLUnit import APLUnit
+        from zsim.sim_progress.Preload.apl_unit.APLUnit import APLUnit
 
         self.apl_unit_inventory: dict[
             int, APLUnit
@@ -51,8 +50,8 @@ class APLOperator:
             )
 
         for priority, apl_unit in self.apl_unit_inventory.items():
-            from sim_progress.Preload.apl_unit.ActionAPLUnit import ActionAPLUnit
-            from sim_progress.Preload.apl_unit.AtkResponseAPLUnit import (
+            from zsim.sim_progress.Preload.apl_unit.ActionAPLUnit import ActionAPLUnit
+            from zsim.sim_progress.Preload.apl_unit.AtkResponseAPLUnit import (
                 AtkResponseAPLUnit,
             )
 
@@ -96,8 +95,10 @@ class APLOperator:
             raise ValueError(
                 "在非进攻响应模式下，不能调用spawn_next_action_in_atk_response_mode方法！"
             )
-        from sim_progress.Preload.apl_unit.ActionAPLUnit import ActionAPLUnit
-        from sim_progress.Preload.apl_unit.AtkResponseAPLUnit import AtkResponseAPLUnit
+        from zsim.sim_progress.Preload.apl_unit.ActionAPLUnit import ActionAPLUnit
+        from zsim.sim_progress.Preload.apl_unit.AtkResponseAPLUnit import (
+            AtkResponseAPLUnit,
+        )
 
         for priority, apl_unit in self.apl_unit_inventory.items():
             if isinstance(apl_unit, ActionAPLUnit | AtkResponseAPLUnit):
@@ -122,8 +123,10 @@ class APLOperator:
 
     def apl_unit_factory(self, apl_unit_dict) -> "APLUnit":
         """构造APL子单元的工厂函数"""
-        from sim_progress.Preload.apl_unit.ActionAPLUnit import ActionAPLUnit
-        from sim_progress.Preload.apl_unit.AtkResponseAPLUnit import AtkResponseAPLUnit
+        from zsim.sim_progress.Preload.apl_unit.ActionAPLUnit import ActionAPLUnit
+        from zsim.sim_progress.Preload.apl_unit.AtkResponseAPLUnit import (
+            AtkResponseAPLUnit,
+        )
 
         if apl_unit_dict["type"] in ["action+=", "action.no_swap_cancel+="]:
             return ActionAPLUnit(apl_unit_dict, sim_instance=self.sim_instance)
@@ -137,10 +140,10 @@ class APLOperator:
             for code_str in ["a", "c", "t", "i", "o", "n"]
         ):
             raise ValueError(
-                f'貌似是拼写错误，当前输入的APL类型为：{apl_unit_dict["type"]}'
+                f"貌似是拼写错误，当前输入的APL类型为：{apl_unit_dict['type']}"
             )
         else:
-            raise ValueError(f'无法识别的APL类型：{apl_unit_dict["type"]}')
+            raise ValueError(f"无法识别的APL类型：{apl_unit_dict['type']}")
         # # Optimized Code:
         #
         # if "enemy" not in judge_code:

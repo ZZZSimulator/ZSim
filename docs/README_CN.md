@@ -48,7 +48,7 @@ powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | ie
 pip install uv
 ```
 
-或参考官方安装指南：<https://docs.astral.sh/uv/getting-started/installation/>
+或参考官方安装指南：[https://docs.astral.sh/uv/getting-started/installation/](https://docs.astral.sh/uv/getting-started/installation/)
 
 ### 安装ZZZ模拟器
 
@@ -80,4 +80,4 @@ uv run zsim run
 
 ## 待办事项
 
-详见项目Issues获取最新开发计划。
+详见[贡献指南](https://github.com/ZZZSimulator/ZSim/wiki/%E8%B4%A1%E7%8C%AE%E6%8C%87%E5%8D%97-Develop-Guide)获取最新开发计划。

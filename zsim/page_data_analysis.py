@@ -1,7 +1,11 @@
 import streamlit as st
 
-from lib_webui.clean_results_cache import delete_result, get_all_results, rename_result
-from lib_webui.constants import IDDuplicateError
+from zsim.lib_webui.clean_results_cache import (
+    delete_result,
+    get_all_results,
+    rename_result,
+)
+from zsim.lib_webui.constants import IDDuplicateError
 
 
 @st.fragment
@@ -68,12 +72,12 @@ def _result_manager():
 
 
 def page_data_analysis():
-    from lib_webui.process_parallel_data import (
+    from zsim.lib_webui.process_buff_result import show_buff_result
+    from zsim.lib_webui.process_dmg_result import show_dmg_result
+    from zsim.lib_webui.process_parallel_data import (
         judge_parallel_result,
         process_parallel_result,
     )
-    from lib_webui.process_dmg_result import show_dmg_result
-    from lib_webui.process_buff_result import show_buff_result
 
     st.title("ZZZ Simulator - 数据分析")
 

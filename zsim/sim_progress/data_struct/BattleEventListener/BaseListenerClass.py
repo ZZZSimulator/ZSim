@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
-    from simulator.simulator_class import Simulator
+    from zsim.simulator.simulator_class import Simulator
 
 
 class BaseListener(ABC):
@@ -20,4 +21,3 @@ class BaseListener(ABC):
     def listener_active(self):
         """当监听到预期事件时，监听器的激活函数"""
         pass
-

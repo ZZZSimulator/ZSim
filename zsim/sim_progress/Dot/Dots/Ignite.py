@@ -1,8 +1,10 @@
-from sim_progress.Dot import Dot
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
+
+from .. import Dot
+
 if TYPE_CHECKING:
-    from simulator.simulator_class import Simulator
+    from zsim.simulator.simulator_class import Simulator
 
 
 class Ignite(Dot):
@@ -12,7 +14,9 @@ class Ignite(Dot):
 
     def __init__(self, bar=None, sim_instance: "Simulator" = None):
         super().__init__(bar, sim_instance=sim_instance)  # 调用父类Dot的初始化方法
-        self.ft = self.DotFeature(sim_instance=sim_instance)  # 用Ignite的DotFeature替代默认的DotFeature
+        self.ft = self.DotFeature(
+            sim_instance=sim_instance
+        )  # 用Ignite的DotFeature替代默认的DotFeature
 
     # 你可以在这里添加特定于Ignite的行为或方法
     @dataclass

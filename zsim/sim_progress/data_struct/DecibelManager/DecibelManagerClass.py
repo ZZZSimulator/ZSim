@@ -1,7 +1,7 @@
-from sim_progress.data_struct import ScheduleRefreshData
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
-    from simulator.simulator_class import Simulator
+    from zsim.simulator.simulator_class import Simulator
 
 
 class Decibelmanager:
@@ -53,6 +53,8 @@ class Decibelmanager:
                 raise ValueError(f"{char_kind}不是major或minor！")
 
     def add_decibel_to_char(self, decibel_value, char_name, output_key):
+        from zsim.sim_progress.data_struct import ScheduleRefreshData
+
         refresh_data = ScheduleRefreshData(
             decibel_target=(char_name,), decibel_value=decibel_value
         )
@@ -112,7 +114,8 @@ class Decibelmanager:
         char_id = int(node.skill_tag.strip().split("_")[0])
         char_dict = {"major": [], "minor": []}
         if not self.char_obj_list:
-            from sim_progress.Buff import find_char_list
+            from zsim.sim_progress.Buff import find_char_list
+
             self.char_obj_list = find_char_list(sim_instance=self.sim_instance)
         for obj in self.char_obj_list:
             if obj.CID == char_id:

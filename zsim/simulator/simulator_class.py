@@ -1,23 +1,27 @@
-from __future__ import annotations
-
+import gc
 from typing import TYPE_CHECKING, Any
 
-if TYPE_CHECKING:
-    from simulator.dataclasses import SimCfg
-
-import gc
-
-from define import APL_MODE, APL_PATH, ENEMY_ADJUST_ID, ENEMY_DIFFICULTY, ENEMY_INDEX_ID
-from sim_progress import Buff, Load
-from sim_progress.Character.skill_class import Skill
-from sim_progress.data_struct import ActionStack, Decibelmanager, ListenerManger
-from sim_progress.Enemy import Enemy
-from sim_progress.Preload import PreloadClass
-from sim_progress.Report import start_report_threads
-from sim_progress.ScheduledEvent import ScheduledEvent as ScE
-from sim_progress.Update.Update_Buff import update_dynamic_bufflist
-from sim_progress.RandomNumberGenerator import RNG
-from simulator.dataclasses import (
+from zsim.define import (
+    APL_MODE,
+    APL_PATH,
+    ENEMY_ADJUST_ID,
+    ENEMY_DIFFICULTY,
+    ENEMY_INDEX_ID,
+)
+from zsim.sim_progress.Buff import (
+    BuffLoadLoop,
+    buff_add,
+)
+from zsim.sim_progress.Character.skill_class import Skill
+from zsim.sim_progress.data_struct import ActionStack, Decibelmanager, ListenerManger
+from zsim.sim_progress.Enemy import Enemy
+from zsim.sim_progress.Load import DamageEventJudge, SkillEventSplit
+from zsim.sim_progress.Preload import PreloadClass
+from zsim.sim_progress.RandomNumberGenerator import RNG
+from zsim.sim_progress.Report import start_report_threads, stop_report_threads
+from zsim.sim_progress.ScheduledEvent import ScheduledEvent as ScE
+from zsim.sim_progress.Update.Update_Buff import update_dynamic_bufflist
+from zsim.simulator.dataclasses import (
     CharacterData,
     GlobalStats,
     InitData,
@@ -25,8 +29,43 @@ from simulator.dataclasses import (
     ScheduleData,
 )
 
+if TYPE_CHECKING:
+    from zsim.simulator.dataclasses import SimCfg
+
 
 class Simulator:
+    """模拟器类。
+
+    ## 模拟器的初始状态，包括但不限于：
+
+    ### 常规变量
+
+    - 模拟器时间刻度（tick）每秒为60ticks
+    - 暴击种子（crit_seed）为RNG模块使用，未来接入随机功能时用于复现测试
+    - 初始化数据（init_data）包含数据库读到的大部分数据
+    - 角色数据（char_data）包含角色的实例
+
+    ### 参与tick逻辑的内部对象
+
+    - 加载数据（load_data）
+    - 调度数据（schedule_data）
+    - 全局统计数据（global_stats）
+    - 技能列表（skills）
+    - 预加载类（preload）
+    - 游戏状态（game_state）包含前面的大多数数据
+    - 喧响管理器（decibel_manager）
+    - 监听器管理器（listener_manager）
+
+    ### 其他实例
+
+    - 随机数生成器实例（rng_instance）
+    - 并行模式标志（in_parallel_mode）
+    - 模拟配置，用于控制并行模式下，模拟器作为子进程的参数（sim_cfg）
+
+    Args:
+        sim_cfg (SimCfg | None): 模拟配置对象，包含模拟的详细参数。
+    """
+
     tick: int
     crit_seed: int
     init_data: InitData
@@ -117,7 +156,7 @@ class Simulator:
                 self.tick,
                 self.load_data.exist_buff_dict,
                 self.schedule_data.enemy,
-            )  # type: ignore
+            )
 
             # Preload
             self.preload.do_preload(
@@ -125,25 +164,27 @@ class Simulator:
                 self.schedule_data.enemy,
                 self.init_data.name_box,
                 self.char_data,
-            )  # type: ignore
-            preload_list = self.preload.preload_data.preload_action  # type: ignore
+            )
+            preload_list = self.preload.preload_data.preload_action
 
             if stop_tick is None:
-                if not APL_MODE and self.preload.preload_data.skills_queue.head is None:  # type: ignore
+                if (
+                    not APL_MODE and self.preload.preload_data.skills_queue.head is None
+                ):  # Old Sequence mode left, not compatible with APL mode now
                     stop_tick = self.tick + 120
             elif self.tick >= stop_tick:
                 break
 
             # Load
             if preload_list:
-                Load.SkillEventSplit(
+                SkillEventSplit(
                     preload_list,
                     self.load_data.load_mission_dict,
                     self.load_data.name_dict,
                     self.tick,
                     self.load_data.action_stack,
                 )
-            Load.DamageEventJudge(
+            DamageEventJudge(
                 self.tick,
                 self.load_data.load_mission_dict,
                 self.schedule_data.enemy,
@@ -151,7 +192,7 @@ class Simulator:
                 self.char_data.char_obj_list,
                 dynamic_buff_dict=self.global_stats.DYNAMIC_BUFF_DICT,
             )
-            Buff.BuffLoadLoop(
+            BuffLoadLoop(
                 self.tick,
                 self.load_data.load_mission_dict,
                 self.load_data.exist_buff_dict,
@@ -160,7 +201,7 @@ class Simulator:
                 self.load_data.all_name_order_box,
                 sim_instance=self,
             )
-            Buff.buff_add(
+            buff_add(
                 self.tick,
                 self.load_data.LOADING_BUFF_DICT,
                 self.global_stats.DYNAMIC_BUFF_DICT,
@@ -182,6 +223,7 @@ class Simulator:
 
             if self.tick % 500 == 0 and self.tick != 0:
                 gc.collect()
+        stop_report_threads()
 
     def __deepcopy__(self, memo):
         return self

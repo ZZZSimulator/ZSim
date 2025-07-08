@@ -6,7 +6,7 @@ from zsim.simulator.config_classes import SimulationConfig as SimCfg
 
 
 def go_webui():
-    """启动Streamlit服务"""
+    """启动 Streamlit 服务"""
     try:
         subprocess.run([sys.executable, "-m", "streamlit", "run", "zsim/webui.py"])
     except Exception as e:
@@ -34,7 +34,7 @@ def go_cli(args: SimCfg = SimCfg()):
     """启动命令行界面，并根据提供的 MainArgs 对象传递参数。
 
     Args:
-        args (MainArgs): 包含传递给 main.py 的参数的对象。
+        `args (MainArgs)`: 包含传递给 main.py 的参数的对象。
                        默认为一个空的 MainArgs 对象，表示不传递额外参数。
     """
     try:
@@ -65,13 +65,13 @@ def go_single_subprocess(stop_tick: int):
 
 
 def go_parallel_subprocess(sim_cfg: SimCfg):
-    """根据提供的 MainArgs 对象启动并行模式子进程。
+    """根据提供的 SimCfg 对象启动并行模式子进程。
 
-    注意：此函数会强制将 'mode' 参数设置为 'parallel'。
+    注意：此函数会强制将 `mode` 参数设置为 `parallel`。
 
     Args:
-        args (MainArgs): 包含传递给 main.py 的参数的对象。
-                       其中的 'mode' 参数会被忽略并强制设为 'parallel'。
+        `sim_cfg (SimCfg)`: 包含传递给 main.py 的参数的对象。
+            其中的 `mode` 参数会被忽略并强制设为 `parallel`。
     """
     try:
         command = [sys.executable, "zsim/main.py"]

@@ -6,8 +6,6 @@ English | [中文](./docs/README_CN.md)
 
 ![zsim项目组](./docs/img/横板logo成图.png)
 
-
-
 ## Introduction
 
 `ZZZ_Calculator` is a damage calculator for Zenless Zone Zero.
@@ -62,7 +60,7 @@ powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | ie
 pip install uv
 ```
 
-Or check the official installation guide: <https://docs.astral.sh/uv/getting-started/installation/>
+Or check the official installation guide: [https://docs.astral.sh/uv/getting-started/installation/](https://docs.astral.sh/uv/getting-started/installation/)
 
 ### Install ZZZ-Simulator
 
@@ -130,4 +128,4 @@ Then you can access the simulator at `http://localhost:8501`.
 
 ## TODO LIST
 
-Go check issues for more details.
+Go check [develop guide](https://github.com/ZZZSimulator/ZSim/wiki/%E8%B4%A1%E7%8C%AE%E6%8C%87%E5%8D%97-Develop-Guide) for more details.

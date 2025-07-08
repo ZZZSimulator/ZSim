@@ -1,12 +1,13 @@
-from sim_progress.Preload.PreloadEngine import BasePreloadEngine
-from sim_progress.Preload import SkillNode, SkillsQueue
-from sim_progress.Report import report_to_log
-
 from typing import TYPE_CHECKING
 
+from zsim.sim_progress.Report import report_to_log
+
+from .. import SkillNode, SkillsQueue
+from ..PreloadEngine import BasePreloadEngine
+
 if TYPE_CHECKING:
-    from sim_progress.Character import Character
-    from sim_progress.Preload.PreloadDataClass import PreloadData
+    from zsim.sim_progress.Character import Character
+    from zsim.sim_progress.Preload.PreloadDataClass import PreloadData
 
 
 class ConfirmEngine(BasePreloadEngine):

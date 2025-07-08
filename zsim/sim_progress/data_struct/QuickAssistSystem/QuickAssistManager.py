@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from sim_progress.Character import Character
+    from zsim.sim_progress.Character import Character
 
 
 class QuickAssistManager:
@@ -23,7 +23,7 @@ class QuickAssistManager:
         if checked_node is None:
             """如果last_update_node是None，那说明当前根本没有技能尝试触发过快速支援，直接返回False"""
             return False
-        from sim_progress.Preload import SkillNode
+        from zsim.sim_progress.Preload import SkillNode
 
         if not isinstance(checked_node, SkillNode):
             raise TypeError
@@ -35,7 +35,7 @@ class QuickAssistManager:
     def state_change(self, tick: int, **kwargs):
         """改变自身状态。"""
         operation = kwargs.get("operation", None)
-        answer = kwargs.get("answer", False)
+        answer = kwargs.get("answer", False)  # noqa: F841
         if operation == "turn_on":
             self.start_tick = tick
             self.quick_assist_available = True

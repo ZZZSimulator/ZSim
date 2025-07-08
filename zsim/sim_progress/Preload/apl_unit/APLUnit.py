@@ -1,17 +1,19 @@
-from sim_progress.Preload.APLModule.SubConditionUnit import (
-    ActionSubUnit,
-    AttributeSubUnit,
-    BuffSubUnit,
-    StatusSubUnit,
-    BaseSubConditionUnit,
-    SpecialSubUnit,
-)
-from define import compare_methods_mapping
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
+from zsim.define import compare_methods_mapping
+
+from ..APLModule.SubConditionUnit import (
+    ActionSubUnit,
+    AttributeSubUnit,
+    BaseSubConditionUnit,
+    BuffSubUnit,
+    SpecialSubUnit,
+    StatusSubUnit,
+)
+
 if TYPE_CHECKING:
-    from simulator.simulator_class import Simulator
+    from zsim.simulator.simulator_class import Simulator
 
 
 class APLUnit(ABC):
@@ -24,7 +26,6 @@ class APLUnit(ABC):
         self.sub_conditions_unit_list = []
         self.apl_unit_type = None
         self.sim_instance = sim_instance
-
 
     @abstractmethod
     def check_all_sub_units(
@@ -95,7 +96,6 @@ class SimpleUnitForForceAdd(APLUnit):
     def check_all_sub_units(
         self, found_char_dict, game_state, sim_instance: "Simulator", **kwargs
     ):
-
         if self.sim_instance is None:
             self.sim_instance = sim_instance
 
@@ -116,4 +116,3 @@ class SimpleUnitForForceAdd(APLUnit):
                 return False, result_box
         else:
             return True, result_box
-

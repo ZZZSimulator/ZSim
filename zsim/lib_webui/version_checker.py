@@ -1,11 +1,13 @@
 import json
+import re
 import webbrowser
-from typing import Any, Dict, Optional
+from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 import streamlit as st
-from define import GITHUB_REPO_NAME, GITHUB_REPO_OWNER, __version__
+
+from zsim.define import GITHUB_REPO_NAME, GITHUB_REPO_OWNER, __version__
 
 
 class GitHubVersionChecker:
@@ -28,9 +30,49 @@ class GitHubVersionChecker:
         )
         self.repo_url = f"https://github.com/{repo_owner}/{repo_name}"
 
+    def _parse_version(self, version: str) -> tuple[list, str, int]:
+        """
+        解析版本号，支持预发布版本
+
+        Args:
+            version: 版本号字符串，如 "1.2.3a1" 或 "1.2.3"
+
+        Returns:
+            tuple: (主版本号列表, 预发布类型, 预发布版本号)
+                  例如: ([1, 2, 3], "a", 1) 或 ([1, 2, 3], "", 0)
+        """
+        # 移除版本号前的 'v' 前缀
+        clean_version = version.lstrip("v")
+
+        # 使用正则表达式匹配版本号格式
+        # 匹配格式: 数字.数字.数字[预发布标识符数字]
+        pattern = r"^(\d+(?:\.\d+)*?)([a-zA-Z]+)?(\d+)?$"
+        match = re.match(pattern, clean_version)
+
+        if not match:
+            # 如果不匹配，尝试简单的数字版本
+            try:
+                main_parts = [int(x) for x in clean_version.split(".")]
+                return main_parts, "", 0
+            except ValueError:
+                # 如果解析失败，返回默认值
+                return [0], "", 0
+
+        main_version = match.group(1)
+        prerelease_type = match.group(2) or ""
+        prerelease_num = int(match.group(3)) if match.group(3) else 0
+
+        # 解析主版本号
+        try:
+            main_parts = [int(x) for x in main_version.split(".")]
+        except ValueError:
+            main_parts = [0]
+
+        return main_parts, prerelease_type, prerelease_num
+
     def _compare_versions(self, version1: str, version2: str) -> int:
         """
-        比较两个版本号
+        比较两个版本号，支持预发布版本
 
         Args:
             version1: 版本号1
@@ -41,29 +83,42 @@ class GitHubVersionChecker:
              0: version1 == version2
              1: version1 > version2
         """
-        # 移除版本号前的 'v' 前缀
-        v1 = version1.lstrip("v")
-        v2 = version2.lstrip("v")
+        # 解析版本号
+        v1_main, v1_pre_type, v1_pre_num = self._parse_version(version1)
+        v2_main, v2_pre_type, v2_pre_num = self._parse_version(version2)
 
-        # 分割版本号
-        v1_parts = [int(x) for x in v1.split(".")]
-        v2_parts = [int(x) for x in v2.split(".")]
+        # 补齐主版本号长度
+        max_len = max(len(v1_main), len(v2_main))
+        v1_main.extend([0] * (max_len - len(v1_main)))
+        v2_main.extend([0] * (max_len - len(v2_main)))
 
-        # 补齐长度
-        max_len = max(len(v1_parts), len(v2_parts))
-        v1_parts.extend([0] * (max_len - len(v1_parts)))
-        v2_parts.extend([0] * (max_len - len(v2_parts)))
-
-        # 比较
+        # 首先比较主版本号
         for i in range(max_len):
-            if v1_parts[i] < v2_parts[i]:
+            if v1_main[i] < v2_main[i]:
                 return -1
-            elif v1_parts[i] > v2_parts[i]:
+            elif v1_main[i] > v2_main[i]:
+                return 1
+
+        # 主版本号相同，比较预发布版本
+        # 预发布版本的优先级：无预发布 > rc > b > a
+        prerelease_priority = {"": 4, "rc": 3, "b": 2, "a": 1}
+
+        v1_priority = prerelease_priority.get(v1_pre_type.lower(), 0)
+        v2_priority = prerelease_priority.get(v2_pre_type.lower(), 0)
+
+        if v1_priority != v2_priority:
+            return -1 if v1_priority < v2_priority else 1
+
+        # 预发布类型相同，比较预发布版本号
+        if v1_pre_type and v2_pre_type:  # 都是预发布版本
+            if v1_pre_num < v2_pre_num:
+                return -1
+            elif v1_pre_num > v2_pre_num:
                 return 1
 
         return 0
 
-    def check_for_updates(self, timeout: int = 10) -> Optional[Dict[str, Any]]:
+    def check_for_updates(self, timeout: int = 10) -> dict[str, Any] | None:
         """
         检查是否有新版本
 
@@ -114,7 +169,7 @@ class GitHubVersionChecker:
             return None
 
     @st.dialog("发现新版本")
-    def show_update_dialog(self, update_info: Dict[str, Any]) -> None:
+    def show_update_dialog(self, update_info: dict[str, Any]) -> None:
         """
         显示更新对话框
 

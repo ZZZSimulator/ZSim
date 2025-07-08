@@ -1,6 +1,7 @@
-from ..character import Character
+from zsim.define import VIVIAN_REPORT
 from zsim.sim_progress.Preload import SkillNode
-from define import VIVIAN_REPORT
+
+from ..character import Character
 
 
 class FeatherManager:

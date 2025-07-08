@@ -1,30 +1,29 @@
+import copy
 import os
 import time
-import copy
-import pandas as pd
-from dataclasses import dataclass
-from typing import Sequence, Any
+from typing import Any, Sequence
 
+import pandas as pd
 import streamlit as st
 import toml
 from streamlit_ace import st_ace
-from define import (
+
+from zsim.define import (
+    CHARACTER_DATA_PATH,
     COSTOM_APL_DIR,
     DEFAULT_APL_DIR,
     saved_char_config,
-    CHARACTER_DATA_PATH,
 )
 
 from .constants import CHAR_CID_MAPPING
 
 
-@dataclass
 class APLArchive:
-    default_apl_map: dict[str, dict] | None = None  # {relative_path: apl_toml}
-    custom_apl_map: dict[str, dict] | None = None  # {relative_path: apl_toml}
-    options: Sequence[str] | None = None
-    title_apl_map: dict[str, dict] | None = None  # {title: apl_toml}
-    title_file_name_map: dict[str, str] | None = None  # {title: APL file name}
+    default_apl_map: dict[str, dict]
+    custom_apl_map: dict[str, dict]
+    options: Sequence[str]
+    title_apl_map: dict[str, dict]
+    title_file_name_map: dict[str, str]
 
     def __post_init__(self):
         self.refresh()
@@ -57,7 +56,8 @@ class APLArchive:
         Raises:
             ValueError: 如果找不到标题对应的文件路径或保存失败。
         """
-        relative_path = self.title_file_name_map.get(title)
+        if self.title_file_name_map is not None:
+            relative_path = self.title_file_name_map.get(title)
         if not relative_path:
             raise ValueError(f"错误：找不到标题 '{title}' 对应的文件路径。")
 
@@ -112,15 +112,18 @@ class APLArchive:
             raise ValueError(f"保存APL文件时出错：{e}")
 
     def get_general(self, title: str):
+        """获取指定标题的APL的一般信息。"""
+        assert self.title_apl_map is not None
         return self.title_apl_map.get(title, {}).get("general", {})
 
     def get_apl_data(self, title: str) -> dict[str, Any] | None:
         """获取指定标题的完整APL数据"""
+        assert self.title_apl_map is not None
         return self.title_apl_map.get(title)
 
     def get_title_from_path(self, path: str) -> str | None:
         """根据路径获取对应的标题"""
-        st.write(self.title_file_name_map)
+        assert self.title_file_name_map is not None
         for title, apl_path in self.title_file_name_map.items():
             if apl_path in path:
                 return title
@@ -142,6 +145,9 @@ class APLArchive:
             return None
 
         # 确定文件属于哪个基础目录 (default 或 custom)
+        assert self.default_apl_map is not None and self.custom_apl_map is not None, (
+            "APL映射未初始化。请先调用 refresh() 方法。"
+        )
         if relative_path_in_apl_dir in self.default_apl_map:
             base_dir_relative_to_project = DEFAULT_APL_DIR
         elif relative_path_in_apl_dir in self.custom_apl_map:
@@ -159,20 +165,25 @@ class APLArchive:
 
         return full_relative_path
 
-    def change_title(self, former_title: str, new_title: str, new_comment: str = None):
+    def change_title(
+        self, former_title: str, new_title: str, new_comment: str | None = None
+    ):
         # Step 1: Check if the former title exists
+
         if former_title not in self.title_apl_map.keys():
             st.error(f"错误：原标题 '{former_title}' 不存在。")
             return
 
         # Step 2: Check if the new title already exists (and is not the same as the former title)
+
         if new_title != former_title and new_title in self.title_apl_map.keys():
             st.error(f"错误：新标题 '{new_title}' 已被其他APL使用。")
             return
 
         # Step 3: Check if the new title is the same as the former title
+
         if new_title == former_title and new_comment == self.title_apl_map.get(
-            former_title
+            former_title, {}
         ).get("general", {}).get("comment", None):
             st.warning("新旧标题相同，且未提供新注释，无需更改。")
             return
@@ -186,6 +197,9 @@ class APLArchive:
             return
 
         # Determine the absolute path
+        assert self.default_apl_map is not None and self.custom_apl_map is not None, (
+            "APL映射未初始化。请先调用 refresh() 方法。"
+        )
         if relative_path in self.default_apl_map:
             base_dir = DEFAULT_APL_DIR
         elif relative_path in self.custom_apl_map:
@@ -243,7 +257,9 @@ class APLArchive:
                                 relative_path = os.path.basename(base_path)
                                 toml_dict_map[relative_path] = toml_dict
                     except Exception as e:
-                        st.exception(Exception(f"Error loading TOML file {base_path}: {e}"))
+                        st.exception(
+                            Exception(f"Error loading TOML file {base_path}: {e}")
+                        )
             elif os.path.isdir(base_path):
                 # 如果是目录，遍历所有toml文件
                 for root, _, files in os.walk(base_path):
@@ -263,7 +279,9 @@ class APLArchive:
                                         toml_dict_map[relative_path] = toml_dict
                             except Exception as e:
                                 st.exception(
-                                    Exception(f"Error loading TOML file {file_path}: {e}")
+                                    Exception(
+                                        f"Error loading TOML file {file_path}: {e}"
+                                    )
                                 )
             else:
                 # 如果路径既不是文件也不是目录，则记录警告或错误
@@ -301,7 +319,7 @@ class APLJudgeTool:
             if cid == char_identifier:
                 return name
         # 如果输入的是名称或未知标识，直接返回
-        return char_identifier
+        return str(char_identifier)
 
     def judge_requried_chars(self) -> tuple[bool, list[str]]:
         """判断是否满足所有必须角色"""
@@ -596,7 +614,10 @@ def go_apl_editor():
     col1, col2, col3, col4 = st.columns([3, 1, 1, 1])
     with col1:
         selected_title = st.selectbox(
-            "APL选项", apl_archive.options, key="selected_apl_title", label_visibility="collapsed"
+            "APL选项",
+            apl_archive.options,
+            key="selected_apl_title",
+            label_visibility="collapsed",
         )
     with col2:
 
@@ -737,4 +758,8 @@ def go_apl_editor():
     if selected_title:
         selected_apl_data = apl_archive.get_apl_data(selected_title)
         # 传递 apl_archive 实例
-        display_apl_details(selected_apl_data, selected_title, apl_archive)
+        if selected_apl_data is None:
+            st.error(f"未找到标题为 '{selected_title}' 的APL数据。")
+        else:
+            # 调用显示函数
+            display_apl_details(selected_apl_data, selected_title, apl_archive)

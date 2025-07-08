@@ -1,5 +1,6 @@
 import streamlit as st
-from lib_webui.version_checker import check_github_updates
+
+from zsim.lib_webui.version_checker import check_github_updates
 
 # 页面导航
 PAGES = {
@@ -33,10 +34,10 @@ def main():
         """,
         unsafe_allow_html=True,
     )
-    
+
     # 检查GitHub更新
     check_github_updates()
-    
+
     pg = st.navigation(PAGES, expanded=True)
     pg.run()
 

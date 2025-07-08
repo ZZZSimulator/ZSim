@@ -1,10 +1,15 @@
 from .BaseNAManager import BaseNAManager
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from zsim.sim_progress.Character.character import Character
+
 
 class YanagiNAManager(BaseNAManager):
     def __init__(self, char_obj, rule_inventory_dict: dict):
         super().__init__(char_obj, rule_inventory_dict)
-        self.char = char_obj
+        self.char: "Character" = char_obj
         self.na_rule_inventory = rule_inventory_dict
         self.RULE_MAP = {
             "default": lambda: self.char.get_special_stats()["当前架势"]
@@ -29,7 +34,7 @@ class HugoNAManager(BaseNAManager):
         super().__init__(char_obj, rule_inventory_dict)
         self.char = char_obj
         self.na_rule_inventory = rule_inventory_dict
-        from define import HUGO_NA_MODE_LEVEL
+        from zsim.define import HUGO_NA_MODE_LEVEL
 
         self.RULE_MAP = {
             "default": lambda: HUGO_NA_MODE_LEVEL == 0,

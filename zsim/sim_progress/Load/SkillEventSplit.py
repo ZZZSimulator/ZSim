@@ -1,6 +1,5 @@
-import tqdm
-from sim_progress import Load, Preload
-from sim_progress.data_struct import ActionStack
+from zsim.sim_progress import Load, Preload
+from zsim.sim_progress.data_struct import ActionStack
 
 
 def SkillEventSplit(
@@ -28,6 +27,8 @@ def SkillEventSplit(
 
 
 if __name__ == "__main__":  # 测试
+    import tqdm
+
     timelimit = 3600
     load_mission_dict = {}
     p = Preload.Preload()

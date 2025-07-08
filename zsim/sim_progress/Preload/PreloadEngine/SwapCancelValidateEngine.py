@@ -1,13 +1,18 @@
 import math
 
-from .BasePreloadEngine import BasePreloadEngine
-from sim_progress.Preload import SkillNode
-from define import (
-    SWAP_CANCEL_MODE_COMPLETION_COEFFICIENT as SCK,
-    SWAP_CANCEL_MODE_LAG_TIME as SCLT,
-    SWAP_CANCEL_MODE_DEBUG,
+from zsim.define import (
     SWAP_CANCEL_DEBUG_TARGET_SKILL,
+    SWAP_CANCEL_MODE_DEBUG,
 )
+from zsim.define import (
+    SWAP_CANCEL_MODE_COMPLETION_COEFFICIENT as SCK,
+)
+from zsim.define import (
+    SWAP_CANCEL_MODE_LAG_TIME as SCLT,
+)
+
+from .. import SkillNode
+from .BasePreloadEngine import BasePreloadEngine
 
 # EXPLAIN：关于SCK和LT的作用：
 """

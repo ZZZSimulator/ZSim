@@ -1,12 +1,13 @@
-from define import ENEMY_ATTACK_REPORT, ENEMY_ATK_PARAMETER_DICT
 import math
 from typing import TYPE_CHECKING
 
+from zsim.define import ENEMY_ATK_PARAMETER_DICT, ENEMY_ATTACK_REPORT
+
 if TYPE_CHECKING:
-    from sim_progress.Enemy.EnemyAttack.EnemyAttackClass import EnemyAttackAction
-    from sim_progress.Enemy import Enemy
-    from sim_progress.Preload import SkillNode
-    from sim_progress.data_struct import SingleHit
+    from zsim.sim_progress.data_struct import SingleHit
+    from zsim.sim_progress.Enemy import Enemy
+    from zsim.sim_progress.Enemy.EnemyAttack.EnemyAttackClass import EnemyAttackAction
+    from zsim.sim_progress.Preload import SkillNode
 
 
 class EnemyAttackEventManager:
@@ -70,9 +71,7 @@ class EnemyAttackEventManager:
         self.hitted_count = 0
         self.answered_count = 0
 
-
     def interrupted(self, tick: int, reason: str = None):
-
         """中断当前进攻事件"""
         if self.action is None:
             raise ValueError("没有正在进行的进攻事件，无法中断！")
@@ -90,7 +89,6 @@ class EnemyAttackEventManager:
             return False
         else:
             return True
-
 
     def end_check(self, tick: int):
         """检测当前进攻事件是否已经结束"""
@@ -132,7 +130,6 @@ class EnemyAttackEventManager:
             return True
         return False
 
-
     def get_rt(self) -> int:
         """获取玩家反应时间（RT），即玩家从看到敌人进攻到做出反应的时间。"""
         theta = ENEMY_ATK_PARAMETER_DICT.get("theta", None)
@@ -143,7 +140,6 @@ class EnemyAttackEventManager:
         if Lp is None:
             raise ValueError(
                 "ENEMY_ATK_PARAMETER_DICT中没有PlayerLevel参数，请检查配置！"
-
             )
         c = ENEMY_ATK_PARAMETER_DICT.get("c", None)
         if c is None:
@@ -164,7 +160,6 @@ class EnemyAttackEventManager:
         RT = theta + math.e ** (mu + sigma * Z)
         rt_tick = round(RT / 1000 * 60)  # 将毫秒转化为帧（tick）
 
-
         return rt_tick
 
     def get_response_window(self) -> tuple[int, int]:
@@ -178,7 +173,6 @@ class EnemyAttackEventManager:
         )  # 如果怪物前摇很短，动作时间也很短，那么怪物攻击动作开始的时间就是黄光亮起的时间。
         right_bound = first_hit_tick
         return left_bound, right_bound
-
 
     def get_uncommon_response_window(self, another_ta: int) -> tuple[int, int]:
         """获取红黄光亮起的时间点，适用于非标准的进攻动作"""
@@ -297,7 +291,7 @@ class EnemyAttackEventManager:
             ) if ENEMY_ATTACK_REPORT else None
             self.answered_count += 1
             if "parry" in nodes.skill_tag:
-                from sim_progress.Preload.APLModule.ActionReplaceManager import (
+                from zsim.sim_progress.Preload.APLModule.ActionReplaceManager import (
                     ActionReplaceManager,
                 )
 
@@ -349,9 +343,3 @@ class EnemyAttackEventManager:
             if skill_node.active_generation:
                 return True
         return False
-            
-
-
-
-
-        

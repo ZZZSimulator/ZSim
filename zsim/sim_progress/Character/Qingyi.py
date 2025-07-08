@@ -1,4 +1,5 @@
-from sim_progress.Preload import SkillNode
+from zsim.sim_progress.Preload import SkillNode
+
 from .character import Character
 from .utils.filters import _skill_node_filter
 

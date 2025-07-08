@@ -1,12 +1,15 @@
-from typing import Optional
 import os
-from .APLParser import APLParser
+from typing import TYPE_CHECKING, Optional
+
+from zsim.define import COSTOM_APL_DIR, DEFAULT_APL_DIR
+
 from .APLClass import APLClass
-from define import DEFAULT_APL_DIR, COSTOM_APL_DIR
-from typing import TYPE_CHECKING
+from .APLParser import APLParser
+
 if TYPE_CHECKING:
-    from simulator.simulator_class import Simulator
-    from sim_progress.Preload import PreloadData
+    from zsim.simulator.simulator_class import Simulator
+
+    from .. import PreloadData
 
 
 class APLManager:
@@ -43,7 +46,9 @@ class APLManager:
                 return path
         return None
 
-    def load_apl(self, path: str, mode: int = 0, preload_data: "PreloadData" = None) -> APLClass:
+    def load_apl(
+        self, path: str, mode: int = 0, preload_data: "PreloadData" = None
+    ) -> APLClass:
         """
         加载并解析APL文件
         :param path: APL文件路径
@@ -51,7 +56,11 @@ class APLManager:
         :param preload_data: 外部传入的Preload_data
         :return: 已初始化的APLClass实例
         """
-        return APLClass(APLParser(file_path=path).parse(mode=mode), preload_data=preload_data, sim_instance=self.sim_instance)
+        return APLClass(
+            APLParser(file_path=path).parse(mode=mode),
+            preload_data=preload_data,
+            sim_instance=self.sim_instance,
+        )
 
     def list_available_apls(self) -> list[str]:
         """

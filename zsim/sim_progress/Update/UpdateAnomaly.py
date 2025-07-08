@@ -1,18 +1,26 @@
 import importlib
 from copy import deepcopy
-from sim_progress.anomaly_bar import AnomalyBar
-from sim_progress.anomaly_bar.CopyAnomalyForOutput import (
+from zsim.sim_progress.anomaly_bar import AnomalyBar
+from zsim.sim_progress.anomaly_bar.CopyAnomalyForOutput import (
     Disorder,
     NewAnomaly,
     PolarityDisorder,
 )
-from sim_progress.Buff.BuffAddStrategy import buff_add_strategy
-from sim_progress.Dot.BaseDot import Dot
+from zsim.sim_progress.Buff.BuffAddStrategy import buff_add_strategy
+from zsim.sim_progress.Dot.BaseDot import Dot
 from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from simulator.simulator_class import Simulator
 
-anomlay_dot_dict = {1: "Ignite", 2: "Freez", 3: "Shock", 4: "Corruption", 5: "Freez", 6: "AuricInkCorruption"}
+if TYPE_CHECKING:
+    from zsim.simulator.simulator_class import Simulator
+
+anomlay_dot_dict = {
+    1: "Ignite",
+    2: "Freez",
+    3: "Shock",
+    4: "Corruption",
+    5: "Freez",
+    6: "AuricInkCorruption",
+}
 
 
 def spawn_output(anomaly_bar, mode_number, sim_instance: "Simulator", **kwargs):
@@ -29,7 +37,9 @@ def spawn_output(anomaly_bar, mode_number, sim_instance: "Simulator", **kwargs):
     )
     # output = anomaly_bar.element_type, anomaly_bar.current_ndarray
     if mode_number == 0:
-        output = NewAnomaly(anomaly_bar, active_by=skill_node, sim_instance=sim_instance)
+        output = NewAnomaly(
+            anomaly_bar, active_by=skill_node, sim_instance=sim_instance
+        )
     elif mode_number == 1:
         output = Disorder(anomaly_bar, active_by=skill_node, sim_instance=sim_instance)
     elif mode_number == 2:
@@ -38,12 +48,19 @@ def spawn_output(anomaly_bar, mode_number, sim_instance: "Simulator", **kwargs):
             raise ValueError(
                 "在调用spawn_output函数的模式二（mode_number=2）、企图生成一个极性紊乱对象时，并未传入必须的参数polarity_ratio！"
             )
-        output = PolarityDisorder(anomaly_bar, polarity_ratio, active_by=skill_node, sim_instance=sim_instance)
+        output = PolarityDisorder(
+            anomaly_bar, polarity_ratio, active_by=skill_node, sim_instance=sim_instance
+        )
     return output
 
 
 def anomaly_effect_active(
-    bar: AnomalyBar, timenow: int, enemy, new_anomaly, element_type, sim_instance: "Simulator"
+    bar: AnomalyBar,
+    timenow: int,
+    enemy,
+    new_anomaly,
+    element_type,
+    sim_instance: "Simulator",
 ):
     """
     该函数的作用是创建属性异常附带的debuff和dot，
@@ -56,7 +73,9 @@ def anomaly_effect_active(
         for debuff in bar.accompany_debuff:
             buff_add_strategy(debuff, sim_instance=sim_instance)
     if bar.accompany_dot:
-        new_dot = spawn_anomaly_dot(element_type, timenow, bar=new_anomaly, sim_instance=sim_instance)
+        new_dot = spawn_anomaly_dot(
+            element_type, timenow, bar=new_anomaly, sim_instance=sim_instance
+        )
         if new_dot:
             for dots in enemy.dynamic.dynamic_dot_list[:]:
                 if dots.ft.index == new_dot.ft.index:
@@ -93,9 +112,9 @@ def update_anomaly(
     bar.max_anomaly = getattr(
         enemy, f"max_anomaly_{enemy.trans_element_number_to_str[element_type]}"
     )
-    assert (
-        bar.max_anomaly is not None and bar.current_anomaly is not None
-    ), "当前异常值或最大异常值为None！"
+    assert bar.max_anomaly is not None and bar.current_anomaly is not None, (
+        "当前异常值或最大异常值为None！"
+    )
 
     if bar.current_anomaly >= bar.max_anomaly:
         bar.is_full = True
@@ -113,7 +132,9 @@ def update_anomaly(
 
             # 异常事件监听器广播
 
-            sim_instance.listener_manager.broadcast_event(event=active_bar, anomaly_event=1)
+            sim_instance.listener_manager.broadcast_event(
+                event=active_bar, anomaly_event=1
+            )
             """
             更新完毕，现在正式进入分支判断——触发同类异常 & 触发异类异常（紊乱）。
             无论是哪个分支，都需要涉及enemy下的两大容器：enemy_debuff_list以及enemy_dot_list的修改，
@@ -125,11 +146,18 @@ def update_anomaly(
                 该策略下，只需要抛出一个新的属性异常给dot，不需要改变enemy的信息，只需要更新enemy的dot和debuff 两个list即可。
                 """
                 mode_number = 0
-                new_anomaly = spawn_output(bar, mode_number, skill_node=skill_node, sim_instance=sim_instance)
+                new_anomaly = spawn_output(
+                    bar, mode_number, skill_node=skill_node, sim_instance=sim_instance
+                )
                 for _char in char_obj_list:
                     _char.special_resources(new_anomaly)
                 anomaly_effect_active(
-                    active_bar, time_now, enemy, new_anomaly, element_type, sim_instance=sim_instance
+                    active_bar,
+                    time_now,
+                    enemy,
+                    new_anomaly,
+                    element_type,
+                    sim_instance=sim_instance,
                 )
                 if element_type in [2, 5]:
                     """
@@ -177,16 +205,26 @@ def update_anomaly(
 
                 # 旧的激活异常拿出来复制，变成disorder后，从enemy身上清空。
                 disorder = spawn_output(
-                    last_anomaly_bar, mode_number, skill_node=skill_node, sim_instance=sim_instance
+                    last_anomaly_bar,
+                    mode_number,
+                    skill_node=skill_node,
+                    sim_instance=sim_instance,
                 )
                 enemy.dynamic.active_anomaly_bar_dict[last_anomaly_element_type] = None
                 enemy.anomaly_bars_dict[last_anomaly_element_type].active = False
                 remove_dots_cause_disorder(disorder, enemy, event_list, time_now)
 
                 # 新的激活异常根据原来的Bar进行复制，并且添加到enemy身上。
-                new_anomaly = spawn_output(bar, 0, skill_node=skill_node, sim_instance=sim_instance)
+                new_anomaly = spawn_output(
+                    bar, 0, skill_node=skill_node, sim_instance=sim_instance
+                )
                 anomaly_effect_active(
-                    active_bar, time_now, enemy, new_anomaly, element_type, sim_instance=sim_instance
+                    active_bar,
+                    time_now,
+                    enemy,
+                    new_anomaly,
+                    element_type,
+                    sim_instance=sim_instance,
                 )
                 enemy.dynamic.active_anomaly_bar_dict[element_type] = active_bar
 
@@ -196,7 +234,9 @@ def update_anomaly(
                 for obj in char_obj_list:
                     obj.special_resources(disorder)
                 event_list.append(disorder)
-                sim_instance.decibel_manager.update(skill_node=skill_node, key="disorder")
+                sim_instance.decibel_manager.update(
+                    skill_node=skill_node, key="disorder"
+                )
                 # print(f'触发紊乱！')
             # 在异常与紊乱两个分支的最后，清空bar的异常积蓄和快照。
             else:
@@ -266,7 +306,9 @@ def check_anomaly_bar(enemy):
     return active_anomaly_check, active_anomaly_list, last_anomaly_element_type
 
 
-def spawn_anomaly_dot(element_type, timenow, bar=None, skill_tag=None, sim_instance: "Simulator" = None):
+def spawn_anomaly_dot(
+    element_type, timenow, bar=None, skill_tag=None, sim_instance: "Simulator" = None
+):
     if element_type in anomlay_dot_dict:
         class_name = anomlay_dot_dict[element_type]
         new_dot = create_dot_instance(class_name, bar, sim_instance=sim_instance)
@@ -286,7 +328,9 @@ def spawn_normal_dot(dot_index, sim_instance: "Simulator"):
 
 def create_dot_instance(class_name, bar=None, sim_instance: "Simulator" = None):
     # 动态导入相应模块
-    module_name = f"sim_progress.Dot.Dots.{class_name}"  # 假设你的类都在dot.DOTS模块中
+    module_name = (
+        f"zsim.sim_progress.Dot.Dots.{class_name}"  # 假设你的类都在dot.DOTS模块中
+    )
     try:
         module = importlib.import_module(module_name)  # 导入模块
         class_obj = getattr(module, class_name)  # 获取类对象

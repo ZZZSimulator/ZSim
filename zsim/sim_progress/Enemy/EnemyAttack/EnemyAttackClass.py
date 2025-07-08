@@ -1,20 +1,22 @@
-import numpy as np
-from define import (
-    ENEMY_ATTACK_METHOD_CONFIG,
-    ENEMY_ATTACK_ACTION,
-    ENEMY_RANDOM_ATTACK,
-    ENEMY_REGULAR_ATTACK,
-    ENEMY_ATTACK_REPORT,
-    ENEMY_ATK_PARAMETER_DICT,
-)
-from collections import defaultdict
-import pandas as pd
-from sim_progress.RandomNumberGenerator import RNG
 import ast
+from collections import defaultdict
 from typing import TYPE_CHECKING
 
+import numpy as np
+import pandas as pd
+
+from zsim.define import (
+    ENEMY_ATK_PARAMETER_DICT,
+    ENEMY_ATTACK_ACTION,
+    ENEMY_ATTACK_METHOD_CONFIG,
+    ENEMY_ATTACK_REPORT,
+    ENEMY_RANDOM_ATTACK,
+    ENEMY_REGULAR_ATTACK,
+)
+from zsim.sim_progress.RandomNumberGenerator import RNG
+
 if TYPE_CHECKING:
-    from sim_progress.Enemy import Enemy
+    from zsim.sim_progress.Enemy import Enemy
 
 """
     EnemyAttack模块相关的数据结构以及程序逻辑设计如下（2025.1.30）：
@@ -70,12 +72,16 @@ class EnemyAttackMethod:
             print(
                 f"【进攻交互系统初始化】：为敌人添加进攻动作：{enemy_attack_action}"
             ) if ENEMY_ATTACK_REPORT else None
-        print("【进攻交互系统初始化】：敌人进攻动作初始化完毕！") if ENEMY_ATTACK_REPORT else None
+        print(
+            "【进攻交互系统初始化】：敌人进攻动作初始化完毕！"
+        ) if ENEMY_ATTACK_REPORT else None
         print(
             f"【进攻交互系统初始化】：敌人（{self.enemy.name}）共拥有{len(self.action_set)}个进攻动作，每次进攻决策的冷却时间为：{self.rest_tick}tick！"
         ) if ENEMY_ATTACK_REPORT else None
         if not self.active and ENEMY_ATTACK_REPORT:
-            print("【进攻交互系统初始化】：由于在配置文件中并未开启任意一种进攻策略，所以在本次模拟中敌人不会进攻！")
+            print(
+                "【进攻交互系统初始化】：由于在配置文件中并未开启任意一种进攻策略，所以在本次模拟中敌人不会进攻！"
+            )
 
     def ready_check(self, current_tick: int) -> bool:
         """判断敌人进攻的内置CD——进攻动作结束后，进攻决策才会进入冷却时间。"""
@@ -196,9 +202,6 @@ class EnemyAttackAction:
                 f"{self.tag}的第一个命中点({hit_tick})小于响应动作持续时间({Ta})，请检查数据库！"
             )
         return self.hit_list[0]
-
-    def __str__(self):
-        return f"进攻动作ID：{self.id}, 技能Tag：{self.tag}，动作耗时：{self.duration}，单次动作的冷却时间：{self.cd}"
 
     def get_first_hit(self) -> int:
         """获取第一个命中点"""

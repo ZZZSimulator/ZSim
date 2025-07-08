@@ -2,7 +2,7 @@ import json
 import os
 
 try:
-    from define import NORMAL_MODE_ID_JSON
+    from zsim.define import NORMAL_MODE_ID_JSON
 except ModuleNotFoundError:
     pass
 
@@ -12,7 +12,7 @@ from .constants import results_dir, IDDuplicateError
 # 获取合法的结果缓存
 def get_all_results(
     *, id_cache_path=NORMAL_MODE_ID_JSON, results_dir=results_dir
-) -> dict[str : str | int | None]:
+) -> dict[str, str | int | None]:
     # 读取id_cache.json文件
     # 如果文件不存在则创建空的id_cache
     if not os.path.exists(id_cache_path):
@@ -55,7 +55,7 @@ def get_all_results(
 def rename_result(
     former_name: str,
     new_name: str,
-    new_comment: str = None,
+    new_comment: str | None = None,
     *,
     id_cache_path=NORMAL_MODE_ID_JSON,
     results_dir=results_dir,
@@ -66,7 +66,7 @@ def rename_result(
     参数:
         former_name (str): 原文件夹名称
         new_name (str): 新文件夹名称
-        new_comment (str, optional): 新的备注信息，默认为None表示保留原备注
+        new_comment (str | None): 新的备注信息，默认为None表示保留原备注
         id_cache_path (str, optional, keyword only): id_cache.json文件路径，默认为ID_CACHE_JSON
         results_dir (str, optional, keyword only): 结果文件夹路径，默认为results_dir
 

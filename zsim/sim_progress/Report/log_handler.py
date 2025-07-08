@@ -1,8 +1,10 @@
+import asyncio
 import os
 import queue
-import asyncio
+
 import aiofiles
-from define import DEBUG, DEBUG_LEVEL
+
+from zsim.define import DEBUG, DEBUG_LEVEL
 
 log_queue: queue.Queue = queue.Queue()
 

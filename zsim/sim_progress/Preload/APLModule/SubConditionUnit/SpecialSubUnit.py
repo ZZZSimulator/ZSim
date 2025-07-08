@@ -1,8 +1,9 @@
-from .BaseSubConditionUnit import BaseSubConditionUnit
 from typing import TYPE_CHECKING
 
+from .BaseSubConditionUnit import BaseSubConditionUnit
+
 if TYPE_CHECKING:
-    from sim_progress.Preload.PreloadDataClass import PreloadData
+    from ...PreloadDataClass import PreloadData
 
 
 class SpecialSubUnit(BaseSubConditionUnit):

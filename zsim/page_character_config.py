@@ -1,16 +1,15 @@
 import streamlit as st
 import toml
-import polars as pl
 
 
 def page_character_config():
     st.title("ZZZ Simulator - 角色配置")
-    from define import saved_char_config
-    from lib_webui.constants import default_chars
+    from zsim.define import saved_char_config
+    from zsim.lib_webui.constants import default_chars
 
     if "name_box" in saved_char_config:
         default_chars = saved_char_config["name_box"]
-    from lib_webui.constants import (
+    from zsim.lib_webui.constants import (
         char_options,
         equip_set2_options,
         equip_set4_options,
@@ -63,11 +62,15 @@ def page_character_config():
         with st.expander(f"{name}的配置"):
             col_weapon, col_level, col_cinema = st.columns(3)
             with col_weapon:
-                show_adapted_weapon = st.session_state.get(f"{name}_show_adapted_weapon", True)
+                show_adapted_weapon = st.session_state.get(
+                    f"{name}_show_adapted_weapon", True
+                )
                 char_profession = char_profession_map.get(name)
                 if show_adapted_weapon and char_profession:
                     filtered_weapon_options = [
-                        w for w in weapon_options if weapon_profession_map.get(w) == char_profession
+                        w
+                        for w in weapon_options
+                        if weapon_profession_map.get(w) == char_profession
                     ]
                 else:
                     filtered_weapon_options = list(weapon_options)
@@ -92,7 +95,9 @@ def page_character_config():
                         key=f"{name}_weapon",
                     )
                 show_adapted_weapon = st.checkbox(
-                    "只显示适配音擎", value=show_adapted_weapon, key=f"{name}_show_adapted_weapon"
+                    "只显示适配音擎",
+                    value=show_adapted_weapon,
+                    key=f"{name}_show_adapted_weapon",
                 )
             with col_level:
                 st.number_input(
@@ -181,7 +186,7 @@ def page_character_config():
                         key=f"{name}_equip_set2C",
                     )
             with col2:
-                from lib_webui.constants import (
+                from zsim.lib_webui.constants import (
                     main_stat4_options,
                     main_stat5_options,
                     main_stat6_options,
@@ -217,7 +222,7 @@ def page_character_config():
                     else 0,
                     key=f"{name}_main_stat6",
                 )
-            from lib_webui.constants import sc_max_value
+            from zsim.lib_webui.constants import sc_max_value
 
             st.text("副词条数量：")
             col1, col2, col3, col4, col5 = st.columns(5)
@@ -374,11 +379,11 @@ def page_character_config():
     for name in name_box:
         _config_to_save[name] = st.session_state[f"{name}_config"]
     saved_char_config.update(_config_to_save)
-    from define import char_config_file
+    from zsim.define import char_config_file
 
     with open(char_config_file, "w", encoding="utf-8") as f:
         toml.dump(saved_char_config, f)
-    from lib_webui.process_char_config import display_character_panels
+    from zsim.lib_webui.process_char_config import display_character_panels
 
     display_character_panels(name_box)
 

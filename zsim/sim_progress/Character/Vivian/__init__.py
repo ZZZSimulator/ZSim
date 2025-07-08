@@ -2,8 +2,9 @@ from ..utils.filters import _skill_node_filter
 from ..character import Character
 from .FeatherManager import FeatherManager
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
-    from sim_progress.Preload import SkillNode
+    from zsim.sim_progress.Preload import SkillNode
 
 
 class Vivian(Character):

@@ -1,4 +1,4 @@
-from define import SWAP_CANCEL
+from zsim.define import SWAP_CANCEL
 
 
 def get_last_action(game_state: dict):

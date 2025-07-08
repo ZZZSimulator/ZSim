@@ -1,4 +1,4 @@
-from sim_progress.Buff import Buff, JudgeTools, check_preparation
+from .. import Buff, JudgeTools, check_preparation
 
 
 class MiyabiCoreSkillFB:
@@ -22,13 +22,15 @@ class MiyabiCoreSkill_FrostBurn(Buff.BuffLogic):
         self.record = None
 
     def get_prepared(self, **kwargs):
-        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
+        return check_preparation(
+            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
+        )
 
     def check_record_module(self):
         if self.buff_0 is None:
-            self.buff_0 = JudgeTools.find_exist_buff_dict(sim_instance=self.buff_instance.sim_instance)["雅"][
-                self.buff_instance.ft.index
-            ]
+            self.buff_0 = JudgeTools.find_exist_buff_dict(
+                sim_instance=self.buff_instance.sim_instance
+            )["雅"][self.buff_instance.ft.index]
         if self.buff_0.history.record is None:
             self.buff_0.history.record = MiyabiCoreSkillFB()
         self.record = self.buff_0.history.record
@@ -41,7 +43,10 @@ class MiyabiCoreSkill_FrostBurn(Buff.BuffLogic):
         self.get_prepared(enemy=1)
         frostbite_now = self.record.enemy.dynamic.frostbite
         frostbite_statement = [self.record.last_frostbite, frostbite_now]
-        mode_func = lambda a, b: a is True and b is False
+
+        def mode_func(a, b):
+            return a is True and b is False
+
         result = JudgeTools.detect_edge(frostbite_statement, mode_func)
         self.record.last_frostbite = frostbite_now
         return result

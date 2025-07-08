@@ -1,4 +1,4 @@
-from sim_progress.Buff import Buff, JudgeTools, check_preparation, find_tick
+from .. import Buff, JudgeTools, check_preparation, find_tick
 
 
 class StreetSuperstarRecord:
@@ -24,15 +24,19 @@ class StreetSuperstar(Buff.BuffLogic):
         self.record = None
 
     def get_prepared(self, **kwargs):
-        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
+        return check_preparation(
+            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
+        )
 
     def check_record_module(self):
         if self.equipper is None:
-            self.equipper = JudgeTools.find_equipper("街头巨星", sim_instance=self.buff_instance.sim_instance)
+            self.equipper = JudgeTools.find_equipper(
+                "街头巨星", sim_instance=self.buff_instance.sim_instance
+            )
         if self.buff_0 is None:
-            self.buff_0 = JudgeTools.find_exist_buff_dict(sim_instance=self.buff_instance.sim_instance)[self.equipper][
-                self.buff_instance.ft.index
-            ]
+            self.buff_0 = JudgeTools.find_exist_buff_dict(
+                sim_instance=self.buff_instance.sim_instance
+            )[self.equipper][self.buff_instance.ft.index]
         if self.buff_0.history.record is None:
             self.buff_0.history.record = StreetSuperstarRecord()
         self.record = self.buff_0.history.record
@@ -43,13 +47,15 @@ class StreetSuperstar(Buff.BuffLogic):
         skill_node = kwargs.get("skill_node", None)
         if skill_node is None:
             return False
-        from sim_progress.Preload import SkillNode
+        from zsim.sim_progress.Preload import SkillNode
 
         if not isinstance(skill_node, SkillNode):
             raise TypeError(
                 f"{self.buff_instance.ft.index}的xjudge函数获取到的skill_node不是SkillNode类型"
             )
-        if not skill_node.preload_tick == find_tick(sim_instance=self.buff_instance.sim_instance):
+        if not skill_node.preload_tick == find_tick(
+            sim_instance=self.buff_instance.sim_instance
+        ):
             return False
         if skill_node.skill.trigger_buff_level == 5:
             self.record.qte_counter = min(
@@ -73,7 +79,8 @@ class StreetSuperstar(Buff.BuffLogic):
             no_end=1,
         )
         self.buff_instance.dy.endticks = (
-            find_tick(sim_instance=self.buff_instance.sim_instance) + self.record.active_signal.skill.ticks
+            find_tick(sim_instance=self.buff_instance.sim_instance)
+            + self.record.active_signal.skill.ticks
         )
         self.buff_instance.update_to_buff_0(self.buff_0)
 

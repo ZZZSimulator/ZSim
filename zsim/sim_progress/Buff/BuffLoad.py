@@ -1,24 +1,27 @@
 from __future__ import annotations
-import numpy as np
-import pandas as pd
-from sim_progress.Character.skill_class import Skill
-from sim_progress.Buff.buff_class import Buff
-from define import (
-    BUFF_LOADING_CONDITION_TRANSLATION_DICT,
-    JUDGE_FILE_PATH,
-    EXIST_FILE_PATH,
-)
 
 from typing import TYPE_CHECKING
+
+import numpy as np
+import pandas as pd
+
+from zsim.define import (
+    BUFF_LOADING_CONDITION_TRANSLATION_DICT,
+    EXIST_FILE_PATH,
+    JUDGE_FILE_PATH,
+)
+from zsim.sim_progress.Character.skill_class import Skill
+
+from .buff_class import Buff
+
 if TYPE_CHECKING:
-    from simulator.simulator_class import Simulator
-    from sim_progress.Load import LoadingMission
+    from zsim.sim_progress.Load import LoadingMission
+    from zsim.simulator.simulator_class import Simulator
 
 EXIST_FILE = pd.read_csv(EXIST_FILE_PATH, index_col="BuffName")
 JUDGE_FILE = pd.read_csv(JUDGE_FILE_PATH, index_col="BuffName")
 JUDGE_FILE = JUDGE_FILE.replace({np.nan: None})
 EXIST_FILE = EXIST_FILE.replace({np.nan: None})
-
 
 
 class BuffInitCache:
@@ -51,7 +54,7 @@ def process_buff(
     selected_characters,
     LOADING_BUFF_DICT,
     exist_buff_dict: dict,
-    sim_instance: "Simulator"
+    sim_instance: "Simulator",
 ):
     """
     该函数是公用的buff逻辑处理函数，主要是通过BuffJudge来判断Buff是否应该触发。
@@ -78,7 +81,11 @@ def process_buff(
                     筛选出正在发生的子任务，如果子任务正在发生就直接执行update，把子任务的str传进buff.update()函数
                     并且触发对应的分支（start、hit、end），完成符合buff属性的时间、层数更新。
                     """
-                    buff_new = Buff(active_condition_dict, judge_condition_dict, sim_instance=sim_instance)
+                    buff_new = Buff(
+                        active_condition_dict,
+                        judge_condition_dict,
+                        sim_instance=sim_instance,
+                    )
                     buff_new.update(
                         char,
                         time_now,
@@ -103,7 +110,9 @@ def process_buff(
             此类buff的更新往往不依赖start、hit、end三大子标签进行，
             所以单独进行处理
             """
-            buff_new = Buff(active_condition_dict, judge_condition_dict, sim_instance=sim_instance)
+            buff_new = Buff(
+                active_condition_dict, judge_condition_dict, sim_instance=sim_instance
+            )
             buff_new.logic.xeffect()
             if buff_new.dy.is_changed:
                 LOADING_BUFF_DICT[char].append(buff_new)
@@ -119,7 +128,7 @@ def BuffLoadLoop(
     character_name_box: list,
     LOADING_BUFF_DICT: dict,
     all_name_order_box: dict,
-    sim_instance: "Simulator"
+    sim_instance: "Simulator",
 ):
     """
     这是buff修改三部曲的第二步,也是最核心的一个步骤，
@@ -127,14 +136,15 @@ def BuffLoadLoop(
     本函数的核心调用函数是ProcessBuff函数。
     """
     # 初始化LOADING_BUFF_DICT
-    from sim_progress.Load import LoadingMission
+    from zsim.sim_progress.Load import LoadingMission
+
     all_name_box = character_name_box + ["enemy"]
     for character in all_name_box:
         LOADING_BUFF_DICT[character] = []
     # 遍历load_mission_dict中的任务
     for mission in load_mission_dict.values():
         if not isinstance(mission, LoadingMission):
-            raise TypeError(f"当前{mission}不是SkillNode类！")
+            raise TypeError(f"当前{mission}不是LoadingMission类！")
         actor_name = mission.mission_character
         if actor_name not in existbuff_dict:
             raise ValueError("当前角色的Buff源并未创建！")
@@ -151,7 +161,7 @@ def BuffLoadLoop(
                     LOADING_BUFF_DICT,
                     all_name_order_box,
                     existbuff_dict,
-                    sim_instance=sim_instance
+                    sim_instance=sim_instance,
                 )
             else:
                 process_backend_buff(
@@ -161,7 +171,7 @@ def BuffLoadLoop(
                     time_now,
                     LOADING_BUFF_DICT,
                     existbuff_dict,
-                    sim_instance=sim_instance
+                    sim_instance=sim_instance,
                 )
     return LOADING_BUFF_DICT
 
@@ -173,7 +183,7 @@ def process_on_field_buff(
     LOADING_BUFF_DICT: dict,
     all_name_order_box: dict,
     exist_buff_dict: dict,
-    sim_instance: "Simulator"
+    sim_instance: "Simulator",
 ):
     """
     处理前台Buff的逻辑模块
@@ -204,7 +214,7 @@ def process_on_field_buff(
             selected_characters,
             LOADING_BUFF_DICT,
             exist_buff_dict,
-            sim_instance=sim_instance
+            sim_instance=sim_instance,
         )
 
 
@@ -215,7 +225,7 @@ def process_backend_buff(
     time_now: int,
     LOADING_BUFF_DICT: dict,
     exist_buff_dict: dict,
-    sim_instance: "Simulator"
+    sim_instance: "Simulator",
 ):
     """
     处理后台Buff的逻辑，
@@ -249,7 +259,7 @@ def process_backend_buff(
             selected_characters_back,
             LOADING_BUFF_DICT,
             exist_buff_dict,
-            sim_instance=sim_instance
+            sim_instance=sim_instance,
         )
 
 
