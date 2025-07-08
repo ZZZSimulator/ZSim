@@ -10,12 +10,14 @@ if TYPE_CHECKING:
     from zsim.sim_progress.anomaly_bar import AnomalyBar
     from zsim.sim_progress.Buff import Buff
     from zsim.sim_progress.Preload.SkillsQueue import SkillNode
+    from zsim.simulator.simulator_class import Simulator
 
 
 @lru_cache(maxsize=128)
 def cal_buff_total_bonus(
     enabled_buff: Sequence["Buff"],
-    judge_obj: "SkillNode" | "AnomalyBar" | None = None,
+    judge_obj: "SkillNode | AnomalyBar | None" = None,
+    sim_instance: "Simulator" = None
 ) -> dict[str, float]:
     """过滤并计算buff总加成。
 
@@ -37,7 +39,8 @@ def cal_buff_total_bonus(
     from zsim.sim_progress.anomaly_bar import AnomalyBar
     from zsim.sim_progress.Buff import Buff
     from zsim.sim_progress.Preload.SkillsQueue import SkillNode
-
+    # FIXME:
+    #  已知bug：武器【时流贤者】的“对佩戴者造成的紊乱伤害增幅”的效果在部分紊乱、极性紊乱上会失效，原因未知，等待继续排查。
     buff_obj: Buff
     for buff_obj in enabled_buff:
         # 确保buff是Buff类的实例
@@ -66,6 +69,8 @@ def cal_buff_total_bonus(
                 if isinstance(judge_obj, AnomalyBar) and not __check_special_anomly(
                     buff_obj, judge_obj
                 ):
+                    continue
+                if not __check_activation_origin(buff_obj=buff_obj, judge_obj=judge_obj, sim_instance=sim_instance):
                     continue
             # 获取buff的层数
             count = buff_obj.dy.count
@@ -194,8 +199,6 @@ def __check_skill_node(buff: "Buff", skill_node: "SkillNode") -> bool:
             ):
                 if skill_node.skill.skill_type in label_value:
                     return True
-        else:
-            raise ValueError(f"{buff.ft.index}的标签类型 {label_key} 未定义！")
     else:
         # if buff.ft.index == "Buff-角色-仪玄-2画-强化E与终结技无视以太抗" and any([__tags in skill_node.skill_tag for __tags in ["1371_E_EX", "1371_Q"]]):
         #     print(f"data_analyzer的报告：{buff.ft.index}与{skill_node.skill_tag}不匹配！")
@@ -215,7 +218,7 @@ def __check_label_key(label_key: str, target_label_key: str):
     return base_key == target_label_key
 
 
-def __check_special_anomly(buff: "Buff", anomly_node: "AnomalyBar") -> bool:
+def __check_special_anomly(buff: "Buff", anomaly_node: "AnomalyBar") -> bool:
     """
     检查 buff 的标签是否与异常匹配。
 
@@ -249,7 +252,6 @@ def __check_special_anomly(buff: "Buff", anomly_node: "AnomalyBar") -> bool:
         "Abloom": Abloom,
         "PolarityDisorder": PolarityDisorder,
     }
-
     # 获取buff的标签列表
     buff_labels: dict[str, list[str] | str] = buff.ft.label
     # 如果buff没有标签限制，则直接返回True
@@ -266,17 +268,58 @@ def __check_special_anomly(buff: "Buff", anomly_node: "AnomalyBar") -> bool:
             # 输入为单个字符串
             if isinstance(label_value, str):
                 if label_value in SELECT_ANOMALY_MAP.keys():
-                    if isinstance(anomly_node, SELECT_ANOMALY_MAP[label_value]):
+                    if isinstance(anomaly_node, SELECT_ANOMALY_MAP[label_value]):
                         return True
             # 输入为列表
             if isinstance(label_value, list):
                 if any(
-                    isinstance(anomly_node, SELECT_ANOMALY_MAP[sig_value])
+                    isinstance(anomaly_node, SELECT_ANOMALY_MAP[sig_value])
                     for sig_value in label_value
                     if sig_value in SELECT_ANOMALY_MAP.keys()
                 ):
                     return True
     return False
+
+
+def __check_activation_origin(buff_obj: "Buff", judge_obj: "SkillNode | AnomalyBar", sim_instance: "Simulator"):
+    """检查buff的label是否存在“only_active_by”，然后再检查当前被检项目与源头是否匹配。
+    - buff_obj: 被检查的buff
+    - judge_obj: 被检查的对象，可能是SkillNode或者异常"""
+    if buff_obj.ft.label is None:
+        return True
+    if "only_active_by" not in buff_obj.ft.label.keys():
+        return True
+    from zsim.sim_progress.Preload import SkillNode
+    from zsim.sim_progress.anomaly_bar import AnomalyBar
+    CID_list = buff_obj.ft.label.get("only_active_by")
+    # FIXME: 由于Deepcopy无法正确拷贝Buff对象的Operator等后赋值的属性，所以这里的筛选会出错。
+    #  目前该问题只能通过硬编码临时绕开（临时搜谁装备了这把武器），后续Buff系统全部重构的时候一起修改。
+    #  已知缺陷：当队伍中同时存在两把“时流贤者”时，Buff源检验可能会出错。
+    if CID_list[0] == "self":
+        buff_from = buff_obj.ft.bufffrom
+        if buff_from in sim_instance.init_data.name_box:
+            target_name = buff_from
+        else:
+            buff_0_manager = sim_instance.load_data.buff_0_manager
+            target_name = buff_0_manager.search_equipper(equipment=buff_from)
+        if target_name is None:
+            raise ValueError(f"{buff_obj.ft.index}存在但是却无法找到{buff_from}的携带者，请检查初始化逻辑！")
+
+        if isinstance(judge_obj, SkillNode):
+            skill_result = target_name == judge_obj.char_name
+            return skill_result
+        elif isinstance(judge_obj, AnomalyBar):
+            if judge_obj.activated_by is None:
+                print(f"未检测到异常对象{judge_obj.element_type}的激活源！")
+                return False
+            anomaly_result = judge_obj.activated_by.char_name == target_name
+            return anomaly_result
+        else:
+            print(f"judge_obj的类型未定义！{type(judge_obj)}")
+            return False
+    else:
+        print(f"尚未定义的“only_active_by参数{CID_list}")
+        return False
 
 
 if __name__ == "__main__":

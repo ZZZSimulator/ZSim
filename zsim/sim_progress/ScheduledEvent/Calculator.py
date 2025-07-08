@@ -10,6 +10,8 @@ from zsim.sim_progress.data_struct import cal_buff_total_bonus
 from zsim.sim_progress.Enemy import Enemy
 from zsim.sim_progress.Preload import SkillNode
 from zsim.sim_progress.Report import report_to_log
+from zsim .sim_progress.anomaly_bar.AnomalyBarClass import AnomalyBar
+
 
 with open(
     file="./zsim/sim_progress/ScheduledEvent/buff_effect_trans.json",
@@ -54,12 +56,12 @@ class MultiplierData:
         enemy_obj: Enemy,
         dynamic_buff: dict | None = None,
         character_obj: Character | None = None,
-        judge_node: SkillNode | None = None,
+        judge_node: SkillNode| AnomalyBar | None = None,
     ):
         if dynamic_buff is None:
             dynamic_buff = {}
         if not hasattr(self, "char_name"):
-            self.judge_node: SkillNode | None = judge_node
+            self.judge_node: SkillNode | AnomalyBar | None = judge_node
             self.enemy_instance = enemy_obj
             if character_obj is None:
                 self.char_name = None
@@ -85,7 +87,7 @@ class MultiplierData:
             dynamic_statement: dict = self.get_buff_bonus(dynamic_buff, self.judge_node)
             self.dynamic = self.DynamicStatement(dynamic_statement)
 
-    def get_buff_bonus(self, dynamic_buff: dict, skill_node: SkillNode | None) -> dict:
+    def get_buff_bonus(self, dynamic_buff: dict, node: SkillNode | AnomalyBar | None) -> dict:
         if self.char_name is None:
             char_buff: list = []
         else:
@@ -108,7 +110,7 @@ class MultiplierData:
                 )
                 enemy_buff = []
         enabled_buff: tuple = tuple(char_buff + enemy_buff)
-        dynamic_statement: dict = cal_buff_total_bonus(enabled_buff, skill_node)
+        dynamic_statement: dict = cal_buff_total_bonus(enabled_buff, node, sim_instance=self.enemy_obj.sim_instance)
         return dynamic_statement
 
     class StaticStatement:

@@ -236,6 +236,7 @@ class Buff:
                 self.label_effect_rule: int | None = self.__process_label_rule(
                     config_dict
                 )
+                self.buff0_id = None
 
                 __listener_id_str = config_dict.get(
                     "listener_id"
@@ -411,6 +412,8 @@ class Buff:
             self.feature_config, self.judge_config, sim_instance=self.sim_instance
         )
         memo[id(self)] = new_obj
+        # if "时流贤者-装备者紊乱伤害提升" in new_obj.ft.index:
+        #     print(self.ft.beneficiary, self.ft.operator, new_obj.ft.operator)
         return new_obj
 
     @property

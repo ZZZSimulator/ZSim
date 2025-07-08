@@ -1,25 +1,10 @@
 from .. import Buff, JudgeTools, check_preparation
 
-
 class TheVaultRecord:
     def __init__(self):
         self.equipper = None
         self.char = None
         self.action_stack = None
-
-
-def is_hit(action_now):
-    """
-    检测当前tick是否有hit事件。
-    """
-    mission_dict = action_now.mission_dict
-    tick_now = JudgeTools.find_tick(sim_instance=self.buff_instance.sim_instance)
-    for sub_mission_start_tick in mission_dict.keys():
-        if tick_now - 1 < sub_mission_start_tick <= tick_now:
-            if mission_dict[sub_mission_start_tick] == "hit":
-                return True
-    else:
-        return False
 
 
 class TheVault(Buff.BuffLogic):
@@ -59,19 +44,20 @@ class TheVault(Buff.BuffLogic):
 
     def special_judge_logic(self, **kwargs):
         """
-        由于聚宝箱的buff是命中判定，且后台生效，但是只能自己触发。
-        所以首先需要判定的是当前tick是否有hit事件。
+        聚宝箱的触发条件：自己的技能、技能命中帧、[强化E、大招、连携技]
         """
         self.check_record_module()
         self.get_prepared(equipper="聚宝箱", action_stack=1)
-        action_now = self.record.action_stack.peek()
-        if not is_hit(action_now):
+        from zsim.sim_progress.Preload import SkillNode
+        skill_node: SkillNode | None = kwargs.get("skill_node", None)
+        if skill_node is None:
             return False
-        if action_now.mission_character != self.record.equipper:
+        if skill_node.char_name != self.record.char.NAME:
             return False
-        if (
-            action_now.mission_node.skill.trigger_buff_level not in [2, 5, 6]
-            and action_now.mission_node.skill.element_type != 4
-        ):
+        if skill_node.skill.trigger_buff_level not in [2, 5, 6]:
             return False
-        return True
+        tick = self.buff_instance.sim_instance.tick
+        if skill_node.is_hit_now(tick):
+            return True
+        return False
+

@@ -5,6 +5,7 @@ import shutil
 
 def remove_pycache(directory):
     for root, dirs, files in os.walk(directory):
+        print(f"Scanning: {root}")
         for dir_name in dirs:
             if dir_name == "__pycache__":
                 pycache_path = os.path.join(root, dir_name)

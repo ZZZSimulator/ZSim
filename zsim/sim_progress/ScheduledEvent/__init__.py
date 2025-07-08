@@ -392,7 +392,7 @@ class ScheduledEvent:
             disorder_obj=event,
             enemy_obj=self.data.enemy,
             dynamic_buff=self.data.dynamic_buff,
-            sim_instance=self.sim_instance,
+            sim_instance=self.sim_instance
         )
         dmg_disorder = cal_obj.cal_anomaly_dmg()
         stun = cal_obj.cal_disorder_stun()
