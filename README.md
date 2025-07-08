@@ -24,7 +24,10 @@ It provides a user-friendly interface to calculate the total damage output of a 
 - Edit agents equipment
 - Edit APL code
 
-## Install
+> [!TIP]
+> You can either install `ZZZ-Simulator` via `uv` or run it with dockers.
+
+## Install via UV
 
 Download the latest source code in release page or use `git clone`
 
@@ -33,8 +36,13 @@ Download the latest source code in release page or use `git clone`
 Open terminal anywhere in your device:
 
 ```bash
-# On macOS or Linux:
+# On Linux or macOS without Homebrew:
 curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+```bash
+# On macOS with Homebrew:
+brew install uv
 ```
 
 ```bash
@@ -63,7 +71,7 @@ uv venv
 uv pip install .  # there is a '.' refer to relative path
 ```
 
-## Run
+### Run
 
 Open terminal anywhere in your device:
 
@@ -81,6 +89,42 @@ uv run ./zsim/run.py run
 # or also:
 uv run zsim run
 ```
+
+Then you can access the simulator at `http://localhost:8501`.
+
+## Install via Docker
+
+You can also run `ZZZ-Simulator` with Docker.
+
+> [!NOTE]
+> Make sure you have docker installed on your machine. If you haven't installed it yet, please refer to the [official Docker installation guide](https://docs.docker.com/get-docker/).
+>
+> On macOS, it is recommended to use [Orbstack](https://docs.orbstack.dev/install) for a better experience.
+
+### Build the image
+
+```bash
+docker build -t zzzsimulator .
+```
+
+### Create a container
+
+```bash
+docker create --name zzzsimulator \
+  -p 8501:8501 \
+  zzzsimulator
+```
+
+### Run the container
+
+```bash
+docker start zzzsimulator
+```
+
+Then you can access the simulator at `http://localhost:8501`.
+
+> [!TIP]
+> If you are using Orbstack, you can access the simulator at `https://zzzsimulator.orb.local/`.
 
 ## TODO LIST
 
