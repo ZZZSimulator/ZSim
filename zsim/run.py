@@ -5,6 +5,29 @@ import sys
 from zsim.simulator.config_classes import SimulationConfig as SimCfg
 
 
+def go_api():
+    """启动 FastAPI 服务"""
+    try:
+        command = [
+            sys.executable,
+            "-m",
+            "uvicorn",
+            "zsim.api:app",
+            "--reload",
+            "--host",
+            "127.0.0.1",
+            "--port",
+            "8000",
+            "--log-level",
+            "info",
+        ]
+
+        subprocess.run(command)
+    except Exception as e:
+        print(f"错误：启动FastAPI失败 - {str(e)}")
+        sys.exit(1)
+
+
 def go_webui():
     """启动 Streamlit 服务"""
     try:
@@ -30,8 +53,8 @@ def go_webview_app():
         sys.exit(1)
 
 
-def go_cli(args: SimCfg = SimCfg()):
-    """启动命令行界面，并根据提供的 MainArgs 对象传递参数。
+def go_cli():
+    """启动命令行模式，不传递任何参数，用作调试或测试。
 
     Args:
         `args (MainArgs)`: 包含传递给 main.py 的参数的对象。
@@ -39,13 +62,6 @@ def go_cli(args: SimCfg = SimCfg()):
     """
     try:
         command = [sys.executable, "zsim/main.py"]
-        for field, value in args.model_dump(exclude_none=True).items():
-            if isinstance(value, bool):
-                if value:
-                    command.append(f"--{field.replace('_', '-')}")
-            else:
-                command.extend([f"--{field.replace('_', '-')}", str(value)])
-
         subprocess.run(command)
     except Exception as e:
         print(f"错误：启动命令行界面失败 - {str(e)}")
@@ -109,16 +125,18 @@ def go_help():
 
 def confirm_launch():
     """交互式确认启动"""
-    CHOICES = {"run": go_webui, "app": go_webview_app, "c": go_cli, "help": go_help}
+    CHOICES = {
+        "run": go_webui,
+        "app": go_webview_app,
+        "c": go_cli,
+        "api": go_api,
+        "help": go_help,
+    }
     choice = input(
-        "输入 run 启动 WebUI, 输入 app 启动桌面应用, 输入 c 运行命令行："
+        "输入 run 启动 WebUI, 输入 app 启动桌面应用, 输入 api 启动API服务, 输入 c 运行命令行："
     ).lower()
     if choice in CHOICES.keys():
-        if choice == "c":
-            # 如果选择 'c'，调用 go_cli 时不传递特定参数，使用默认值
-            CHOICES[choice]()
-        else:
-            CHOICES[choice]()
+        CHOICES[choice]()
     else:
         print("操作已取消")
         sys.exit(0)
@@ -130,10 +148,9 @@ def main():
         "command",
         nargs="?",
         default=None,
-        help="子命令（例如：run, app, c）",
-        choices=["run", "app", "c", None],
+        help="子命令（例如：run, app, c, api）",
+        choices=["run", "app", "c", "api", None],
     )
-    # 未来可以扩展这里，使其能解析 main.py 的参数并传递给 go_cli
     args = parser.parse_args()
 
     if args.command == "run":
@@ -141,8 +158,9 @@ def main():
     elif args.command == "app":
         go_webview_app()
     elif args.command == "c":
-        # 调用 go_cli 时不传递特定参数，使用默认值
         go_cli()
+    elif args.command == "api":
+        go_api()
     else:
         print("ZZZ模拟器\n")
         confirm_launch()
