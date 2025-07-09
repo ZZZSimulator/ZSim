@@ -23,7 +23,7 @@ include_files = ["zsim", "docs"]
 
 [project]
 name = "zzz-simulator"
-version = "0.3.0a1"
+version = "0.3.1a1"
 description = "A simulator for ZZZ game"
 requires-python = ">=3.12"
 dependencies = [

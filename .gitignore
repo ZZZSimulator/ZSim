@@ -53,3 +53,4 @@ zsim/config.json
 
 # 生成文件
 zsim/data/APLData/custom/*
+*out*
