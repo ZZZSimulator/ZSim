@@ -189,8 +189,7 @@ class Simulator:
                 self.load_data.load_mission_dict,
                 self.schedule_data.enemy,
                 self.schedule_data.event_list,
-                self.char_data.char_obj_list,
-                dynamic_buff_dict=self.global_stats.DYNAMIC_BUFF_DICT,
+                self.char_data.char_obj_list
             )
             BuffLoadLoop(
                 self.tick,
@@ -207,6 +206,7 @@ class Simulator:
                 self.global_stats.DYNAMIC_BUFF_DICT,
                 self.schedule_data.enemy,
             )
+
             # Load.DamageEventJudge(tick, load_data.load_mission_dict, schedule_data.enemy, schedule_data.event_list, char_data.char_obj_list)
             # ScheduledEvent
             sce = ScE(

@@ -126,6 +126,7 @@ class YanagiPolarityDisorderTrigger(Buff.BuffLogic):
 
         # 获取当前正在激活的属性异常条
         active_anomaly_bar = self.record.enemy.get_active_anomaly_bar()
+
         active_bar_deep_copy = deepcopy(active_anomaly_bar)
 
         # 构造极性紊乱对象

@@ -407,15 +407,6 @@ class Buff:
             self.last_update_resource = 0
             self.record = None
 
-    def __deepcopy__(self, memo):
-        new_obj = Buff(
-            self.feature_config, self.judge_config, sim_instance=self.sim_instance
-        )
-        memo[id(self)] = new_obj
-        # if "时流贤者-装备者紊乱伤害提升" in new_obj.ft.index:
-        #     print(self.ft.beneficiary, self.ft.operator, new_obj.ft.operator)
-        return new_obj
-
     @property
     def durtation(self):
         if not self.dy.active:
@@ -895,6 +886,13 @@ class Buff:
     def __str__(self) -> str:
         return f"Buff名: {self.ft.index}→{self.ft.description}"
 
+    def __deepcopy__(self, memo):
+        new_obj = Buff(
+            self.feature_config, self.judge_config, sim_instance=self.sim_instance
+        )
+        memo[id(self)] = new_obj
+        return new_obj
+
 
 def spawn_buff_from_index(index: str):
     """
@@ -916,6 +914,7 @@ def spawn_buff_from_index(index: str):
     judge_dict = find_row_as_dict(index, JUDGE_FILE_PATH)
     # 创建Buff实例
     return Buff(trigger_dict, judge_dict)
+
 
 
 if __name__ == "__main__":

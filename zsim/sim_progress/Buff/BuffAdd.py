@@ -29,7 +29,9 @@ def buff_add(timenow: float, LOADING_BUFF_DICT: dict, DYNAMIC_BUFF_DICT: dict, e
     for char in LOADING_BUFF_DICT:
         if not LOADING_BUFF_DICT[char]:
             continue
-        for buff in LOADING_BUFF_DICT[char]:
+        while LOADING_BUFF_DICT[char]:
+            buff = LOADING_BUFF_DICT[char].pop()
+        # for buff in LOADING_BUFF_DICT[char]:
             if not isinstance(buff, Buff):
                 raise ValueError(f"loading_buff_dict中的{buff}元素不是Buff类")
             if (
@@ -40,7 +42,6 @@ def buff_add(timenow: float, LOADING_BUFF_DICT: dict, DYNAMIC_BUFF_DICT: dict, e
                 # if buff.ft.index == 'Buff-武器-精1燃狱齿轮-叠层冲击力':
                 #     print(f'{buff.dy.active, buff.dy.startticks, buff.dy.endticks, buff.dy.count}')
                 continue
-
             buff_existing_check = next(
                 (
                     existing_buff
@@ -58,6 +59,7 @@ def buff_add(timenow: float, LOADING_BUFF_DICT: dict, DYNAMIC_BUFF_DICT: dict, e
 
             DYNAMIC_BUFF_DICT[char].append(buff)
             add_debuff_to_enemy(buff, char, enemy)
+
     return DYNAMIC_BUFF_DICT
 
 

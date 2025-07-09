@@ -182,3 +182,39 @@ class AnomalyBar:
         new_instance = AnomalyBar.__new__(AnomalyBar)  # 不调用构造函数
         new_instance.__dict__ = existing_instance.__dict__.copy()  # 复制原实例的属性
         return new_instance
+
+    def __deepcopy__(self, memo):
+        """AnomalyBar的deepcopy方法，需要绕开Buff"""
+        import copy
+        cls = self.__class__
+        new_anomaly_bar = cls.__new__(cls)
+        memo[id(self)] = new_anomaly_bar
+        # 安全复制属性
+        for key, value in self.__dict__.items():
+            if key == 'sim_instance':
+                # 直接复制 Simulator 引用（避免深拷贝 Buff）
+                setattr(new_anomaly_bar, key, value)
+            elif key == 'activated_by' and hasattr(value, 'skill'):
+                # 复制 SkillNode 但不深拷贝其内部技能对象
+                new_skill_node = copy.copy(value)
+                setattr(new_anomaly_bar, key, new_skill_node)
+            elif key == 'current_ndarray' and value is not None:
+                # 使用 numpy 的安全复制方法
+                setattr(new_anomaly_bar, key, value.copy())
+            elif key == 'current_anomaly' and value is not None:
+                # 安全复制 np.float64
+                setattr(new_anomaly_bar, key, copy.copy(value))
+            elif key == 'UUID':
+                # 生成新的 UUID
+                setattr(new_anomaly_bar, key, uuid.uuid4())
+            else:
+                try:
+                    # 尝试标准深拷贝
+                    setattr(new_anomaly_bar, key, copy.deepcopy(value, memo))
+                except TypeError:
+                    # 无法深拷贝时回退到浅拷贝
+                    setattr(new_anomaly_bar, key, value)
+
+        return new_anomaly_bar
+
+
