@@ -296,6 +296,10 @@ def __check_activation_origin(buff_obj: "Buff", judge_obj: "SkillNode | AnomalyB
     #  目前该问题只能通过硬编码临时绕开（临时搜谁装备了这把武器），后续Buff系统全部重构的时候一起修改。
     #  已知缺陷：当队伍中同时存在两把“时流贤者”时，Buff源检验可能会出错。
     if CID_list[0] == "self":
+        if buff_obj.ft.operator is None:
+            print(111111111, buff_obj.ft.index, buff_obj.ft.passively_updating, buff_obj.ft.beneficiary, buff_obj.ft.bufffrom)
+        # else:
+        #     print(222222222)
         buff_from = buff_obj.ft.bufffrom
         if buff_from in sim_instance.init_data.name_box:
             target_name = buff_from

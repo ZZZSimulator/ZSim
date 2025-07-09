@@ -722,6 +722,9 @@ class Enemy:
     def __str__(self):
         return f"{self.name}: {self.dynamic.__str__()}"
 
+    def __deepcopy__(self, memo):
+        return self
+
 
 if __name__ == "__main__":
     test = Enemy(index_ID=11432, sub_ID=900011432)
