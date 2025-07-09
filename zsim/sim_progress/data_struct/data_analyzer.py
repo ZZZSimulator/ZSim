@@ -3,6 +3,8 @@ from __future__ import annotations
 from functools import lru_cache
 from typing import TYPE_CHECKING, Any, Sequence
 
+from charset_normalizer.md import is_arabic_isolated_form
+
 from zsim.define import BACK_ATTACK_RATE
 from zsim.sim_progress.Report import report_to_log
 
@@ -17,7 +19,8 @@ if TYPE_CHECKING:
 def cal_buff_total_bonus(
     enabled_buff: Sequence["Buff"],
     judge_obj: "SkillNode | AnomalyBar | None" = None,
-    sim_instance: "Simulator" = None
+    sim_instance: "Simulator" = None,
+    char_name: str | None = None
 ) -> dict[str, float]:
     """过滤并计算buff总加成。
 
@@ -56,12 +59,14 @@ def cal_buff_total_bonus(
             # 检查buff的标签是否与技能节点匹配
             if judge_obj is not None:
                 """
-                下面两个continue作用：筛选掉无法对当前judge_obj生效的buff。
+                下面几个continue作用：筛选掉无法对当前judge_obj生效的buff。
                 一般来说，buff都是默认对所有的judge_obj产生效果的，但是有一类buff不是。
-                这类的buff通常带有标签，比如only_skill或者only_anomaly，或者only_label，
-                这些buff只有在特定条件被满足的情况下才会对当前技能生效——__check_skill_node() 和 __check_special_anomlay()方法就是用来检查这个的。
-                所以，被continue跳过的Buff一定自带label或是其他的特殊判定条件，并且和当前的检查对象——judge_obj不相符，导致它对当前检测对象无法生效。
+                这类的buff通常带有标签，比如only_skill或者only_anomaly，或者only_label……
+                这些buff只有在特定条件被满足的情况下才会对当前技能生效——__check_skill_node() 和 __check_special_anomlay()这几个函数就是用来检查这个的。
+                总之，被continue跳过的Buff一定自带label或是其他的特殊判定条件，并且和当前的检查对象——judge_obj不相符，导致它对当前检测对象无法生效。
                 """
+                if not __check_activation_origin(buff_obj=buff_obj, judge_obj=judge_obj, sim_instance=sim_instance, char_name=char_name):
+                    continue
                 if isinstance(judge_obj, SkillNode) and not __check_skill_node(
                     buff_obj, judge_obj
                 ):
@@ -69,8 +74,6 @@ def cal_buff_total_bonus(
                 if isinstance(judge_obj, AnomalyBar) and not __check_special_anomly(
                     buff_obj, judge_obj
                 ):
-                    continue
-                if not __check_activation_origin(buff_obj=buff_obj, judge_obj=judge_obj, sim_instance=sim_instance):
                     continue
             # 获取buff的层数
             count = buff_obj.dy.count
@@ -281,7 +284,7 @@ def __check_special_anomly(buff: "Buff", anomaly_node: "AnomalyBar") -> bool:
     return False
 
 
-def __check_activation_origin(buff_obj: "Buff", judge_obj: "SkillNode | AnomalyBar", sim_instance: "Simulator"):
+def __check_activation_origin(buff_obj: "Buff", judge_obj: "SkillNode | AnomalyBar", sim_instance: "Simulator", char_name: str):
     """检查buff的label是否存在“only_active_by”，然后再检查当前被检项目与源头是否匹配。
     - buff_obj: 被检查的buff
     - judge_obj: 被检查的对象，可能是SkillNode或者异常"""
@@ -292,31 +295,24 @@ def __check_activation_origin(buff_obj: "Buff", judge_obj: "SkillNode | AnomalyB
     from zsim.sim_progress.Preload import SkillNode
     from zsim.sim_progress.anomaly_bar import AnomalyBar
     CID_list = buff_obj.ft.label.get("only_active_by")
-    # FIXME: 由于Deepcopy无法正确拷贝Buff对象的Operator等后赋值的属性，所以这里的筛选会出错。
-    #  目前该问题只能通过硬编码临时绕开（临时搜谁装备了这把武器），后续Buff系统全部重构的时候一起修改。
-    #  已知缺陷：当队伍中同时存在两把“时流贤者”时，Buff源检验可能会出错。
+    # FIXME: 当队伍中同时存在两把“时流贤者”时，Buff源检验可能会出错，暂不确定。
     if CID_list[0] == "self":
-        if buff_obj.ft.operator is None:
-            print(111111111, buff_obj.ft.index, buff_obj.ft.passively_updating, buff_obj.ft.beneficiary, buff_obj.ft.bufffrom)
-        # else:
-        #     print(222222222)
-        buff_from = buff_obj.ft.bufffrom
-        if buff_from in sim_instance.init_data.name_box:
-            target_name = buff_from
-        else:
-            buff_0_manager = sim_instance.load_data.buff_0_manager
-            target_name = buff_0_manager.search_equipper(equipment=buff_from)
-        if target_name is None:
-            raise ValueError(f"{buff_obj.ft.index}存在但是却无法找到{buff_from}的携带者，请检查初始化逻辑！")
-
+        """
+        注：当Buff的only_active_by的值为self时，
+        其语义为：“只有自己激活/释放的对象（技能、异常伤害）才能享受到这个buff的加成”
+        这里的“自己”，指的应该是Buff的受益者（beneficiary），而不是Buff的实际操作者（operator）
+        举例：如果某把武器会给三名队友上一个“自己触发的属性异常的伤害提升”的Buff，那么这里对比的就是触发源的角色以及当前buff的受益者。
+        所以这里的self指的是beneficiary
+        """
+        beneficiary = buff_obj.ft.beneficiary        # Buff的实际受益者
         if isinstance(judge_obj, SkillNode):
-            skill_result = target_name == judge_obj.char_name
+            skill_result = beneficiary == judge_obj.char_name
             return skill_result
         elif isinstance(judge_obj, AnomalyBar):
             if judge_obj.activated_by is None:
                 print(f"未检测到异常对象{judge_obj.element_type}的激活源！")
                 return False
-            anomaly_result = judge_obj.activated_by.char_name == target_name
+            anomaly_result = judge_obj.activated_by.char_name == beneficiary
             return anomaly_result
         else:
             print(f"judge_obj的类型未定义！{type(judge_obj)}")

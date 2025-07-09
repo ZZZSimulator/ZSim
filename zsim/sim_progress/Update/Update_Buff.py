@@ -8,19 +8,17 @@ def update_dynamic_bufflist(
     DYNAMIC_BUFF_DICT: dict, timetick, exist_buff_dict: dict, enemy: Enemy
 ):
     """
-    该函数是buff修改三部曲的第一步,\n
-    位于整个main函数主循环的第二部分,紧跟在tick_update函数之后.\n
-    这个函数主要用于更新DYNAMIC_BUFF_DICT,需要扔给它三个参数 \n
-    DICT,以及角色名的box(是一个list),以及当前时间timetick \n
-    它会轮询charname_box,并且以其中的角色名为key,到DICT中去提取对应的dynamic_buff_list \n
-    最后,将这些bufflist中的所有buff,挨个判断结束状态,如果该结束的,则执行buff.end(),并且把buff从list中移除.
-    TODO：重写注释！！！
+    该函数用于更新当前正处于活跃状态的Buff，
+    并且根据时间或是其他规则判断这些Buff是否应该结束。
+    结束的Buff会被移除。
+    注意，该函数的运行位置会导致所有Buff于Ntick末尾消失的Buff在N+1tick的开头处理，
+    当然这大部分情况下不会影响正确性。
     """
-
     update_anomaly_bar(timetick, enemy)
     for charname in exist_buff_dict:
         sub_exist_buff_dict = exist_buff_dict[charname]
-        for _ in DYNAMIC_BUFF_DICT[charname][:]:
+        remove_buff_list = []
+        for _ in DYNAMIC_BUFF_DICT[charname]:
             CheckBuff(_, charname)
             if not _.ft.simple_exit_logic:
                 # 首先处理那些通过xexit逻辑模块来控制结束与否的buff。
@@ -31,56 +29,47 @@ def update_dynamic_bufflist(
                         charname, timetick, _.ft.index, _.dy.count, True, level=4
                     )
                 else:
-                    KickOutBuff(
-                        DYNAMIC_BUFF_DICT,
-                        _,
-                        charname,
-                        enemy,
-                        sub_exist_buff_dict,
-                        timetick,
-                    )
-                continue
-            if _.ft.alltime:
-                # 对于alltime的buff，自然是每个tick都存在，所以每个tick都记录。
-                report_buff_to_queue(
-                    charname, timetick, _.ft.index, _.dy.count, True, level=4
-                )
-                continue
-            if _.ft.individual_settled:
-                if len(_.dy.built_in_buff_box) <= 0 or timetick >= _.dy.endticks:
-                    # 层数为0或是到点了，都会导致buff结束，触发KickOut
-                    KickOutBuff(
-                        DYNAMIC_BUFF_DICT,
-                        _,
-                        charname,
-                        enemy,
-                        sub_exist_buff_dict,
-                        timetick,
-                    )
-                    continue
-                else:
-                    process_individual_buff(_, timetick)
-                    # 先更新层数，再report。
-                    report_buff_to_queue(
-                        charname, timetick, _.ft.index, _.dy.count, True, level=4
-                    )
+                    remove_buff_list.append(_)
             else:
-                if timetick > _.dy.endticks:
-                    # 层数不独立的buff，时间到点了就要结束。满足该条件的buff统一执行KickOut.
-                    KickOutBuff(
-                        DYNAMIC_BUFF_DICT,
-                        _,
-                        charname,
-                        enemy,
-                        sub_exist_buff_dict,
-                        timetick,
-                    )
-                    continue
-                else:
-                    # 没结束的buffreport一下层数。
+                if _.ft.alltime:
+                    # 对于alltime的buff，自然是每个tick都存在，所以每个tick都记录。
                     report_buff_to_queue(
                         charname, timetick, _.ft.index, _.dy.count, True, level=4
                     )
+                    continue
+                if _.ft.individual_settled:
+                    if len(_.dy.built_in_buff_box) <= 0 or timetick >= _.dy.endticks:
+                        # 层数为0或是到点了，都会导致buff结束，
+                        remove_buff_list.append(_)
+                        continue
+                    else:
+                        process_individual_buff(_, timetick)
+                        # 先更新层数，再report。
+                        report_buff_to_queue(
+                            charname, timetick, _.ft.index, _.dy.count, True, level=4
+                        )
+                else:
+                    if timetick > _.dy.endticks:
+                        # 层数不独立的buff，时间到点了就要结束。
+                        remove_buff_list.append(_)
+                        continue
+                    else:
+                        # 没结束的buffreport一下层数。
+                        report_buff_to_queue(
+                            charname, timetick, _.ft.index, _.dy.count, True, level=4
+                        )
+        else:
+            # 统一执行KickOut函数，移除buff
+            for removed_buff in remove_buff_list:
+                KickOutBuff(
+                    DYNAMIC_BUFF_DICT,
+                    removed_buff,
+                    charname,
+                    enemy,
+                    sub_exist_buff_dict,
+                    timetick,
+                )
+
     update_dot(enemy, timetick)
     return DYNAMIC_BUFF_DICT
 

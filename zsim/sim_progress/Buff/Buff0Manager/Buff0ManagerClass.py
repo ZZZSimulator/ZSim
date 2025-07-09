@@ -1,10 +1,8 @@
 import copy
 import itertools
-import uuid
 from typing import TYPE_CHECKING
-
+from collections import defaultdict
 import pandas as pd
-
 from zsim.define import (
     BUFF_0_REPORT,
     CHARACTER_DATA_PATH,
@@ -42,6 +40,7 @@ class Buff0Manager:
         self.char_name_box = name_box  # 角色名列表
         self.name_order_box = self.change_name_box()  # 角色名顺序字典
         self.char_obj_dict = char_obj_dict
+        self.buff_info_inventory: dict[str, dict[str, tuple[dict, dict]]] = defaultdict(dict)
 
         # 设置初始值和数据预处理
         self.allbuff_list = self.EXIST_FILE.index.tolist()  # 将索引列转为列表
@@ -404,12 +403,8 @@ class Buff0Manager:
                 dict_1, dict_2, sim_instance=self.buff_0_manager.sim_instance
             )
             buff_new.ft.beneficiary = benifiter
-            # buff_new.ft.buff0_id = uuid.uuid4()
             self.buff_0_manager.exist_buff_dict[benifiter][buff_name] = buff_new
-            # if not buff_new.ft.passively_updating:
-            #     operator_obj: "Character" = self.buff_0_manager.char_obj_dict[buff_new.ft.operator]
-            #     map_key = hash((buff_new.ft.index, operator_obj.NAME))  # 由Buff的index、buff实操者的名字组成的哈希值为key
-            #     operator_obj.equip_buff_map[map_key] = buff_new     # 将这些buff0的指针存入角色的equip_buff_map
+            # self.buff_0_manager.buff_info_inventory[benifiter][buff_name] = (dict_1, dict_2)
 
         def processor_equipment_buff(
             self, adding_code, buff_info_tuple, buff_name, equipment_carrier

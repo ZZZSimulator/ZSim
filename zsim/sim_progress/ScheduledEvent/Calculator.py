@@ -56,7 +56,7 @@ class MultiplierData:
         enemy_obj: Enemy,
         dynamic_buff: dict | None = None,
         character_obj: Character | None = None,
-        judge_node: SkillNode| AnomalyBar | None = None,
+        judge_node: SkillNode | AnomalyBar | None = None,
     ):
         if dynamic_buff is None:
             dynamic_buff = {}
@@ -85,6 +85,7 @@ class MultiplierData:
             self.enemy_obj = enemy_obj
             # 获取buff动态加成
             dynamic_statement: dict = self.get_buff_bonus(dynamic_buff, self.judge_node)
+
             self.dynamic = self.DynamicStatement(dynamic_statement)
 
     def get_buff_bonus(self, dynamic_buff: dict, node: SkillNode | AnomalyBar | None) -> dict:
@@ -110,7 +111,7 @@ class MultiplierData:
                 )
                 enemy_buff = []
         enabled_buff: tuple = tuple(char_buff + enemy_buff)
-        dynamic_statement: dict = cal_buff_total_bonus(enabled_buff, node, sim_instance=self.enemy_obj.sim_instance)
+        dynamic_statement: dict = cal_buff_total_bonus(enabled_buff, node, sim_instance=self.enemy_obj.sim_instance, char_name=self.char_name)
         return dynamic_statement
 
     class StaticStatement:
