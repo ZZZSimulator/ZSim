@@ -83,7 +83,6 @@ class VivianAdditionalAbilityCoAttackTrigger(Buff.BuffLogic):
         self.get_prepared(char_CID=1361, preload_data=1)
         coattack_skill_tag = self.record.char.feather_manager.spawn_coattack()
         if coattack_skill_tag is None:
-            self.buff_instance.sim_instance.schedule_data.change_process_state()
             if VIVIAN_REPORT:
                 self.buff_instance.sim_instance.schedule_data.change_process_state()
                 print(
@@ -92,7 +91,6 @@ class VivianAdditionalAbilityCoAttackTrigger(Buff.BuffLogic):
             return
         input_tuple = (coattack_skill_tag, False, 0)
         self.record.preload_data.external_add_skill(input_tuple)
-        self.buff_instance.sim_instance.schedule_data.change_process_state()
         if VIVIAN_REPORT:
             self.buff_instance.sim_instance.schedule_data.change_process_state()
             print(
