@@ -1,6 +1,9 @@
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
+import traceback
+import inspect
+
 from zsim.define import saved_char_config
 from zsim.sim_progress import Buff
 from zsim.sim_progress.Buff.Buff0Manager import Buff0ManagerClass, change_name_box
@@ -203,3 +206,4 @@ class GlobalStats:
     def reset_myself(self, name_box):
         for name in self.name_box + ["enemy"]:
             self.DYNAMIC_BUFF_DICT[name] = []
+

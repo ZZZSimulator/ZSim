@@ -288,9 +288,9 @@ class ScheduledEvent:
 
     def solve_buff(self) -> None:
         """提前处理Buff实例"""
-        Buff.buff_add(
-            self.tick, self.data.loading_buff, self.data.dynamic_buff, self.data.enemy
-        )
+        # Buff.buff_add(
+        #     self.tick, self.data.loading_buff, self.data.dynamic_buff, self.data.enemy
+        # )
         buff_events = []
         other_events = []
         for event in self.data.event_list[:]:

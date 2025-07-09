@@ -6,8 +6,10 @@ from . import JudgeTools
 from .buff_class import Buff
 from .BuffAdd import add_debuff_to_enemy
 
+from zsim.sim_progress.Preload import SkillNode
+from zsim.sim_progress.Load import LoadingMission
+
 if TYPE_CHECKING:
-    from zsim.sim_progress.Load import LoadingMission
     from zsim.simulator.simulator_class import Simulator
 
 
@@ -25,7 +27,24 @@ def ScheduleBuffSettle(
     此类Buff往往需要当前Tick的结果出来之后再判定触发与否；
     """
     preload_data = JudgeTools.find_preload_data(sim_instance=sim_instance)
-    action_now = preload_data.get_on_field_node(time_tick)
+    action_result = None
+    if "anomaly_bar" in kwargs:
+        anomaly_bar = kwargs["anomaly_bar"]
+        if anomaly_bar.activated_by is not None:
+            action_result = anomaly_bar.activated_by
+    elif "skill_node" in kwargs:
+        skill_node = kwargs["skill_node"]
+        if isinstance(skill_node, SkillNode):
+            action_result = skill_node
+        elif isinstance(skill_node, LoadingMission):
+            action_result = skill_node.mission_node
+        else:
+            print(f"ScheduleBuffSettle函数接收到了无法识别的event类型{type(skill_node).__name__}")
+            return
+    if action_result is None:
+        action_now = preload_data.get_on_field_node(time_tick)
+    else:
+        action_now = action_result
     if action_now is None:
         print("Warnning！！！ScheduleBuffSettle函数没有找到action_now！")
         # FIXME: 修复这个问题！！！
@@ -156,6 +175,8 @@ def add_schedule_buff(
     """
     Schedule阶段用来直接添加buff的函数
     """
+    if not buff.ft.schedule_judge:
+        raise ValueError(f"{buff.ft.index}不是schedule阶段buff！")
     for characters in selected_characters:
         buff_new = Buff.create_new_from_existing(buff)
         buff_new.ft.operator = buff.ft.operator
