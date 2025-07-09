@@ -2,8 +2,8 @@ import argparse
 import timeit
 
 from zsim.simulator.config_classes import (
-    AttrCurveConfig,
-    WeaponConfig,
+    ExecAttrCurveCfg,
+    ExecWeaponCfg,
 )
 from zsim.simulator.simulator_class import Simulator
 
@@ -88,7 +88,7 @@ if __name__ == "__main__":
         simulator_instance = Simulator()
         # 并行模式，作为子进程运行，角色的指定副词条将被设为传入值，并根据是否移除其他主副词条进行模拟
         if func := args.func == "attr_curve":
-            sim_cfg: AttrCurveConfig = AttrCurveConfig(
+            sim_cfg: ExecAttrCurveCfg = ExecAttrCurveCfg(
                 stop_tick=args.stop_tick,
                 mode=args.mode,
                 adjust_char=args.adjust_char,
@@ -98,7 +98,7 @@ if __name__ == "__main__":
                 remove_equip=args.remove_equip,
             )
         elif func := args.func == "weapon":
-            sim_cfg: WeaponConfig = WeaponConfig(
+            sim_cfg: ExecWeaponCfg = ExecWeaponCfg(
                 stop_tick=args.stop_tick,
                 mode=args.mode,
                 adjust_char=args.adjust_char,

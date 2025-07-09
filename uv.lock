@@ -1853,6 +1853,7 @@ dependencies = [
 dev = [
     { name = "cx-freeze" },
     { name = "ipykernel" },
+    { name = "objprint" },
     { name = "openpyxl" },
     { name = "pyinstaller" },
     { name = "pytest" },
@@ -1883,6 +1884,7 @@ requires-dist = [
 dev = [
     { name = "cx-freeze", specifier = ">=6.15.0" },
     { name = "ipykernel", specifier = ">=6.29.5" },
+    { name = "objprint", specifier = ">=0.3.0" },
     { name = "openpyxl", specifier = ">=3.1.5" },
     { name = "pyinstaller", specifier = ">=6.13.0" },
     { name = "pytest", specifier = ">=8.3.5" },
