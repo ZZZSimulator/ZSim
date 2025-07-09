@@ -949,6 +949,9 @@ class Character:
         目前这个接口是被Schedule阶段调用的。"""
         return None
 
+    def __deepcopy__(self, memo):
+        return self
+
 
 class LastingNode:
     def __init__(self, char_instance: Character):
