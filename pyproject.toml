@@ -72,4 +72,5 @@ dev = [
     "pytest>=8.3.5",
     "viztracer>=1.0.3",
     "cx-freeze>=6.15.0",
+    "objprint>=0.3.0",
 ]

@@ -19,7 +19,7 @@ from .utils.filters import _skill_node_filter, _sp_update_data_filter
 if TYPE_CHECKING:
     from zsim.sim_progress.data_struct.sp_update_data import SPUpdateData
     from zsim.sim_progress.Preload.SkillsQueue import SkillNode
-    from zsim.simulator.config_classes import AttrCurveConfig, WeaponConfig
+    from zsim.simulator.config_classes import ExecAttrCurveCfg, ExecWeaponCfg
     from zsim.sim_progress.Buff.buff_class import Buff
 
 
@@ -53,7 +53,7 @@ class Character:
         crit_balancing=True,  # 暴击配平开关，默认开
         crit_rate_limit=0.95,  # 暴击率上限，默认0.95
         *,
-        sim_cfg: "AttrCurveConfig | WeaponConfig | None" = None,
+        sim_cfg: "ExecAttrCurveCfg | ExecWeaponCfg | None" = None,
     ):
         """
         调用时，会生成包含全部角色基础信息的对象，自动从数据库中查找全部信息
@@ -838,10 +838,10 @@ class Character:
         if SP_REGEN is not None:
             self.sp_regen_percent = SP_REGEN * SUB_STATS_MAPPING["SP_REGEN"]
 
-    def __init_attr_curve_config(self, parallel_config: "AttrCurveConfig"):
-        from zsim.simulator.config_classes import AttrCurveConfig
+    def __init_attr_curve_config(self, parallel_config: "ExecAttrCurveCfg"):
+        from zsim.simulator.config_classes import ExecAttrCurveCfg
 
-        if not isinstance(parallel_config, AttrCurveConfig):
+        if not isinstance(parallel_config, ExecAttrCurveCfg):
             return
         ALLOW_SC_LIST: list[str] = list(SUB_STATS_MAPPING.keys())
         sc_name, sc_value = parallel_config.sc_name, parallel_config.sc_value
