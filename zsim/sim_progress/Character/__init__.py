@@ -85,9 +85,12 @@ def character_factory(
         "sim_cfg": sim_cfg,
     }
     if name in __char_module_map:
-        module_name = __char_module_map[name]
-        module = importlib.import_module(f".{module_name}", package=__name__)
-        character_class: Type[Character] = getattr(module, module_name)
-        return character_class(**char_init_args)
+        try:
+            module_name = __char_module_map[name]
+            module = importlib.import_module(f".{module_name}", package=__name__)
+            character_class: Type[Character] = getattr(module, module_name)
+            return character_class(**char_init_args)
+        except ModuleNotFoundError:
+            return Character(**char_init_args)
     else:
         return Character(**char_init_args)
