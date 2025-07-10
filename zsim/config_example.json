@@ -40,6 +40,7 @@
         "debug_target_skill": "1371_CA"
     },
     "database": {
+        "SQLITE_PATH": "./zsim/data/zsim.db",
         "CHARACTER_DATA_PATH": "./zsim/data/character.csv",
         "WEAPON_DATA_PATH": "./zsim/data/weapon.csv",
         "EQUIP_2PC_DATA_PATH": "./zsim/data/equip_set_2pc.csv",
