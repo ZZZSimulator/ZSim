@@ -7,8 +7,8 @@ import streamlit as st
 from zsim.define import CONFIG_PATH
 from zsim.lib_webui.process_apl_editor import APLArchive, APLJudgeTool
 from zsim.simulator.config_classes import (
-    AttrCurveConfig,
-    WeaponConfig,
+    ExecAttrCurveCfg,
+    ExecWeaponCfg,
 )
 from zsim.simulator.config_classes import (
     SimulationConfig as SimCfg,
@@ -48,7 +48,7 @@ def generate_parallel_args(
         )  # 获取需要移除装备的词条列表，如果不存在则为空列表
         for sc_name in sc_list:
             for sc_value in range(sc_range_start, sc_range_end + 1):
-                args = AttrCurveConfig(
+                args = ExecAttrCurveCfg(
                     stop_tick=stop_tick,
                     mode="parallel",
                     func=func,
@@ -63,7 +63,7 @@ def generate_parallel_args(
         adjust_weapon_cfg = parallel_cfg["adjust_weapon"]
         weapon_list = adjust_weapon_cfg["weapon_list"]
         for weapon in weapon_list:
-            args = WeaponConfig(
+            args = ExecWeaponCfg(
                 stop_tick=stop_tick,
                 mode="parallel",
                 func=func,
@@ -171,12 +171,8 @@ def show_apl_judge_result(selected_title: str | None = None) -> bool:
     return required_chars_result[0] and char_config_result[0]
 
 
-def enemy_selector() -> tuple[int, int]:
-    """敌人配置选择器。
-
-    Returns:
-        tuple[int, int]: (index_ID, adjust_ID) 元组
-    """
+def enemy_selector() -> None:
+    """敌人配置选择器界面。"""
     # 从enemy.csv获取所有唯一的IndexID和CN_enemy_ID，并按IndexID排序
     with open(CONFIG_PATH, "r", encoding="utf-8") as f:
         config = json.load(f)

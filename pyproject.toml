@@ -4,7 +4,16 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 include = ["zsim*"]
-exclude = ["results*", "tests*", "docs*", "build*", ".venv*", ".git*"]
+exclude = [
+    "results*",
+    "tests*",
+    "docs*",
+    "build*",
+    ".venv*",
+    ".git*",
+    "electron*",
+    "dist*",
+]
 
 [tool.cxfreeze]
 executables = [{ script = "zzz_simulator.py", base = "gui" }]
@@ -42,7 +51,11 @@ dependencies = [
     "polars>=1.28.1",
     "pywebview>=5.4",
     "fastapi>=0.115.12",
+    "uvicorn>=0.35.0",
 ]
+
+[tool.ruff]
+line-length = 100
 
 [[tool.uv.index]]
 url = "https://pypi.tuna.tsinghua.edu.cn/simple"
@@ -62,4 +75,5 @@ dev = [
     "pytest>=8.3.5",
     "viztracer>=1.0.3",
     "cx-freeze>=6.15.0",
+    "objprint>=0.3.0",
 ]
