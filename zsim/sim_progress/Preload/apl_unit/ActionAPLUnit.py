@@ -3,9 +3,7 @@ from typing import TYPE_CHECKING
 from .APLUnit import APLUnit
 
 if TYPE_CHECKING:
-    from zsimsimulator.simulator_class import Simulator
-
-
+    from zsim.simulator.simulator_class import Simulator
 
 
 class ActionAPLUnit(APLUnit):
