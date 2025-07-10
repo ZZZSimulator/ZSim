@@ -66,9 +66,7 @@ ENEMY_ATTACK_REPORT: bool = _config["apl_mode"]["enemy_attack_report"]
 ENEMY_ATK_PARAMETER_DICT: dict[str, int | float] = {
     "Taction": 30,  # 角色弹刀与闪避动作的持续时间，不开放给用户更改。
     "Tbase": 273,  # 人类反应时间大数据中位数，单位ms，不可更改！
-    "PlayerLevel": _config["apl_mode"][
-        "player_level"
-    ],  # 玩家水平系数，由用户自己填写。
+    "PlayerLevel": _config["apl_mode"]["player_level"],  # 玩家水平系数，由用户自己填写。
     "theta": 90,  # θ，人类胜利最小反应时间（神经传导极限），为90ms，不可更改！
     "c": 0.5,  # 波动调节系数，暂取0.5，不开放给用户更改。
     "delta": 30,  # 玩家水平系数所导致的中位数波动单位，暂时取30ms，不开放给用户更改。
@@ -93,6 +91,9 @@ SWAP_CANCEL_MODE_COMPLETION_COEFFICIENT: float = _config["swap_cancel_mode"][
 SWAP_CANCEL_MODE_LAG_TIME: float = _config["swap_cancel_mode"]["lag_time"]
 SWAP_CANCEL_MODE_DEBUG: bool = _config["swap_cancel_mode"]["debug"]
 SWAP_CANCEL_DEBUG_TARGET_SKILL: str = _config["swap_cancel_mode"]["debug_target_skill"]
+
+# 数据库配置
+SQLITE_PATH: str = _config["database"]["SQLITE_PATH"]
 CHARACTER_DATA_PATH: str = _config["database"]["CHARACTER_DATA_PATH"]
 WEAPON_DATA_PATH: str = _config["database"]["WEAPON_DATA_PATH"]
 EQUIP_2PC_DATA_PATH: str = _config["database"]["EQUIP_2PC_DATA_PATH"]

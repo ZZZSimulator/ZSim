@@ -54,6 +54,9 @@ dependencies = [
     "uvicorn>=0.35.0",
 ]
 
+[tool.ruff]
+line-length = 100
+
 [[tool.uv.index]]
 url = "https://pypi.tuna.tsinghua.edu.cn/simple"
 default = true

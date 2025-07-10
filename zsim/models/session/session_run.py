@@ -45,7 +45,14 @@ SessionCreate 的初始化json样例:
 
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field, ValidationError, model_validator
+from pydantic import (
+    BaseModel,
+    Field,
+    NonNegativeFloat,
+    NonNegativeInt,
+    ValidationError,
+    model_validator,
+)
 
 
 class CharConfig(BaseModel):
@@ -63,20 +70,20 @@ class CharConfig(BaseModel):
     drive4: str | None = None
     drive5: str | None = None
     drive6: str | None = None
-    scATK_percent: int = 0
-    scATK: int = 0
-    scHP_percent: int = 0
-    scHP: int = 0
-    scDEF_percent: int = 0
-    scDEF: int = 0
-    scAnomalyProficiency: int = 0
-    scPEN: int = 0
-    scCRIT: int = 0
-    scCRIT_DMG: int = 0
-    sp_limit: int | float = 120
-    cinema: int = 0
+    scATK_percent: NonNegativeInt = 0
+    scATK: NonNegativeInt = 0
+    scHP_percent: NonNegativeInt = 0
+    scHP: NonNegativeInt = 0
+    scDEF_percent: NonNegativeInt = 0
+    scDEF: NonNegativeInt = 0
+    scAnomalyProficiency: NonNegativeInt = 0
+    scPEN: NonNegativeInt = 0
+    scCRIT: NonNegativeInt = 0
+    scCRIT_DMG: NonNegativeInt = 0
+    sp_limit: NonNegativeInt | float = 120
+    cinema: NonNegativeInt = 0
     crit_balancing: bool = True
-    crit_rate_limit: float = 0.95
+    crit_rate_limit: NonNegativeFloat = 0.95
 
     @model_validator(mode="after")
     def validate_stats(self) -> "CharConfig":
@@ -85,20 +92,10 @@ class CharConfig(BaseModel):
         if self.name is None and self.CID is None:
             raise ValidationError("name和CID不能同时为空")
         # 验证暴击率上限
-        if not 0 <= self.crit_rate_limit <= 1:
-            raise ValidationError("暴击率上限必须在0到1之间")
+        if not 0.05 <= self.crit_rate_limit <= 1:
+            raise ValidationError("暴击率上限必须在0.05到1之间")
 
         # 验证所有sc属性必须大于等于0
-        # fmt:off
-        sc_fields = [
-            'scATK_percent', 'scATK', 'scHP_percent', 'scHP',
-            'scDEF_percent', 'scDEF', 'scAnomalyProficiency',
-            'scPEN', 'scCRIT', 'scCRIT_DMG'
-        ]
-        # fmt:on
-        for field in sc_fields:
-            if getattr(self, field) < 0:
-                raise ValidationError(f"{field}必须大于等于0")
 
         return self
 
@@ -204,7 +201,7 @@ class ParallelCfg(BaseModel):
         return data
 
 
-class SessionCreate(BaseModel):
+class SessionRun(BaseModel):
     """模拟器会话配置参数，启动会话的全部数据"""
 
     # all mode common:
@@ -214,7 +211,7 @@ class SessionCreate(BaseModel):
     parallel_config: ParallelCfg | None = None
 
     @model_validator(mode="after")
-    def validate_common_config(self) -> "SessionCreate":
+    def validate_common_config(self) -> "SessionRun":
         """验证通用配置参数"""
         if self.mode == "parallel" and self.parallel_config is None:
             raise ValidationError("并行模式下，parallel_config 不能为空")
@@ -229,25 +226,25 @@ if __name__ == "__main__":
             "sc_range": (0, 40),
             "sc_list": ["scATK", "scDEF"],
             "remove_equip_list": [],
-        },
+        },  # type: ignore
     )
     print(config)
     try:
-        session_config = SessionCreate(
+        session_config = SessionRun(
             stop_tick=1000,
             mode="parallel",
             common_config={
                 "char_config": [{"name": ""}, {"name": ""}, {"name": ""}],
                 "enemy_config": {"index_id": 1, "adjustment_idx": "s"},
                 "apl_path": "",
-            },
+            },  # type: ignore
             parallel_config=config,
         )
         print(session_config.model_dump_json(indent=4))
     except ValidationError as e:
         print(e)
     try:
-        session_config = SessionCreate(
+        session_config = SessionRun(
             **{
                 "stop_tick": 3600,
                 "mode": "parallel",
