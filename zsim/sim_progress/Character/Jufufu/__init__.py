@@ -3,6 +3,9 @@ from sim_progress.Character.character import Character
 from sim_progress.Preload import SkillNode
 from define import JUFUFU_REPORT
 from .HuweiManagerClass import HuweiManager
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from zsim.simulator.simulator_class import Simulator
 
 
 class Jufufu(Character):
@@ -18,17 +21,52 @@ class Jufufu(Character):
         """橘福福的特殊资源模块的主函数"""
         skill_nodes: list[SkillNode] = _skill_node_filter(*args, **kwargs)
         tick = self.sim_instance.tick
-        # TODO: 虎威管理器 自检。
         for node in skill_nodes:
-            # TODO: 检查队友的技能，如果是大招，则触发反哺喧响值逻辑
+            if self.additional_abililty_active:
+                # 检查队友的技能，如果是大招，则触发反哺喧响值逻辑、
+                self.decibel_refund(node)
+            if node.char_name == self.NAME:
+                pass
             # TODO: 检查自己的技能，修改威风数值
 
-            # TODO：发现一个潜在的问题，就是虎威的管理器是在这个阶段进行运行并且向Preload抛出攻击动作的，
-            #  但是这意味着虎威抛出的动作在下一个tick才会被Preload受理，这好像有点奇怪？？？
-            #  那我在计算CD时必须考虑这个时间差，使其符合测试值，所以虎威必须提前1tick运行。
-            #  另外，就算是提前1tick，貌似依旧无法处理第0tick的情况。第0tick如果触发了虎威的自动攻击，
-            #  那就只能去第1tick执行了（不过貌似进战斗的时候虎威不会A一下，但是这个还需要测试）
-            pass
+            """威风、威势来源，以及处理位置：
+            Character处理
+            1、强化E：80威风，3威势——发动时获得
+            2、大招：100威风，6威势——发动时获得
+            3、协同连携：-100威风，发动时结算
+            4、支援突击：1威势，10秒内置CD，发动时获得
+            
+            Buff触发器处理——调用Character的内置方法。
+            5、虎威普攻，20威风，命中时获得
+            6、强化旋转的撞击：-1威势，25威风，命中时结算
+            
+            """
+
+        else:
+            """
+            因为涉及到占用问题，所以每个tick应该让skill_node更新传入优先于虎威自检，
+            因为在第Ntick抛出的动作会在第N + 1tick被执行，而如果每个tick虎威的自检前置，那么容易重复抛出，
+            """
+            self.huwei_manager.check_myself()
+
+    def decibel_refund(self, node):
+        """模拟橘福福反哺队友喧响值的逻辑"""
+        if node.skill.trigger_buff_level == 6:
+            char_obj: Character = node.skill.char_obj
+            if char_obj.speicalty in ["命破", "强攻"]:
+                from zsim.sim_progress.data_struct import ScheduleRefreshData
+                target_name = char_obj.NAME
+                decibel_value = 300
+                refresh_data = ScheduleRefreshData(
+                    decibel_target=(target_name,),
+                    decibel_value=decibel_value,
+                )
+                sim_instance: "Simulator" = self.sim_instance
+                event_list = sim_instance.schedule_data.event_list
+                event_list.append(refresh_data)
+                if JUFUFU_REPORT:
+                    sim_instance.schedule_data.change_process_state()
+                    print(f"检测到{target_name}释放大招{node.skill.skill_text}，为其恢复{decibel_value}点喧响值！")
 
     def update_might(self, might_change: int, update_from: SkillNode | str):
         """更改威风点数的函数"""
