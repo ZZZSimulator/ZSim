@@ -1,6 +1,8 @@
 import asyncio
 from concurrent.futures import ProcessPoolExecutor
-from zsim.lib_webui.multiprocess_wrapper import run_single_simulation, run_parallel_simulation
+
+from zsim.lib_webui.multiprocess_wrapper import run_parallel_simulation, run_single_simulation
+
 
 class SimController:
     def __init__(self):
@@ -11,12 +13,11 @@ class SimController:
             self._executor = ProcessPoolExecutor()
         return self._executor
 
-    async def run_simulation(self):
+    async def run_test_simulation(self):
         """
-        运行模拟。
+        运行测试模拟。
         """
         loop = asyncio.get_event_loop()
         executor = self._get_executor()
-        result = await loop.run_in_executor(executor, run_single_simulation)
+        result = await loop.run_in_executor(executor, run_single_simulation, (6000))
         return result
-

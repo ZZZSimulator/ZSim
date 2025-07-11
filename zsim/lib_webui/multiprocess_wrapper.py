@@ -47,5 +47,7 @@ def run_parallel_simulation(sim_cfg: "SimCfg") -> str:
     with redirect_stdout(f):
         print("启动子进程")
         sim_ins = Simulator()
-        sim_ins.main_loop(stop_tick=sim_cfg.stop_tick, sim_cfg=sim_cfg)
+        sim_ins.main_loop(
+            stop_tick=sim_cfg.stop_tick if sim_cfg.stop_tick is not None else 1000, sim_cfg=sim_cfg
+        )
     return f.getvalue()

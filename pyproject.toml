@@ -52,6 +52,7 @@ dependencies = [
     "pywebview>=5.4",
     "fastapi>=0.115.12",
     "uvicorn>=0.35.0",
+    "aiosqlite>=0.21.0",
 ]
 
 [tool.ruff]
