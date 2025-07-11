@@ -30,6 +30,7 @@ from zsim.simulator.dataclasses import (
 )
 
 if TYPE_CHECKING:
+    from zsim.models.session.session_run import SessionRun
     from zsim.simulator.dataclasses import SimCfg
 
 
@@ -87,6 +88,14 @@ class Simulator:
         self.reset_sim_data(sim_cfg)  # 重置所有全局变量
         start_report_threads(sim_cfg)  # 启动线程以处理日志和结果写入
 
+    def api_init_simulator(self, session_run: "SessionRun"):
+        """api初始化模拟器实例的接口。"""
+        ...
+
+    def api_run_simulator(self):
+        """api运行模拟器实例的接口。"""
+        ...
+
     def reset_sim_data(self, sim_cfg: "SimCfg | None"):
         """重置所有全局变量为初始状态。"""
         if sim_cfg is not None:
@@ -122,15 +131,13 @@ class Simulator:
         if self.schedule_data.enemy.sim_instance is None:
             self.schedule_data.enemy.sim_instance = self
 
-        self.global_stats = GlobalStats(
-            name_box=self.init_data.name_box, sim_instance=self
-        )
+        self.global_stats = GlobalStats(name_box=self.init_data.name_box, sim_instance=self)
         skills = [char.skill_object for char in self.char_data.char_obj_list]
         self.preload = PreloadClass(
             skills, load_data=self.load_data, apl_path=APL_PATH, sim_instance=self
         )
 
-        self.game_state = {  # noqa: F841
+        self.game_state: dict[str, Any] = {
             "tick": self.tick,
             "init_data": self.init_data,
             "char_data": self.char_data,
@@ -189,7 +196,7 @@ class Simulator:
                 self.load_data.load_mission_dict,
                 self.schedule_data.enemy,
                 self.schedule_data.event_list,
-                self.char_data.char_obj_list
+                self.char_data.char_obj_list,
             )
             BuffLoadLoop(
                 self.tick,
