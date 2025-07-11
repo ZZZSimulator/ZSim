@@ -21,6 +21,7 @@ class HuweiManager:
         self.normal_attack_tag: str = "1391_SNA"     # 普攻攻击的技能tag
         self.ex_qte_tag: str = "1391_QTE_B"        # 强化连携技的技能tag
         self.ca_tag: str = "1391_CA_3"        # 强化旋转状态的技能tag
+        self.occupied_skill_list: list[str] = ["1391_E_EX", "1391_CA_2", "1391_CA_3", "1391_QTE_A", "1391_QTE_B", "1391_Q"]
 
     @property
     def ready(self) -> bool:
@@ -80,6 +81,11 @@ class HuweiManager:
             if JUFUFU_REPORT:
                 self.sim_instance.schedule_data.change_process_state()
                 print(f"虎威释放一次普通攻击！")
+
+    def update_occupied_state(self, skill_node: SkillNode):
+        """把外部传入的skill_node做筛选，并且更新虎威的占用状态"""
+        if skill_node.skill_tag in self.occupied_skill_list:
+            self.update_occupied_origin(skill_node, tick=self.sim_instance.tick)
 
 
 

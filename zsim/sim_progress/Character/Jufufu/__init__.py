@@ -26,6 +26,7 @@ class Jufufu(Character):
                 # 检查队友的技能，如果是大招，则触发反哺喧响值逻辑、
                 self.decibel_refund(node)
             if node.char_name == self.NAME:
+                # TODO: 属于橘福福自己的技能，需要先传进虎威的数据结构中，更新占用情况。
                 pass
             # TODO: 检查自己的技能，修改威风数值
 
