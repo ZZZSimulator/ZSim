@@ -38,6 +38,7 @@ dist*
 *.egg
 *.spec
 zsim/data/character_config.toml
+zsim/data/zsim.db
 zsim/config.json
 
 # macOS系统文件
