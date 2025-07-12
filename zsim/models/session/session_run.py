@@ -26,7 +26,7 @@ SessionCreate 的初始化json样例:
         ],
         "enemy_config": {
             "index_id": 1,
-            "adjustment_idx": "s",
+            "adjustment_id": "s",
             "difficulty": 8.74
         },
         "apl_path": "path/to/apl.txt"
@@ -104,7 +104,7 @@ class EnemyConfig(BaseModel):
     """敌人配置参数"""
 
     index_id: int
-    adjustment_idx: int | str
+    adjustment_id: int | str
     difficulty: int | float = 8.74
 
 
