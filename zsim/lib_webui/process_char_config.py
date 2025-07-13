@@ -1,6 +1,7 @@
 import streamlit as st
 from zsim.define import saved_char_config
 from zsim.sim_progress.Character import character_factory
+from zsim.models.session.session_run import CharConfig
 
 
 def display_character_panels(name_box: list[str], use_columns: bool = True) -> None:
@@ -10,13 +11,14 @@ def display_character_panels(name_box: list[str], use_columns: bool = True) -> N
         name_box: 包含角色名称的列表。
         use_columns: 是否将角色面板分列显示，默认为 True。
     """
-    all_char_configs = [
+    all_char_configs: list[dict] = [
         saved_char_config.get(name) for name in name_box if name in saved_char_config
     ]
     characters = []
     for config in all_char_configs:
         if config:
-            character = character_factory(**config)
+            char_config = CharConfig(**config)
+            character = character_factory(char_config)
             characters.append(character)
     st.subheader("角色局外面板")
 
