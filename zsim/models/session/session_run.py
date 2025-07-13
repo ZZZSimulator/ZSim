@@ -1,46 +1,37 @@
 """
 单个会话的启动配置参数
 
-SessionCreate 的初始化json样例:
-{
-    "stop_tick": 3600,
-    "mode": "parallel",
-    "common_config": {
-        "char_config": [
-            {
-                "name": "角色名",
-                "CID": 1,
-                "weapon": "武器名",
-                "weapon_level": 5,
-                "equip_style": "4+2",
-                "equip_set4": "套装4",
-                "equip_set2_a": "套装2a",
-                "drive4": "驱动4",
-                "drive5": "驱动5",
-                "drive6": "驱动6",
-                "scATK_percent": 10,
-                "scCRIT": 10,
-                "scCRIT_DMG": 10
-            }, ..., ...,
-            需要至少三个角色
-        ],
-        "enemy_config": {
-            "index_id": 1,
-            "adjustment_id": "s",
-            "difficulty": 8.74
+初始化json样例:
+session_config = SessionRun(
+    **{
+        "stop_tick": 3600,
+        "mode": "parallel",
+        "common_config": {
+            "session_id": "123",
+            "char_config": [
+                {"name": "角色名", "CID": 1},
+                {"name": "角色名", "CID": 2},
+                {"name": "角色名", "CID": 3},
+            ],
+            "enemy_config": {
+                "index_id": 11451,
+                "adjustment_id": 22041,
+                "difficulty": 8.74,
+            },
+            "apl_path": "path/to/apl.toml",
         },
-        "apl_path": "path/to/apl.txt"
-    },
-    "parallel_config": {
-        "enable": true,
-        "func": "attr_curve",        # 可选值功能，后续会拓展
-        "func_config": {             # 根据 func 的值，自动将 func_config 字典转换为正确的模型实例
-            "sc_range": [0, 40],
-            "sc_list": ["scATK_percent", "scCRIT", "scCRIT_DMG"],
-            "remove_equip_list": []
-        }
+        "parallel_config": {
+            "enable": "true",
+            "adjust_char": 2,
+            "func": "attr_curve",  # 可选值功能，后续会拓展
+            "func_config": {  # 根据 func 的值，自动将 func_config 字典转换为正确的模型实例
+                "sc_range": [0, 40],
+                "sc_list": ["scATK_percent", "scCRIT", "scCRIT_DMG"],
+                "remove_equip_list": [],
+            },
+        },
     }
-}
+)
 """
 
 from typing import Any, Literal
@@ -58,7 +49,7 @@ from pydantic import (
 class CharConfig(BaseModel):
     """角色配置参数"""
 
-    name: str | None = None
+    name: str
     CID: int | None = None
     weapon: str | None = None
     weapon_level: Literal[1, 2, 3, 4, 5] = 1
@@ -80,17 +71,14 @@ class CharConfig(BaseModel):
     scPEN: NonNegativeInt = 0
     scCRIT: NonNegativeInt = 0
     scCRIT_DMG: NonNegativeInt = 0
-    sp_limit: NonNegativeInt | float = 120
-    cinema: NonNegativeInt = 0
+    sp_limit: NonNegativeInt | NonNegativeFloat = 120
+    cinema: Literal[0, 1, 2, 3, 4, 5, 6] = 0
     crit_balancing: bool = True
     crit_rate_limit: NonNegativeFloat = 0.95
 
     @model_validator(mode="after")
     def validate_stats(self) -> "CharConfig":
         """验证属性值是否合法"""
-        # name和CID不能同时为空
-        if self.name is None and self.CID is None:
-            raise ValidationError("name和CID不能同时为空")
         # 验证暴击率上限
         if not 0.05 <= self.crit_rate_limit <= 1:
             raise ValidationError("暴击率上限必须在0.05到1之间")
@@ -139,6 +127,7 @@ class ExecWeaponCfg(SimulationConfig):
 class CommonCfg(BaseModel):
     """通用配置参数"""
 
+    session_id: str
     char_config: list[CharConfig] = []
     enemy_config: EnemyConfig
     apl_path: str = ""
@@ -154,6 +143,7 @@ class CommonCfg(BaseModel):
 
 class ParallelCfg(BaseModel):
     enable: bool = False
+    adjust_char: Literal[1, 2, 3]
     func: Literal["attr_curve", "weapon"] | None = None
     func_config: "AttrCurveConfig | WeaponConfig | None" = None
 
@@ -167,11 +157,14 @@ class ParallelCfg(BaseModel):
     class WeaponConfig(BaseModel):
         """调整武器配置参数"""
 
-        weapon_list: list[str] = []
-        weapon_levels: list[Literal[1, 2, 3, 4, 5]] = [1, 5]
+        weapon_list: list["SingleWeapon"] = []
 
-    @model_validator(mode="before")
+        class SingleWeapon(BaseModel):
+            name: str
+            level: Literal[1, 2, 3, 4, 5] = 1
+
     @classmethod
+    @model_validator(mode="before")
     def _check_func_config_type(cls, data: Any) -> Any:
         """根据 func 的值，自动将 func_config 字典转换为正确的模型实例"""
         if not isinstance(data, dict):
@@ -221,6 +214,7 @@ class SessionRun(BaseModel):
 if __name__ == "__main__":
     config = ParallelCfg(
         enable=True,
+        adjust_char=2,
         func="attr_curve",
         func_config={
             "sc_range": (0, 40),
@@ -234,8 +228,9 @@ if __name__ == "__main__":
             stop_tick=1000,
             mode="parallel",
             common_config={
+                "session_id": "123",
                 "char_config": [{"name": ""}, {"name": ""}, {"name": ""}],
-                "enemy_config": {"index_id": 1, "adjustment_idx": "s"},
+                "enemy_config": {"index_id": 1, "adjustment_id": "s"},
                 "apl_path": "",
             },  # type: ignore
             parallel_config=config,
@@ -249,20 +244,22 @@ if __name__ == "__main__":
                 "stop_tick": 3600,
                 "mode": "parallel",
                 "common_config": {
+                    "session_id": "123",
                     "char_config": [
                         {"name": "角色名", "CID": 1},
                         {"name": "角色名", "CID": 2},
                         {"name": "角色名", "CID": 3},
                     ],
                     "enemy_config": {
-                        "index_id": 1,
-                        "adjustment_idx": "s",
+                        "index_id": 11451,
+                        "adjustment_id": 22041,
                         "difficulty": 8.74,
                     },
-                    "apl_path": "path/to/apl.txt",
+                    "apl_path": "path/to/apl.toml",
                 },
                 "parallel_config": {
                     "enable": "true",
+                    "adjust_char": 2,
                     "func": "attr_curve",  # 可选值功能，后续会拓展
                     "func_config": {  # 根据 func 的值，自动将 func_config 字典转换为正确的模型实例
                         "sc_range": [0, 40],

@@ -30,7 +30,7 @@ from zsim.simulator.dataclasses import (
 )
 
 if TYPE_CHECKING:
-    from zsim.models.session.session_run import SessionRun
+    from zsim.models.session.session_run import CommonCfg
     from zsim.simulator.dataclasses import SimCfg
 
 
@@ -62,14 +62,12 @@ class Simulator:
     - 随机数生成器实例（rng_instance）
     - 并行模式标志（in_parallel_mode）
     - 模拟配置，用于控制并行模式下，模拟器作为子进程的参数（sim_cfg）
-
-    Args:
-        sim_cfg (SimCfg | None): 模拟配置对象，包含模拟的详细参数。
     """
 
     tick: int
     crit_seed: int
     init_data: InitData
+    enemy: Enemy
     char_data: CharacterData
     load_data: LoadData
     schedule_data: ScheduleData
@@ -83,33 +81,61 @@ class Simulator:
     in_parallel_mode: bool
     sim_cfg: "SimCfg | None"
 
-    def reset_simulator(self, sim_cfg: "SimCfg | None"):
-        """重置模拟器实例为初始状态。"""
-        self.reset_sim_data(sim_cfg)  # 重置所有全局变量
+    def cli_init_simulator(self, sim_cfg: "SimCfg | None"):
+        """CLI和WebUI的旧方法，重置模拟器实例为初始状态。"""
+        self.__detect_parallel_mode(sim_cfg)
+        self.init_data = InitData(common_cfg=None, sim_cfg=sim_cfg)
+        self.enemy = Enemy(
+            index_id=ENEMY_INDEX_ID,
+            adjustment_id=ENEMY_ADJUST_ID,
+            difficulty=ENEMY_DIFFICULTY,
+            sim_instance=self,
+        )
+        self.__init_data_struct(sim_cfg)
         start_report_threads(sim_cfg)  # 启动线程以处理日志和结果写入
 
-    def api_init_simulator(self, session_run: "SessionRun"):
+    def api_init_simulator(self, common_cfg: "CommonCfg", sim_cfg: "SimCfg | None"):
         """api初始化模拟器实例的接口。"""
-        ...
+        self.__detect_parallel_mode(sim_cfg)
+        self.init_data = InitData(common_cfg=common_cfg, sim_cfg=sim_cfg)
+        self.enemy = Enemy(
+            index_id=common_cfg.enemy_config.index_id,
+            adjustment_id=common_cfg.enemy_config.adjustment_id,
+            difficulty=common_cfg.enemy_config.difficulty,
+            sim_instance=self,
+        )
+        self.__init_data_struct(sim_cfg, api_apl_path=common_cfg.apl_path)
+        start_report_threads(
+            sim_cfg, session_id=common_cfg.session_id
+        )  # 启动线程以处理日志和结果写入
 
-    def api_run_simulator(self, session_run: "SessionRun"):
-        """api运行模拟器实例的接口。"""
-        raise NotImplementedError
-        self.api_init_simulator(session_run)
-        self.main_loop(use_api = True)
+    def api_run_simulator(
+        self, common_cfg: "CommonCfg", sim_cfg: "SimCfg | None", stop_tick: int = 10800
+    ):
+        """api运行模拟器实例的接口。
 
-    def reset_sim_data(self, sim_cfg: "SimCfg | None"):
-        """重置所有全局变量为初始状态。"""
+        Args:
+            common_cfg: 通用配置对象，包含角色和敌人配置
+            sim_cfg: 模拟配置对象，包含模拟的详细参数
+            stop_tick: 停止模拟的帧数，默认为10800帧（3分钟）
+
+        Returns:
+            模拟结果数据
+        """
+        self.api_init_simulator(common_cfg, sim_cfg)
+        return self.main_loop(stop_tick=stop_tick, sim_cfg=sim_cfg, use_api=True)
+
+    def __detect_parallel_mode(self, sim_cfg):
         if sim_cfg is not None:
             self.in_parallel_mode = True
             self.sim_cfg = sim_cfg
         else:
             self.in_parallel_mode = False
             self.sim_cfg = None
+
+    def __init_data_struct(self, sim_cfg, *, api_apl_path: str | None = None):
         self.tick = 0
         self.crit_seed = 0
-        self.init_data = InitData(sim_cfg)
-
         self.char_data = CharacterData(self.init_data, sim_cfg, sim_instance=self)
         self.load_data = LoadData(
             name_box=self.init_data.name_box,
@@ -121,24 +147,20 @@ class Simulator:
             sim_instance=self,
         )
         self.schedule_data = ScheduleData(
-            enemy=Enemy(
-                index_ID=ENEMY_INDEX_ID,
-                adjust_ID=ENEMY_ADJUST_ID,
-                difficulty=ENEMY_DIFFICULTY,
-                sim_instance=self,
-            ),
+            enemy=self.enemy,
             char_obj_list=self.char_data.char_obj_list,
             sim_instance=self,
         )
         if self.schedule_data.enemy.sim_instance is None:
             self.schedule_data.enemy.sim_instance = self
-
         self.global_stats = GlobalStats(name_box=self.init_data.name_box, sim_instance=self)
         skills = [char.skill_object for char in self.char_data.char_obj_list]
         self.preload = PreloadClass(
-            skills, load_data=self.load_data, apl_path=APL_PATH, sim_instance=self
+            skills,
+            load_data=self.load_data,
+            apl_path=APL_PATH if api_apl_path is None else api_apl_path,
+            sim_instance=self,
         )
-
         self.game_state: dict[str, Any] = {
             "tick": self.tick,
             "init_data": self.init_data,
@@ -151,15 +173,18 @@ class Simulator:
         self.decibel_manager = Decibelmanager(self)
         self.listener_manager = ListenerManger(self)
         self.rng_instance = RNG(sim_instance=self)
-
         # 监听器的初始化需要整个Simulator实例，因此在这里进行初始化
         self.load_data.buff_0_manager.initialize_buff_listener()
 
     def main_loop(
         self, stop_tick: int = 10800, *, sim_cfg: "SimCfg | None" = None, use_api: bool = False
     ):
+        """
+        CLI和WebUI使用此方法直接从文件读取数据，运行模拟器。
+        传入的值仅为stop_tick和并行模拟配置。
+        """
         if not use_api:
-            self.reset_simulator(sim_cfg)
+            self.cli_init_simulator(sim_cfg)
         while True:
             # Tick Update
             # report_to_log(f"[Update] Tick step to {tick}")

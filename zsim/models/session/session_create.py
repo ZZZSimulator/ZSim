@@ -1,8 +1,11 @@
 from datetime import datetime
 from uuid import uuid4
-from .session_run import SessionRun
+from typing import Literal
 
 from pydantic import BaseModel, Field
+
+from .session_run import SessionRun
+from .session_result import SessionResult
 
 
 def generate_session_id() -> str:
@@ -22,7 +25,10 @@ class Session(BaseModel):
         default_factory=datetime.now, description="会话创建时间，默认当前时间"
     )
     session_run: SessionRun | None = None
-    session_result: None = None  # 后面再写
+    session_result: list[SessionResult] | None = None
+    status: Literal["pending", "running", "completed", "stopped", "failed"] = Field(
+        default="pending", description="会话状态"
+    )
 
 
 if __name__ == "__main__":

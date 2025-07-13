@@ -23,6 +23,7 @@ class SessionDB:
                 """CREATE TABLE IF NOT EXISTS sessions (
                     session_id TEXT PRIMARY KEY,
                     create_time TEXT NOT NULL,
+                    status TEXT NOT NULL,
                     session_run TEXT,
                     session_result TEXT
                 )"""
@@ -35,12 +36,13 @@ class SessionDB:
         await self._init_db()
         async with aiosqlite.connect(SQLITE_PATH) as db:
             await db.execute(
-                "INSERT INTO sessions (session_id, create_time, session_run, session_result) VALUES (?, ?, ?, ?)",
+                "INSERT INTO sessions (session_id, create_time, status, session_run, session_result) VALUES (?, ?, ?, ?, ?)",
                 (
                     session.session_id,
                     session.create_time.isoformat(),
+                    session.status,
                     session.session_run.model_dump_json(indent=4) if session.session_run else None,
-                    json.dumps(session.session_result) if session.session_result else None,
+                    json.dumps([r.model_dump() for r in session.session_result]) if session.session_result else None,
                 ),
             )
             await db.commit()
@@ -55,8 +57,9 @@ class SessionDB:
                 return Session(
                     session_id=row[0],
                     create_time=row[1],
-                    session_run=json.loads(row[2]) if row[2] else None,
-                    session_result=json.loads(row[3]) if row[3] else None,
+                    status=row[2],
+                    session_run=json.loads(row[3]) if row[3] else None,
+                    session_result=json.loads(row[4]) if row[4] else None,
                 )
         return None
 
@@ -66,12 +69,13 @@ class SessionDB:
         async with aiosqlite.connect(SQLITE_PATH) as db:
             await db.execute(
                 """UPDATE sessions
-                SET create_time = ?, session_run = ?, session_result = ?
+                SET create_time = ?, status = ?, session_run = ?, session_result = ?
                 WHERE session_id = ?""",
                 (
                     session.create_time.isoformat(),
+                    session.status,
                     session.session_run.model_dump_json(indent=4) if session.session_run else None,
-                    json.dumps(session.session_result) if session.session_result else None,
+                    json.dumps([r.model_dump() for r in session.session_result]) if session.session_result else None,
                     session.session_id,
                 ),
             )
@@ -96,8 +100,9 @@ class SessionDB:
                     Session(
                         session_id=row[0],
                         create_time=row[1],
-                        session_run=json.loads(row[2]) if row[2] else None,
-                        session_result=json.loads(row[3]) if row[3] else None,
+                        status=row[2],
+                        session_run=json.loads(row[3]) if row[3] else None,
+                        session_result=json.loads(row[4]) if row[4] else None,
                     )
                 )
         return sessions
