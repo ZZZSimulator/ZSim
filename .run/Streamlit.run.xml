@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Run in Project Path" type="PythonConfigurationType" factoryName="Python">
-    <module name="ZZZ_Calculator" />
+  <configuration default="false" name="Streamlit" type="PythonConfigurationType" factoryName="Python">
+    <module name="ZSim" />
     <option name="ENV_FILES" value="" />
     <option name="INTERPRETER_OPTIONS" value="" />
     <option name="PARENT_ENVS" value="true" />
@@ -9,16 +9,16 @@
     </envs>
     <option name="SDK_HOME" value="" />
     <option name="SDK_NAME" value="Python 3.13 (ZSim)" />
-    <option name="WORKING_DIRECTORY" value="$ProjectFileDir$" />
+    <option name="WORKING_DIRECTORY" value="" />
     <option name="IS_MODULE_SDK" value="false" />
     <option name="ADD_CONTENT_ROOTS" value="true" />
     <option name="ADD_SOURCE_ROOTS" value="true" />
     <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-    <option name="SCRIPT_NAME" value="zsim" />
-    <option name="PARAMETERS" value="run" />
+    <option name="SCRIPT_NAME" value="-m" />
+    <option name="PARAMETERS" value="streamlit run zsim/webui.py" />
     <option name="SHOW_COMMAND_LINE" value="false" />
     <option name="EMULATE_TERMINAL" value="false" />
-    <option name="MODULE_MODE" value="true" />
+    <option name="MODULE_MODE" value="false" />
     <option name="REDIRECT_INPUT" value="false" />
     <option name="INPUT_FILE" value="" />
     <method v="2" />
