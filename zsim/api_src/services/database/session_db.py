@@ -6,8 +6,6 @@ import aiosqlite
 from zsim.define import SQLITE_PATH
 from zsim.models.session.session_create import Session
 
-_session_db: "SessionDB | None" = None  # 单例实例
-
 
 class SessionDB:
     def __init__(self):
@@ -20,11 +18,12 @@ class SessionDB:
             return
         async with aiosqlite.connect(SQLITE_PATH) as db:
             await db.execute(
-                """CREATE TABLE IF NOT EXISTS sessions (
-                    session_id TEXT PRIMARY KEY,
-                    create_time TEXT NOT NULL,
-                    session_run TEXT,
-                    session_result TEXT
+                """
+                CREATE TABLE IF NOT EXISTS sessions (
+                session_id TEXT PRIMARY KEY,
+                create_time TEXT NOT NULL,
+                session_run TEXT,
+                session_result TEXT
                 )"""
             )
             await db.commit()
@@ -101,6 +100,9 @@ class SessionDB:
                     )
                 )
         return sessions
+
+
+_session_db: SessionDB | None = None  # 单例实例
 
 
 async def get_session_db() -> SessionDB:

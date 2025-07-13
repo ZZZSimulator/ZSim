@@ -80,7 +80,7 @@ class CharConfig(BaseModel):
     scPEN: NonNegativeInt = 0
     scCRIT: NonNegativeInt = 0
     scCRIT_DMG: NonNegativeInt = 0
-    sp_limit: NonNegativeInt | float = 120
+    sp_limit: NonNegativeInt | NonNegativeFloat = 120
     cinema: NonNegativeInt = 0
     crit_balancing: bool = True
     crit_rate_limit: NonNegativeFloat = 0.95
@@ -94,9 +94,6 @@ class CharConfig(BaseModel):
         # 验证暴击率上限
         if not 0.05 <= self.crit_rate_limit <= 1:
             raise ValidationError("暴击率上限必须在0.05到1之间")
-
-        # 验证所有sc属性必须大于等于0
-
         return self
 
 
