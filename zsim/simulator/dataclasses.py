@@ -1,10 +1,8 @@
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
-import traceback
-import inspect
-
 from zsim.define import saved_char_config
+from zsim.models.session.session_run import CharConfig
 from zsim.sim_progress import Buff
 from zsim.sim_progress.Buff.Buff0Manager import Buff0ManagerClass, change_name_box
 from zsim.sim_progress.Character import Character, character_factory
@@ -94,11 +92,15 @@ class CharacterData:
             i = 0
             for _ in self.init_data.name_box:
                 char_dict = getattr(self.init_data, f"char_{i}")
+                # 提取sim_cfg参数
+                sim_cfg = None
                 if (
                     self.sim_cfg is not None and self.sim_cfg.adjust_char == i + 1
                 ):  # UI那边不是从0开始数数的
-                    char_dict["sim_cfg"] = self.sim_cfg
-                char_obj: Character = character_factory(**char_dict)
+                    sim_cfg = self.sim_cfg
+                # 创建CharConfig对象
+                char_config = CharConfig(**char_dict)
+                char_obj: Character = character_factory(char_config, sim_cfg=sim_cfg)
                 if char_obj.sim_instance is None:
                     char_obj.sim_instance = self.sim_instance
                 self.char_obj_list.append(char_obj)
