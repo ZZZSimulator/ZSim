@@ -92,9 +92,11 @@ class Simulator:
         """api初始化模拟器实例的接口。"""
         ...
 
-    def api_run_simulator(self):
+    def api_run_simulator(self, session_run: "SessionRun"):
         """api运行模拟器实例的接口。"""
-        ...
+        raise NotImplementedError
+        self.api_init_simulator(session_run)
+        self.main_loop(use_api = True)
 
     def reset_sim_data(self, sim_cfg: "SimCfg | None"):
         """重置所有全局变量为初始状态。"""
@@ -153,8 +155,11 @@ class Simulator:
         # 监听器的初始化需要整个Simulator实例，因此在这里进行初始化
         self.load_data.buff_0_manager.initialize_buff_listener()
 
-    def main_loop(self, stop_tick: int = 10800, *, sim_cfg: "SimCfg | None" = None):
-        self.reset_simulator(sim_cfg)
+    def main_loop(
+        self, stop_tick: int = 10800, *, sim_cfg: "SimCfg | None" = None, use_api: bool = False
+    ):
+        if not use_api:
+            self.reset_simulator(sim_cfg)
         while True:
             # Tick Update
             # report_to_log(f"[Update] Tick step to {tick}")
