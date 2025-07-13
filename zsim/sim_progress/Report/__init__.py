@@ -1,5 +1,6 @@
 import asyncio
 import json
+import logging
 import os
 import threading
 from datetime import datetime
@@ -12,6 +13,8 @@ from .result_handler import (  # noqa: F401
     report_dmg_result,
     result_queue,
 )
+from zsim.define import NORMAL_MODE_ID_JSON
+
 
 __result_id: str | None = None
 __event_loop = None  # 存储事件循环的引用
@@ -21,20 +24,21 @@ if TYPE_CHECKING:
     from zsim.simulator.dataclasses import SimCfg
 
 
-def regen_result_id(sim_cfg: "SimCfg | None") -> None:
+def regen_result_id(sim_cfg: "SimCfg | None", *, session_id=None) -> None:
     """
     根据运行模式生成结果ID并处理相关文件。
 
-    如果 `parallel_config` 不为 None（并行模式），则结果ID由 `run_turn_uuid`, `sc_name` 和 `sc_value` 组合而成，
+    如果 `sim_cfg` 不为 None（并行模式），则结果ID由 `run_turn_uuid`, `sc_name` 和 `sc_value` 组合而成，
     格式为 "./results/{run_turn_uuid}/{sc_name}_{sc_value}"。
     此模式下会创建对应的结果目录，并将 `parallel_config` 对象序列化为 JSON 文件（parallel_config.json）保存在该目录中。
 
-    如果 `parallel_config` 为 None（普通模式），则从ID缓存文件中读取现有ID，
+    如果 `sim_cfg` 为 None（普通模式），则从ID缓存文件中读取现有ID，
     找到最大的有效ID，生成一个新的递增ID，并将新ID和时间戳写入缓存文件。
     结果ID格式为 "./results/{current_id}"。
 
     Args:
-        parallel_config: 并行配置对象，或 None。
+        sim_cfg: 并行配置对象，或 None。
+        session_id: 会话ID，在API启动的普通模式下用作传递本次运行的id。
 
     Returns:
         None. 全局变量 `__result_id` 会被更新。
@@ -42,7 +46,7 @@ def regen_result_id(sim_cfg: "SimCfg | None") -> None:
     global __result_id
 
     if sim_cfg is not None:
-        # 并行模式：func + 配置列表作为id
+        # 并行模式：session_id(API模式)/随机生成的uuid(WebUI模式) + 配置列表作为id
         if sim_cfg.func == "attr_curve":
             __result_id = f"./results/{sim_cfg.run_turn_uuid}/{sim_cfg.func}_{sim_cfg.sc_name}_{sim_cfg.sc_value}"
         elif sim_cfg.func == "weapon":
@@ -64,12 +68,27 @@ def regen_result_id(sim_cfg: "SimCfg | None") -> None:
         except TypeError as e:
             # 如果转换或序列化失败，记录错误日志
             raise TypeError(f"无法将 parallel_config 转换为字典: {e}") from e
-    else:
-        # 普通模式：从文件生成数字 ID
-        from zsim.define import NORMAL_MODE_ID_JSON
-
+    elif session_id is not None:
+        # API启动的普通模式：使用session_id作为id
         cache_path = NORMAL_MODE_ID_JSON
-
+        # 检查缓存文件是否存在，如果不存在则创建
+        if not os.path.exists(cache_path):
+            os.makedirs(os.path.dirname(cache_path), exist_ok=True)
+            with open(cache_path, "w") as f:
+                json.dump({}, f, indent=4)
+        with open(cache_path, "r+", encoding="utf-8") as f:
+            id_cache_dict = json.load(f)
+            if session_id in id_cache_dict.keys():
+                logging.warning(f"session_id {session_id} 已存在，将使用该id")
+            else:
+                id_cache_dict[session_id] = datetime.now().strftime("%Y-%m-%d_%H%M")
+            f.seek(0)
+            json.dump(id_cache_dict, f, indent=4)
+            f.truncate()
+        __result_id = f"./results/{session_id}"
+    else:
+        # CLI或WebUI启动的普通模式：使用缓存文件中的最大ID+1作为id
+        cache_path = NORMAL_MODE_ID_JSON
         # 检查缓存文件是否存在，如果不存在则创建
         if not os.path.exists(cache_path):
             os.makedirs(os.path.dirname(cache_path), exist_ok=True)
@@ -130,9 +149,9 @@ def start_async_tasks():
     loop_thread.start()
 
 
-def start_report_threads(sim_cfg):
+def start_report_threads(sim_cfg, *, session_id=None):
     """用于在开始模拟时启动线程以处理日志和结果写入。"""
-    regen_result_id(sim_cfg)
+    regen_result_id(sim_cfg, session_id=session_id)
     start_async_tasks()
 
 
