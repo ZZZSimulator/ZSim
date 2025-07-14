@@ -51,7 +51,8 @@
         "JUDGE_FILE_PATH": "./zsim/data/\u89e6\u53d1\u5224\u65ad.csv",
         "EFFECT_FILE_PATH": "./zsim/data/buff_effect.csv",
         "EXIST_FILE_PATH": "./zsim/data/\u6fc0\u6d3b\u5224\u65ad.csv",
-        "APL_FILE_PATH": "./zsim/data/APLData/\u8587\u8587\u5b89-\u67f3-\u8000\u5609\u97f3.toml"
+        "APL_FILE_PATH": "./zsim/data/APLData/\u8587\u8587\u5b89-\u67f3-\u8000\u5609\u97f3.toml",
+        "CHARACTER_IMAGE_PATH": "./zsim/data/character_img"
     },
     "translate": {
         "id": "skill_tag",
