@@ -3,7 +3,9 @@ import cv2
 import mss
 import numpy as np
 
+
 CHARACTER_IMAGE_PATH = "./zsim/data/character_img"
+
 
 with mss.mss() as sct:
     # Take a screenshot during fullscreen gaming on a *4K* monitor

@@ -5,11 +5,11 @@ from zsim.lib_webui.version_checker import check_github_updates
 # 页面导航
 PAGES = {
     "功能选择": [
-        st.Page("page_recognize_equip.py", title="识别驱动盘"),
         st.Page("page_character_config.py", title="角色配置"),
         st.Page("page_simulator.py", title="模拟器"),
         st.Page("page_data_analysis.py", title="数据分析"),
         st.Page("page_apl_editor.py", title="APL编辑器"),
+        st.Page("page_recognize_equip.py", title="识别装备"),
     ],
     "文档": [
         st.Page("lib_webui/doc_pages/page_char_support.py", title="角色支持列表"),
