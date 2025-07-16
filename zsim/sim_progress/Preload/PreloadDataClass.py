@@ -7,7 +7,7 @@ from zsim.sim_progress.data_struct import (
 )
 
 from . import SkillNode
-
+from zsim.models.event_enums import ListenerBroadcastSignal as LBS
 if TYPE_CHECKING:
     from zsim.simulator.simulator_class import Simulator
 
@@ -70,7 +70,7 @@ class PreloadData:
         if self.personal_node_stack[char_cid].is_empty():
             """检测角色的第一个动作抛出。"""
             self.sim_instance.listener_manager.broadcast_event(
-                event=node, enter_battle_event=1
+                event=node, signal=LBS.ENTER_BATTLE
             )
         self.personal_node_stack[char_cid].push(node)
         if node.active_generation:

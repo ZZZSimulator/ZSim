@@ -11,7 +11,7 @@ from zsim.sim_progress.anomaly_bar.CopyAnomalyForOutput import (
 from zsim.sim_progress.Buff.BuffAddStrategy import buff_add_strategy
 from zsim.sim_progress.Dot.BaseDot import Dot
 from typing import TYPE_CHECKING
-
+from zsim.models.event_enums import ListenerBroadcastSignal as LBS
 if TYPE_CHECKING:
     from zsim.simulator.simulator_class import Simulator
 
@@ -139,7 +139,7 @@ def update_anomaly(
             # 异常事件监听器广播
 
             sim_instance.listener_manager.broadcast_event(
-                event=active_bar, anomaly_event=1
+                event=active_bar, signal=LBS.ANOMALY
             )
             """
             更新完毕，现在正式进入分支判断——触发同类异常 & 触发异类异常（紊乱）。

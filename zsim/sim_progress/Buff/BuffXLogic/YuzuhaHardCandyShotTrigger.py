@@ -9,7 +9,7 @@ class YuzuhaHardCandyShotTriggerRecord:
     def __init__(self):
         self.char = None
         self.sub_exist_buff_dict = None
-        self.cd = 480
+        self.cd = None
         self.last_update_tick = None
         self.update_signal = None
 
@@ -82,6 +82,8 @@ class YuzuhaHardCandyShotTrigger(Buff.BuffLogic):
 
     @property
     def ready(self):
+        if self.record.cd is None:
+            self.record.cd = 480 if self.record.char.cinema < 2 else 360
         if self.record.last_update_tick is None:
             return True
         if self.buff_instance.sim_instance.tick - self.record.last_update_tick > self.record.cd:

@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
 from .BaseListenerClass import BaseListener
-
+from zsim.models.event_enums import ListenerBroadcastSignal as LBS
 if TYPE_CHECKING:
     from zsim.simulator.simulator_class import Simulator
 
@@ -13,9 +13,9 @@ class HeartstringNocturneListener(BaseListener):
         super().__init__(listener_id, sim_instance=sim_instance)
         self.active_signal = None
 
-    def listening_event(self, event, **kwargs):
+    def listening_event(self, event, signal: LBS, **kwargs):
         """监听到角色入场事件，传递入场信号。"""
-        if "enter_battle_event" not in kwargs:
+        if signal != LBS.ENTER_BATTLE:
             return
         from zsim.sim_progress.Preload import SkillNode
 

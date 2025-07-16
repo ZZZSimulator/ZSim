@@ -21,7 +21,6 @@ class Yuzuha(Character):
         self.max_sugar_points: int = 6
         self.hard_candy_shot_tag = "1411_CoAttack_A"
 
-
     def special_resources(self, *args, **kwargs) -> None:
         skill_nodes: list[SkillNode] = _skill_node_filter(*args, **kwargs)
         for node in skill_nodes:
@@ -53,12 +52,6 @@ class Yuzuha(Character):
                         sim_instance.schedule_data.change_process_state()
                         print(f"【柚叶回能】：柚叶发动大招，为{[_name for _name in report_namelist]}恢复25点能量值")
 
-    def POST_INIT_DATA(self, sim_insatnce: "Simulator"):
-        """柚叶的后置初始化函数，用于后置创建甜蜜惊吓特殊状态"""
-        enemy = sim_insatnce.schedule_data.enemy
-        self.sweet_scare = enemy.special_state_manager.special_state_factory(state_type=PIOT.SweetScare)
-        self.sp = 40.00 if self.cinema < 1 else 70.00 # 初始化能量值
-
     def update_sugar_points(self, value: int):
         """更新甜度点"""
         if value < 0 and abs(self.sugar_points) < abs(value):
@@ -87,6 +80,15 @@ class Yuzuha(Character):
         if YUZUHA_REPORT:
             self.sim_instance.schedule_data.change_process_state()
             print(f"【硬糖射击】{update_signal.skill_tag if update_signal is not None else None}触发了一次硬糖射击！")
+
+    def POST_INIT_DATA(self, sim_insatnce: "Simulator"):
+        """柚叶的后置初始化函数，用于后置创建甜蜜惊吓特殊状态"""
+        enemy = sim_insatnce.schedule_data.enemy
+        self.sweet_scare = enemy.special_state_manager.special_state_factory(state_type=PIOT.SweetScare)
+        self.sp = 40.00 if self.cinema < 1 else 70.00 # 初始化能量值
+        if self.cinema >= 2:
+            sim_insatnce: "Simulator" = self.sim_instance
+            sim_insatnce.listener_manager.listener_factory(listener_owner=self, initiate_signal="Yuzuha_1", sim_instance=sim_insatnce)
 
     def get_resources(self, *args, **kwargs) -> tuple[str | None, int | float | None]:
         return "甜度点", self.sugar_points
