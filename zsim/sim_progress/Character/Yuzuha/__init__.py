@@ -21,6 +21,7 @@ class Yuzuha(Character):
         self.max_sugar_points: int = 6
         self.hard_candy_shot_tag = "1411_CoAttack_A"
 
+
     def special_resources(self, *args, **kwargs) -> None:
         skill_nodes: list[SkillNode] = _skill_node_filter(*args, **kwargs)
         for node in skill_nodes:
@@ -56,6 +57,7 @@ class Yuzuha(Character):
         """柚叶的后置初始化函数，用于后置创建甜蜜惊吓特殊状态"""
         enemy = sim_insatnce.schedule_data.enemy
         self.sweet_scare = enemy.special_state_manager.special_state_factory(state_type=PIOT.SweetScare)
+        self.sp = 40.00 if self.cinema < 1 else 70.00 # 初始化能量值
 
     def update_sugar_points(self, value: int):
         """更新甜度点"""
