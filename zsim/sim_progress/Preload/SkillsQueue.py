@@ -3,7 +3,7 @@ import uuid
 
 import pandas as pd
 
-from zsim.define import APL_MODE
+from zsim.define import APL_MODE, ElementType, ELEMENT_TYPE_MAPPING as etm
 from zsim.sim_progress.Character.skill_class import Skill
 from zsim.sim_progress.data_struct.LinkedList import LinkedList
 from zsim.sim_progress.Report import report_to_log
@@ -59,6 +59,36 @@ class SkillNode:
             self.tick_list = tick_list
 
             self.loading_mission = None
+            self._effective_anomaly_buildup: bool = True
+            self._element_type_change: ElementType | None = None
+
+    @property
+    def element_type(self) -> ElementType:
+        """返回当前的属性种类！（考虑染色）"""
+        if self._element_type_change is None:
+            return self.skill.element_type
+        else:
+            return self._element_type_change
+
+    @property
+    def element_type_change(self):
+        """技能的染色"""
+        return self._element_type_change
+
+    @element_type_change.setter
+    def element_type_change(self, value: ElementType):
+        if self._element_type_change is not None:
+            raise ValueError(f"技能{self.skill_tag}已经被染色为【{etm.get(self.element_type_change)}】属性！不能被重复染色！")
+        self._element_type_change = value
+
+    @property
+    def effective_anomaly_buildup(self) -> bool:
+        """判断技能是否为异常技能"""
+        return self._effective_anomaly_buildup
+
+    @effective_anomaly_buildup.setter
+    def effective_anomaly_buildup(self, value: bool):
+        self._effective_anomaly_buildup = value
 
     def __str__(self) -> str:
         return f"SkillNode: {self.skill_tag}"

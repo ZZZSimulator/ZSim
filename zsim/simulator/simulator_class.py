@@ -232,15 +232,18 @@ class Simulator:
             sce.event_start()
             # self.tick += 1
             # if sce.data.processed_times > 0:
-            if self.schedule_data.processed_state_this_tick:
-                # print(sce.data.processed_times, "events processed", end="")
+            # print(f"\r{self.tick}", end="")
+            if self.schedule_data.processed_state_this_tick and self.tick != 0:
                 minutes = self.tick // 3600
                 rest_seconds = self.tick % 3600 / 60
-                # seconds = self.tick / 60
-                # frames = self.tick % 60
-                # print(f"\r{seconds} 秒 {frames:02d} 帧 ", end="")
-                print(f"\r▶{self.tick} 帧 （{minutes:.0f}分 {rest_seconds:02.0f}秒）◀\n ", end="")
+                if rest_seconds == 60:
+                    rest_seconds = 0
+                    minutes += 1
+                print()
+                print(f"▲ ▲ ▲第{self.tick}帧({minutes:.0f}分 {rest_seconds:02.0f}秒)发生的事件如上▲ ▲ ▲\n ", end="")
+                print("---------------------------------------------")
             self.tick += 1
+            self.schedule_data.reset_processed_event()
             if self.tick % 500 == 0 and self.tick != 0:
                 gc.collect()
         stop_report_threads()

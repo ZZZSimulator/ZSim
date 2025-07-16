@@ -151,6 +151,7 @@ ASTRAYAO_REPORT: bool = _config["char_report"]["AstraYao"]
 HUGO_REPORT: bool = _config["char_report"]["Hugo"]
 YIXUAN_REPORT: bool = _config["char_report"]["Yixuan"]
 TRIGGER_REPORT: bool = _config["char_report"]["Trigger"]
+YUZUHA_REPORT: bool = _config["char_report"]["Yuzuha"]
 
 # 开发变量
 NEW_SIM_BOOT: bool = _config.get("dev", {}).get("new_sim_boot", True)
@@ -171,6 +172,16 @@ ANOMALY_MAPPING: dict[ElementType, str] = {
     4: "侵蚀",
     5: "烈霜碎冰",
     6: "玄墨侵蚀",
+}
+
+ELEMENT_TYPE_MAPPING: dict[ElementType, str] = {
+    0: "物理",
+    1: "火",
+    2: "冰",
+    3: "电",
+    4: "以太",
+    5: "烈霜",
+    6: "玄墨"
 }
 # 属性类型等价映射字典
 ELEMENT_EQUIVALENCE_MAP: dict[ElementType, list[ElementType]] = {

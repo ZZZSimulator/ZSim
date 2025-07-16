@@ -25,6 +25,7 @@ __char_module_map = {
     "耀嘉音": "AstraYao",
     "雨果": "Hugo",
     "仪玄": "Yixuan",
+    "柚叶": "Yuzuha"
 }
 
 

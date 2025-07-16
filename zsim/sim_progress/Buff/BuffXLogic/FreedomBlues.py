@@ -54,6 +54,6 @@ class FreedomBlues(Buff.BuffLogic):
             str(self.record.char.CID) in action_now.mission_tag
             and action_now.mission_node.skill.trigger_buff_level == 2
         ):
-            if action_now.mission_node.skill.element_type == element_type_trigger:
+            if action_now.mission_node.element_type == element_type_trigger:
                 return True
         return False

@@ -68,7 +68,7 @@ class SpectralGazeSpiritLock(Buff.BuffLogic):
         if not skill_node.skill.labels:
             return False
         if (
-            skill_node.skill.element_type == 3
+            skill_node.element_type == 3
             and "aftershock_attack" in skill_node.skill.labels
         ):
             if self.record.preload_data.operating_now != self.record.char.CID:

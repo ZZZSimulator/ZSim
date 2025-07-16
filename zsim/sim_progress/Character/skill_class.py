@@ -116,6 +116,14 @@ class Skill:
         self.name, self.CID = lookup_name_or_cid(name, cid_int)
         # 核心技等级需要可读
         self.core_level = core_level
+        self.skill_level_dict = {
+            "normal": normal_level,
+            "special": special_level,
+            "dodge": dodge_level,
+            "chain": chain_level,
+            "assist": assist_level,
+            "core": core_level
+        }       # 技能等级字典
         # 最晚在这里创建DataFrame，优化不一点点，这玩意可大了
         schema_dict = {
             "CID": int,
