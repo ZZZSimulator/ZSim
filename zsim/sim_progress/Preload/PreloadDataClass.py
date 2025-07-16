@@ -160,3 +160,15 @@ class PreloadData:
                 mission_key_to_remove.append(mission_key)
         for key in mission_key_to_remove:
             self.load_mission_dict.pop(key)
+
+    def char_occupied_check(self, char_cid: int, tick: int):
+        """检查角色当前是否存在动作（无论主动、被动）"""
+        char_stack = self.personal_node_stack.get(char_cid, None)
+        if char_stack is None:
+            return True
+        latest_node = char_stack.get_effective_node()
+        if latest_node is None:
+            return True
+        if latest_node.end_tick > tick:
+            return True
+        return False

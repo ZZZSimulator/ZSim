@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
+from zsim.define import ENEMY_ATTACK_REPORT
 
 if TYPE_CHECKING:
     from zsim.sim_progress.Character.character import Character
@@ -361,15 +362,19 @@ class ActionReplaceManager:
                     return
             if "Light_parry" in skill_node.skill_tag:
                 self.parry_interaction_in_progress = True
-                print(
-                    f"检测到来自于{skill_node.char_name}的招架技能{skill_node.skill_tag}！招架交互开始！"
-                )
+                if ENEMY_ATTACK_REPORT:
+                    self.preload_data.sim_instance.schedule_data.change_process_state()
+                    print(
+                        f"检测到来自于{skill_node.char_name}的招架技能{skill_node.skill_tag}！招架交互开始！"
+                    )
                 if self.preload_data.atk_manager.action.hit > 1:
                     self.consecutive_parry_mode = True
                     self.consecutive_parry_node = skill_node
                     print("当前进攻事件是多次命中的，所以开启连续招架模式！")
             elif "knock_back" in skill_node.skill_tag:
-                print(f"角色{skill_node.char_name}因招架而被击退！")
+                if ENEMY_ATTACK_REPORT:
+                    self.preload_data.sim_instance.schedule_data.change_process_state()
+                    print(f"角色 {skill_node.char_name} 因招架而被击退！")
                 self.knock_back_signal = False
                 self.final_parry_node = None
                 self.parry_interaction_in_progress = False
@@ -378,11 +383,13 @@ class ActionReplaceManager:
             elif "Assault_Aid" in skill_node.skill_tag:
                 if tick > self.assault_aid_disable_tick:
                     raise ValueError(
-                        f"{skill_node.char_name}企图释放支援突击，但支援突击早就在{self.assault_aid_disable_tick}tick失效！请检查函数逻辑！"
+                        f"{skill_node.char_name} 企图释放支援突击，但支援突击早就在{self.assault_aid_disable_tick}tick失效！请检查函数逻辑！"
                     )
                 self.assault_aid_enable = False
                 self.assault_aid_disable_tick = tick
-                print(f"角色{skill_node.char_name}在招架完成后释放支援突击！")
+                if ENEMY_ATTACK_REPORT:
+                    self.preload_data.sim_instance.schedule_data.change_process_state()
+                    print(f"角色 {skill_node.char_name} 在招架完成后释放支援突击！")
             elif any(
                 [
                     _sub_tag in skill_node.skill_tag

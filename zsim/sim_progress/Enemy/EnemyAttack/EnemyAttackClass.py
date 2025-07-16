@@ -69,15 +69,17 @@ class EnemyAttackMethod:
             action_rate = float(rate_list[i])
             enemy_attack_action = EnemyAttackAction(int(action_id))
             self.action_set[action_rate] = enemy_attack_action
+            if ENEMY_ATTACK_REPORT:
+                print(
+                    f"【进攻交互系统初始化】：为敌人添加进攻动作：{enemy_attack_action}"
+                )
+        if ENEMY_ATTACK_REPORT:
             print(
-                f"【进攻交互系统初始化】：为敌人添加进攻动作：{enemy_attack_action}"
-            ) if ENEMY_ATTACK_REPORT else None
-        print(
-            "【进攻交互系统初始化】：敌人进攻动作初始化完毕！"
-        ) if ENEMY_ATTACK_REPORT else None
-        print(
-            f"【进攻交互系统初始化】：敌人（{self.enemy.name}）共拥有{len(self.action_set)}个进攻动作，每次进攻决策的冷却时间为：{self.rest_tick}tick！"
-        ) if ENEMY_ATTACK_REPORT else None
+                "【进攻交互系统初始化】：敌人进攻动作初始化完毕！"
+            )
+            print(
+                f"【进攻交互系统初始化】：敌人（{self.enemy.name}）共拥有{len(self.action_set)}个进攻动作，每次进攻决策的冷却时间为：{self.rest_tick}tick！"
+            )
         if not self.active and ENEMY_ATTACK_REPORT:
             print(
                 "【进攻交互系统初始化】：由于在配置文件中并未开启任意一种进攻策略，所以在本次模拟中敌人不会进攻！"
@@ -118,9 +120,11 @@ class EnemyAttackMethod:
             self.last_start_tick = current_tick
             self.last_end_tick = current_tick + self.action_set[1].duration
             self.ready = False
-            print(
-                f"{self.enemy.name}（ID：{self.enemy.index_ID}）抛出进攻动作{self.action_set[1].tag}"
-            ) if ENEMY_ATTACK_REPORT else None
+            if ENEMY_ATTACK_REPORT:
+                self.enemy.sim_instance.schedule_data.change_process_state()
+                print(
+                    f"{self.enemy.name}（ID：{self.enemy.index_ID}）抛出进攻动作{self.action_set[1].tag}"
+                )
             return self.action_set[1]
         else:
             return None
