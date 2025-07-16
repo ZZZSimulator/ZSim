@@ -1238,5 +1238,9 @@
     "Buff-角色-柚叶-组队被动-属性异常与紊乱伤害增幅": {
         "module": ".BuffXLogic.YuzuhaAdditionalAbilityAnomalyDmgBonus",
         "class": "YuzuhaAdditionalAbilityAnomalyDmgBonus"
+    },
+    "Buff-角色-柚叶-1画-全属性伤害抗性降低": {
+        "module": ".BuffXLogic.YuzuhaCinem1EleResReduce",
+        "class": "YuzuhaCinem1EleResReduce"
     }
 }

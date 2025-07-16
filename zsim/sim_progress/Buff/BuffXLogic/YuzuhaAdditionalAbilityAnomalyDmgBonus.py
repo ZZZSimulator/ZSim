@@ -8,6 +8,7 @@ class YuzuhaAdditionalAbilityAnomalyDmgBonusRecord:
         self.sub_exist_buff_dict = None
         self.dynamic_buff_list = None
         self.enemy = None
+        self.cinema_1_ratio = None
 
 
 class YuzuhaAdditionalAbilityAnomalyDmgBonus(Buff.BuffLogic):
@@ -36,6 +37,8 @@ class YuzuhaAdditionalAbilityAnomalyDmgBonus(Buff.BuffLogic):
         """buff激活时，根据柚叶的异常掌控计算层数"""
         self.check_record_module()
         self.get_prepared(char_CID=1411, sub_exist_buff_dict=1, enemy=1, dynamic_buff_list=1)
+        if self.record.cinema_1_ratio is None:
+            self.record.cinema_1_ratio = 1 if self.record.char.cinema < 1 else 1.3
         from zsim.sim_progress.ScheduledEvent.Calculator import MultiplierData
         from zsim.sim_progress.ScheduledEvent import Calculator
         mul_data = MultiplierData(
@@ -44,11 +47,11 @@ class YuzuhaAdditionalAbilityAnomalyDmgBonus(Buff.BuffLogic):
         am = Calculator.AnomalyMul.cal_am(mul_data)
         if am < 100:
             return
-        count = min(am - 100, self.buff_instance.ft.maxcount)
+        count = min(am - 100, 100) * self.record.cinema_1_ratio
         tick = self.buff_instance.sim_instance.tick
         self.buff_instance.simple_start(timenow=tick, sub_exist_buff_dict=self.record.sub_exist_buff_dict, no_count=1)
         self.buff_instance.dy.count = count
         self.buff_instance.update_to_buff_0(buff_0=self.buff_0)
         if YUZUHA_REPORT:
             self.buff_instance.sim_instance.schedule_data.change_process_state()
-            print(f"【柚叶组队被动】检测到【狸之愿】激活，当前柚叶的异常掌控为{am:.2f}点，共计提供{(am - 100) * 0.2 :.2f}%的异常积蓄效率以及属性异常/紊乱增伤")
+            print(f"【柚叶组队被动】检测到【狸之愿】激活，当前柚叶的异常掌控为{am:.2f}点，共计提供{count * 0.2:.2f}%的异常积蓄效率以及属性异常/紊乱增伤")
