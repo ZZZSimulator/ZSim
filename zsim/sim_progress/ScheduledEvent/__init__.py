@@ -279,7 +279,7 @@ class ScheduledEvent:
                     should_update = True
         if should_update:
             update_anomaly(
-                _node.skill.element_type,
+                _node.element_type,
                 self.enemy,
                 self.tick,
                 self.data.event_list,
@@ -354,7 +354,7 @@ class ScheduledEvent:
 
         Report.report_dmg_result(
             tick=self.tick,
-            element_type=event.skill.element_type,
+            element_type=event.element_type,
             skill_tag=event.skill_tag,
             dmg_expect=round(dmg_expect, 2),
             dmg_crit=round(dmg_crit, 2),

@@ -1,10 +1,8 @@
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
-import traceback
-import inspect
-
 from zsim.define import saved_char_config
+from zsim.models.session.session_run import CharConfig
 from zsim.sim_progress import Buff
 from zsim.sim_progress.Buff.Buff0Manager import Buff0ManagerClass, change_name_box
 from zsim.sim_progress.Character import Character, character_factory
@@ -94,11 +92,15 @@ class CharacterData:
             i = 0
             for _ in self.init_data.name_box:
                 char_dict = getattr(self.init_data, f"char_{i}")
+                # 提取sim_cfg参数
+                sim_cfg = None
                 if (
                     self.sim_cfg is not None and self.sim_cfg.adjust_char == i + 1
                 ):  # UI那边不是从0开始数数的
-                    char_dict["sim_cfg"] = self.sim_cfg
-                char_obj: Character = character_factory(**char_dict)
+                    sim_cfg = self.sim_cfg
+                # 创建CharConfig对象
+                char_config = CharConfig(**char_dict)
+                char_obj: Character = character_factory(char_config, sim_cfg=sim_cfg)
                 if char_obj.sim_instance is None:
                     char_obj.sim_instance = self.sim_instance
                 self.char_obj_list.append(char_obj)
@@ -182,6 +184,7 @@ class ScheduleData:
     loading_buff: dict[str, list[Buff.Buff]] = field(default_factory=dict)
     dynamic_buff: dict[str, list[Buff.Buff]] = field(default_factory=dict)
     sim_instance: "Simulator" = None
+    processed_event: bool = False
     # 记录已处理的事件次数, 给外部判断是否有事件发生, 便于前端跳过没有 event 的帧的 log
     # 实际执行时, 当 event 是 Preload.SkillNode | LoadingMission 时, 大多数情况是没有 log 输出的, 所以仍然会输出大量空帧.
     # 10800 帧的情况目前可以只打印 1500 条左右的 log. 但是打印的帧数字不规律, 可能看起来有点怪.
@@ -201,11 +204,15 @@ class ScheduleData:
     @property
     def processed_state_this_tick(self):
         """当前tick是否有新事件发生"""
-        return self.sim_instance.tick == self.processe_state_update_tick
+        return self.processed_event
 
     def change_process_state(self):
         """有新事件发生时调用，保证终端print"""
-        self.processe_state_update_tick = self.sim_instance.tick
+        self.processed_event = True
+
+    def reset_processed_event(self):
+        """重置processed_event"""
+        self.processed_event = False
 
 
 @dataclass

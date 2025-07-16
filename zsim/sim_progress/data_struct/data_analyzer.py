@@ -3,10 +3,11 @@ from __future__ import annotations
 from functools import lru_cache
 from typing import TYPE_CHECKING, Any, Sequence
 
-from charset_normalizer.md import is_arabic_isolated_form
+# from charset_normalizer.md import is_arabic_isolated_form
 
-from zsim.define import BACK_ATTACK_RATE
+from zsim.define import BACK_ATTACK_RATE, ELEMENT_TYPE_MAPPING
 from zsim.sim_progress.Report import report_to_log
+from zsim.sim_progress.anomaly_bar.CopyAnomalyForOutput import NewAnomaly
 
 if TYPE_CHECKING:
     from zsim.sim_progress.anomaly_bar import AnomalyBar
@@ -192,7 +193,7 @@ def __check_skill_node(buff: "Buff", skill_node: "SkillNode") -> bool:
 
                 for _ele_type in label_value:
                     if (
-                        skill_node.skill.element_type
+                        skill_node.element_type
                         in ELEMENT_EQUIVALENCE_MAP[_ele_type]
                     ):
                         # 只要找到一种符合要求的元素，就返回True
@@ -246,14 +247,33 @@ def __check_special_anomly(buff: "Buff", anomaly_node: "AnomalyBar") -> bool:
         Disorder,
         PolarityDisorder,
     )
+    from zsim.sim_progress.anomaly_bar.Anomalies import (
+        IceAnomaly,
+        PhysicalAnomaly,
+        FireAnomaly,
+        FrostAnomaly,
+        EtherAnomaly,
+        ElectricAnomaly,
+        AuricInkAnomaly)
+    from zsim.sim_progress.anomaly_bar.CopyAnomalyForOutput import NewAnomaly
+
 
     # 定义允许的标签类型
     ALLOW_LABELS = ["only_anomaly"]
     # 定义异常状态类型映射字典
     SELECT_ANOMALY_MAP = {
-        "Disorder": Disorder,
-        "Abloom": Abloom,
-        "PolarityDisorder": PolarityDisorder,
+        "Disorder": [Disorder],
+        "Abloom": [Abloom],
+        "PolarityDisorder": [PolarityDisorder],
+        "AllAnomaly": [
+            IceAnomaly,
+            PhysicalAnomaly,
+            FireAnomaly,
+            FrostAnomaly,
+            EtherAnomaly,
+            ElectricAnomaly,
+            AuricInkAnomaly,
+            NewAnomaly]
     }
     # 获取buff的标签列表
     buff_labels: dict[str, list[str] | str] = buff.ft.label
@@ -271,16 +291,21 @@ def __check_special_anomly(buff: "Buff", anomaly_node: "AnomalyBar") -> bool:
             # 输入为单个字符串
             if isinstance(label_value, str):
                 if label_value in SELECT_ANOMALY_MAP.keys():
-                    if isinstance(anomaly_node, SELECT_ANOMALY_MAP[label_value]):
-                        return True
+                    for sig_value in SELECT_ANOMALY_MAP[label_value]:
+                        if isinstance(anomaly_node, sig_value):
+                            # buff.sim_instance.schedule_data.change_process_state()
+                            # print(f"{ELEMENT_TYPE_MAPPING[anomaly_node.element_type]}属性的{type(anomaly_node).__name__}对象成功与{buff.ft.index}匹配")
+                            return True
+
             # 输入为列表
             if isinstance(label_value, list):
-                if any(
-                    isinstance(anomaly_node, SELECT_ANOMALY_MAP[sig_value])
-                    for sig_value in label_value
-                    if sig_value in SELECT_ANOMALY_MAP.keys()
-                ):
-                    return True
+                for checked_value in label_value:
+                    if checked_value in SELECT_ANOMALY_MAP.keys():
+                        for sig_value in SELECT_ANOMALY_MAP[checked_value]:
+                            if isinstance(anomaly_node, sig_value):
+                                # buff.sim_instance.schedule_data.change_process_state()
+                                # print(f"{ELEMENT_TYPE_MAPPING[anomaly_node.element_type]}属性的{type(anomaly_node).__name__}对象成功与{buff.ft.index}匹配")
+                                return True
     return False
 
 

@@ -26,7 +26,7 @@ SessionCreate 的初始化json样例:
         ],
         "enemy_config": {
             "index_id": 1,
-            "adjustment_idx": "s",
+            "adjustment_id": "s",
             "difficulty": 8.74
         },
         "apl_path": "path/to/apl.txt"
@@ -80,7 +80,7 @@ class CharConfig(BaseModel):
     scPEN: NonNegativeInt = 0
     scCRIT: NonNegativeInt = 0
     scCRIT_DMG: NonNegativeInt = 0
-    sp_limit: NonNegativeInt | float = 120
+    sp_limit: NonNegativeInt | NonNegativeFloat = 120
     cinema: NonNegativeInt = 0
     crit_balancing: bool = True
     crit_rate_limit: NonNegativeFloat = 0.95
@@ -94,9 +94,6 @@ class CharConfig(BaseModel):
         # 验证暴击率上限
         if not 0.05 <= self.crit_rate_limit <= 1:
             raise ValidationError("暴击率上限必须在0.05到1之间")
-
-        # 验证所有sc属性必须大于等于0
-
         return self
 
 
@@ -104,7 +101,7 @@ class EnemyConfig(BaseModel):
     """敌人配置参数"""
 
     index_id: int
-    adjustment_idx: int | str
+    adjustment_id: int | str
     difficulty: int | float = 8.74
 
 

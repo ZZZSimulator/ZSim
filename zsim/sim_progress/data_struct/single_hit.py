@@ -18,6 +18,10 @@ class SingleHit:
     )
     skill_node = None
 
+    def effective_anomlay_buildup(self) -> bool:
+        """是否是有效积蓄"""
+        return self.skill_node.effective_anomaly_buildup
+
 
 @dataclass
 class AnomalyHit:

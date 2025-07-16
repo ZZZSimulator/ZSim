@@ -60,7 +60,7 @@ class ShadowHarmony4(Buff.BuffLogic):
             所以这里需要过滤到第一个hit的节点"""
             return False
         """是冲刺攻击或是追加攻击标签时，检测技能属性是否与四件套佩戴者属性相同，如果不同则不予触发！"""
-        if skill_node.skill.element_type != self.record.char.element_type:
+        if skill_node.element_type != self.record.char.element_type:
             return False
         if not skill_node.skill.labels:
             if skill_node.skill.trigger_buff_level == 3:

@@ -13,6 +13,7 @@ from .FindMain import (
     find_preload_data,
     find_stack,
     find_tick,  # noqa: F401
+    find_init_data
 )
 
 if TYPE_CHECKING:
@@ -40,6 +41,7 @@ def check_preparation(buff_0, buff_instance: "Buff", **kwargs):
     trigger_buff_0 = kwargs.get("trigger_buff_0")
     preload_data = kwargs.get("preload_data")
     char_obj_list = kwargs.get("char_obj_list")
+    na_skill_level = kwargs.get("na_skill_level")
 
     # 参数正确性检查
     if (
@@ -115,6 +117,10 @@ def check_preparation(buff_0, buff_instance: "Buff", **kwargs):
             record.char_obj_list = find_char_list(
                 sim_instance=buff_instance.sim_instance
             )
+    if na_skill_level:
+        if record.char is None:
+            raise ValueError("在buff_0.history.record 中并未读取到对应的char")
+        record.na_skill_level = record.char.skill_object.skill_level_dict.get("normal")
 
 
 def trigger_buff_0_handler(record, trigger_buff_0, buff_instance: "Buff"):

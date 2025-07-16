@@ -58,7 +58,7 @@ class SpectralGazeDefReduce(Buff.BuffLogic):
         ):
             return False
         if (
-            skill_node.skill.element_type == 3
+            skill_node.element_type == 3
             and "aftershock_attack" in skill_node.skill.labels
         ):
             return True

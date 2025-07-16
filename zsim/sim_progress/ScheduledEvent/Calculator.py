@@ -463,7 +463,7 @@ class Calculator:
         self.char_name: str | None = data.char_name
         self.cid: int | None = data.cid
         self.skill_node = skill_node
-        self.element_type = data.judge_node.skill.element_type
+        self.element_type = data.judge_node.element_type
         self.skill_tag = data.judge_node.skill_tag
 
         # 初始化各种乘区
@@ -648,7 +648,7 @@ class Calculator:
             伤害类型增伤包括针对于各类技能(如普通攻击，强化特殊技，终结技等)的增伤。常见于音擎效果和鸣徽效果中。
             进攻类型增伤即针对于角色进攻类型(斩击(Slash)、打击(Strike)和穿透(Pierce))的增伤。全类型增伤就是未作类型限定的增伤。
             """
-            element_type = data.judge_node.skill.element_type
+            element_type = data.judge_node.element_type
             # 获取属性伤害加成，初始化为1.0
             if element_type == 0:
                 element_dmg_bonus = (
@@ -878,7 +878,7 @@ class Calculator:
         ) -> float:
             """抗性区 = 1 - 受击方抗性 + 受击方抗性降低 + 攻击方抗性穿透"""
             if element_type is None:
-                element_type = data.judge_node.skill.element_type
+                element_type = data.judge_node.element_type
             # 获取抗性区，初始化为0
             if element_type == 0:
                 element_res = (
@@ -932,7 +932,7 @@ class Calculator:
             减易伤区 = 1 + 减易伤
             """
             if element_type is None:
-                element_type = data.judge_node.skill.element_type
+                element_type = data.judge_node.element_type
             # 获取抗性区，初始化为0
             if element_type == 0:
                 element_vulnerability = data.dynamic.physical_vulnerability
@@ -1000,7 +1000,7 @@ class Calculator:
         """
 
         def __init__(self, data: MultiplierData):
-            self.element_type: ElementType = data.judge_node.skill.element_type
+            self.element_type: ElementType = data.judge_node.element_type
             self.anomaly_buildup: np.float64 = self.cal_anomaly_buildup(data)
 
             self.base_damage: float = self.cal_base_damage(data)
@@ -1044,7 +1044,7 @@ class Calculator:
             # 异常掌控
             am = Calculator.AnomalyMul.cal_am(data)
             # 属性异常积蓄效率提升、属性异常积蓄抗性
-            element_type = data.judge_node.skill.element_type
+            element_type = data.judge_node.element_type
 
             enemy_buildup_res = data.enemy_obj.anomaly_resistance_dict.get(
                 element_type, 0
@@ -1153,7 +1153,7 @@ class Calculator:
                 data.static.atk * (1 + data.dynamic.field_atk_percentage)
                 + data.dynamic.atk
             )
-            element_type = data.judge_node.skill.element_type
+            element_type = data.judge_node.element_type
             if element_type == 0:
                 base_damage = 7.13 * atk
             elif element_type == 1:
@@ -1171,7 +1171,7 @@ class Calculator:
         @staticmethod
         def cal_dmg_bonus(data: MultiplierData) -> float:
             """增伤区 = 1 + 属性增伤 + 全增伤"""
-            element_type = data.judge_node.skill.element_type
+            element_type = data.judge_node.element_type
             if element_type == 0:
                 element_dmg_bonus = (
                     data.static.phy_dmg_bonus + data.dynamic.phy_dmg_bonus
@@ -1221,7 +1221,7 @@ class Calculator:
         @staticmethod
         def cal_ano_extra_mul(data: MultiplierData) -> float:
             """异常额外增伤区 = 1 + 对应属性异常额外增伤"""
-            element_type = data.judge_node.skill.element_type
+            element_type = data.judge_node.element_type
             map = data.dynamic.ano_extra_bonus
             ano_dmg_mul = 1 + map.get(element_type, 0) + map["all"]
             return ano_dmg_mul
@@ -1253,7 +1253,7 @@ class Calculator:
         """
 
         def __init__(self, data: MultiplierData):
-            self.element_type: ElementType = data.judge_node.skill.element_type
+            self.element_type: ElementType = data.judge_node.element_type
             self.imp = self.cal_imp(data)
             self.stun_ratio = self.cal_stun_ratio(data)
             self.stun_res = self.cal_stun_res(data, self.element_type)

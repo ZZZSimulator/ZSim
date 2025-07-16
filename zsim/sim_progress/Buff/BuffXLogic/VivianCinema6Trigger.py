@@ -135,44 +135,48 @@ class VivianCinema6Trigger(Buff.BuffLogic):
                 print(
                     "6画触发器：在怪物没有异常的情况下打了【悬落】，虽然不能触发额外的异放，但是依然可以进行羽毛转化！"
                 )
-        active_anomaly_bar = get_result[0]
-        copyed_anomaly = AnomalyBar.create_new_from_existing(active_anomaly_bar)
-        # copyed_anomaly = self.record.last_update_anomaly
-        event_list = JudgeTools.find_event_list(
-            sim_instance=self.buff_instance.sim_instance
-        )
-        mul_data = Mul(
-            self.record.enemy, self.record.dynamic_buff_list, self.record.char
-        )
-        ap = Cal.AnomalyMul.cal_ap(mul_data)
-        from zsim.sim_progress.anomaly_bar.CopyAnomalyForOutput import (
-            DirgeOfDestinyAnomaly,
-        )
-
-        dirge_of_destiny_anomaly = DirgeOfDestinyAnomaly(
-            copyed_anomaly,
-            active_by="1331",
-            sim_instance=self.buff_instance.sim_instance,
-        )
-        ratio = self.ANOMALY_RATIO_MUL.get(copyed_anomaly.element_type)
-        if self.record.cinema_ratio is None:
-            self.record.cinema_ratio = 1 if self.record.char.cinema < 2 else 1.3
-        final_ratio = (
-            math.floor(ap / 10)
-            * ratio
-            * self.record.cinema_ratio
-            * self.record.c6_ratio
-        )
-        dirge_of_destiny_anomaly.anomaly_dmg_ratio = final_ratio
-        dirge_of_destiny_anomaly.current_ndarray = (
-            dirge_of_destiny_anomaly.current_ndarray
-            / dirge_of_destiny_anomaly.current_anomaly
-        )
-        event_list.append(dirge_of_destiny_anomaly)
-        if VIVIAN_REPORT:
-            self.buff_instance.sim_instance.schedule_data.change_process_state()
-            print(
-                f"6画触发器：触发额外异放！本次触发消耗额外护羽数量为：{self.record.guard_feather}，当前资源情况为：{self.record.char.get_special_stats()}"
+        else:
+            active_anomaly_bar = get_result[0]
+            copyed_anomaly = AnomalyBar.create_new_from_existing(active_anomaly_bar)
+            # copyed_anomaly = self.record.last_update_anomaly
+            event_list = JudgeTools.find_event_list(
+                sim_instance=self.buff_instance.sim_instance
             )
+            mul_data = Mul(
+                self.record.enemy, self.record.dynamic_buff_list, self.record.char
+            )
+            ap = Cal.AnomalyMul.cal_ap(mul_data)
+            from zsim.sim_progress.anomaly_bar.CopyAnomalyForOutput import (
+                DirgeOfDestinyAnomaly,
+            )
+
+            dirge_of_destiny_anomaly = DirgeOfDestinyAnomaly(
+                copyed_anomaly,
+                active_by="1331",
+                sim_instance=self.buff_instance.sim_instance,
+            )
+            ratio = self.ANOMALY_RATIO_MUL.get(copyed_anomaly.element_type)
+            if self.record.cinema_ratio is None:
+                self.record.cinema_ratio = 1 if self.record.char.cinema < 2 else 1.3
+            final_ratio = (
+                math.floor(ap / 10)
+                * ratio
+                * self.record.cinema_ratio
+                * self.record.c6_ratio
+            )
+            dirge_of_destiny_anomaly.anomaly_dmg_ratio = final_ratio
+
+            # 在柚叶版本更新后，异常计算的逻辑改变了。current_ndarray不再动态变更，而是在属性异常触发后集中计算。
+            # 所以，这里获取到的current_ndarray是已经计算好的，所以这里不需要除以当前异常值
+            # dirge_of_destiny_anomaly.current_ndarray = (
+            #     dirge_of_destiny_anomaly.current_ndarray
+            #     / dirge_of_destiny_anomaly.current_anomaly
+            # )
+            event_list.append(dirge_of_destiny_anomaly)
+            if VIVIAN_REPORT:
+                self.buff_instance.sim_instance.schedule_data.change_process_state()
+                print(
+                    f"6画触发器：触发额外异放！本次触发消耗额外护羽数量为：{self.record.guard_feather}，当前资源情况为：{self.record.char.get_special_stats()}"
+                )
         self.record.guard_feather = 0
         self.record.char.feather_manager.update_myself(c6_signal=True)

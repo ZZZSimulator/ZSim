@@ -1,5 +1,7 @@
 import importlib
 from copy import deepcopy
+
+from zsim.define import ELEMENT_TYPE_MAPPING
 from zsim.sim_progress.anomaly_bar import AnomalyBar
 from zsim.sim_progress.anomaly_bar.CopyAnomalyForOutput import (
     Disorder,
@@ -14,6 +16,7 @@ if TYPE_CHECKING:
     from zsim.simulator.simulator_class import Simulator
 
 anomlay_dot_dict = {
+    0: "Assault",
     1: "Ignite",
     2: "Freez",
     3: "Shock",
@@ -32,9 +35,11 @@ def spawn_output(anomaly_bar, mode_number, sim_instance: "Simulator", **kwargs):
     skill_node = kwargs.get("skill_node", None)
 
     # 先处理快照，使其除以总权值。
-    anomaly_bar.current_ndarray = (
-        anomaly_bar.current_ndarray / anomaly_bar.current_anomaly
-    )
+    anomaly_bar.anomaly_settled() if mode_number in [0] else None
+    # 老逻辑
+    # anomaly_bar.current_ndarray = (
+    #     anomaly_bar.current_ndarray / anomaly_bar.current_anomaly
+    # )
     # output = anomaly_bar.element_type, anomaly_bar.current_ndarray
     if mode_number == 0:
         output = NewAnomaly(
@@ -102,7 +107,7 @@ def update_anomaly(
     """
     skill_node = kwargs.get("skill_node")
     dynamic_buff_dict = kwargs.get("dynamic_buff_dict", None)
-    bar: AnomalyBar = enemy.anomaly_bars_dict[skill_node.skill.element_type]
+    bar: AnomalyBar = enemy.anomaly_bars_dict[skill_node.element_type]
     if not isinstance(bar, AnomalyBar):
         raise TypeError(f"{type(bar)}不是Anomaly类！")
     active_anomaly_check, active_anomaly_list, last_anomaly_element_type = (
@@ -127,6 +132,7 @@ def update_anomaly(
                 time_now, dynamic_buff_dict=dynamic_buff_dict, skill_node=skill_node
             )
             enemy.update_anomaly(element_type)
+
             active_bar = deepcopy(bar)
             enemy.dynamic.active_anomaly_bar_dict[element_type] = active_bar
 
@@ -147,7 +153,7 @@ def update_anomaly(
                 """
                 mode_number = 0
                 new_anomaly = spawn_output(
-                    bar, mode_number, skill_node=skill_node, sim_instance=sim_instance
+                    active_bar, mode_number, skill_node=skill_node, sim_instance=sim_instance
                 )
                 for _char in char_obj_list:
                     _char.special_resources(new_anomaly)
@@ -216,7 +222,7 @@ def update_anomaly(
 
                 # 新的激活异常根据原来的Bar进行复制，并且添加到enemy身上。
                 new_anomaly = spawn_output(
-                    bar, 0, skill_node=skill_node, sim_instance=sim_instance
+                    active_bar, 0, skill_node=skill_node, sim_instance=sim_instance
                 )
                 anomaly_effect_active(
                     active_bar,
@@ -237,7 +243,8 @@ def update_anomaly(
                 sim_instance.decibel_manager.update(
                     skill_node=skill_node, key="disorder"
                 )
-                # print(f'触发紊乱！')
+                enemy.sim_instance.schedule_data.change_process_state()
+                print(f'由【{disorder.activated_by.char_name}】的【{disorder.activated_by.skill_tag}】技能触发了紊乱！【{ELEMENT_TYPE_MAPPING[last_anomaly_bar.element_type]}】属性的异常状态提前结束！')
             # 在异常与紊乱两个分支的最后，清空bar的异常积蓄和快照。
             else:
                 raise ValueError("无法解析的异常/紊乱分支")
@@ -262,7 +269,9 @@ def remove_dots_cause_disorder(disorder, enemy, event_list, time_now):
             enemy.dynamic.dynamic_dot_list.remove(dots)
             enemy.dynamic.frozen = False
             enemy.dynamic.frostbite = False
-            # print('因紊乱而强行移除碎冰')
+            sim_instance = enemy.sim_instance
+            sim_instance.schedule_data.change_process_state()
+            print('因紊乱而强行移除碎冰')
         else:
             if dots.ft.index == anomlay_dot_dict[disorder.element_type]:
                 dots.end(time_now)

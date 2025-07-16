@@ -1,5 +1,4 @@
 import json
-import os
 import shutil
 from pathlib import Path
 from typing import Callable, Literal
@@ -15,15 +14,45 @@ NORMAL_MODE_ID_JSON = "results/id_cache.json"
 
 
 def initialize_config_files():
-    """初始化配置文件，如果不存在则从 _example 文件复制生成"""
-    config_files = [
-        (char_config_file, "zsim/data/character_config_example.toml"),
-        (CONFIG_PATH, "zsim/config_example.json"),
-    ]
-    for target, example in config_files:
-        if not os.path.exists(target):
-            shutil.copy(example, target)
-            print(f"已生成配置文件：{target}")
+    """
+    初始化配置文件。
+    如果配置文件不存在，则从 _example 文件复制生成。
+    如果存在，则检查并使用模板更新现有配置。
+    """
+    # TOML config
+    char_config_example_path = Path("zsim/data/character_config_example.toml")
+    if not char_config_file.exists():
+        shutil.copy(char_config_example_path, char_config_file)
+        print(f"已生成配置文件：{char_config_file}")
+
+    # JSON config
+    config_example_path = Path("zsim/config_example.json")
+
+    def update_json_config(template: dict, user: dict) -> bool:
+        """递归更新用户配置，返回是否被更新"""
+        updated = False
+        for key, value in template.items():
+            if key not in user:
+                user[key] = value
+                updated = True
+            elif isinstance(value, dict) and isinstance(user.get(key), dict):
+                if update_json_config(value, user[key]):
+                    updated = True
+        return updated
+
+    if not Path(CONFIG_PATH).exists():
+        shutil.copy(config_example_path, CONFIG_PATH)
+        print(f"已生成配置文件：{CONFIG_PATH}")
+    else:
+        with open(config_example_path, "r", encoding="utf-8") as f:
+            template_config = json.load(f)
+        with open(CONFIG_PATH, "r", encoding="utf-8") as f:
+            user_config = json.load(f)
+
+        if update_json_config(template_config, user_config):
+            with open(CONFIG_PATH, "w", encoding="utf-8") as f:
+                json.dump(user_config, f, indent=4, ensure_ascii=False)
+            print(f"配置文件 {CONFIG_PATH} 已更新。")
 
 
 results_dir = "results/"
@@ -123,6 +152,7 @@ ASTRAYAO_REPORT: bool = _config["char_report"]["AstraYao"]
 HUGO_REPORT: bool = _config["char_report"]["Hugo"]
 YIXUAN_REPORT: bool = _config["char_report"]["Yixuan"]
 TRIGGER_REPORT: bool = _config["char_report"]["Trigger"]
+YUZUHA_REPORT: bool = _config["char_report"]["Yuzuha"]
 
 # 开发变量
 NEW_SIM_BOOT: bool = _config.get("dev", {}).get("new_sim_boot", True)
@@ -143,6 +173,16 @@ ANOMALY_MAPPING: dict[ElementType, str] = {
     4: "侵蚀",
     5: "烈霜碎冰",
     6: "玄墨侵蚀",
+}
+
+ELEMENT_TYPE_MAPPING: dict[ElementType, str] = {
+    0: "物理",
+    1: "火",
+    2: "冰",
+    3: "电",
+    4: "以太",
+    5: "烈霜",
+    6: "玄墨"
 }
 # 属性类型等价映射字典
 ELEMENT_EQUIVALENCE_MAP: dict[ElementType, list[ElementType]] = {
