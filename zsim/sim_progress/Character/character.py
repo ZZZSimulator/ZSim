@@ -22,6 +22,7 @@ if TYPE_CHECKING:
     from zsim.sim_progress.Buff.buff_class import Buff
     from zsim.sim_progress.data_struct.sp_update_data import SPUpdateData
     from zsim.sim_progress.Preload.SkillsQueue import SkillNode
+    from zsim.simulator.simulator_class import Simulator
 
 
 class Character:
@@ -829,6 +830,9 @@ class Character:
 
     def __deepcopy__(self, memo):
         return self
+
+    def POST_INIT_DATA(self, sim_insatnce: "Simulator"):
+        pass
 
 
 class LastingNode:

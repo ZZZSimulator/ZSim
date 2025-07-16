@@ -95,6 +95,7 @@ class VivianCorePassiveTrigger(Buff.BuffLogic):
         from zsim.sim_progress.anomaly_bar import AnomalyBar
 
         get_result = self.record.enemy.dynamic.get_active_anomaly()
+
         if not get_result:
             raise ValueError(
                 f"{self.buff_instance.ft.index}的xeffect函数中，enemy.get_active_anomlay函数返回空列表，说明此时没有异常。但是xjudge函数却放行了。"
@@ -124,10 +125,10 @@ class VivianCorePassiveTrigger(Buff.BuffLogic):
         """final_ratio = math.floor(ap/10) * ratio * self.record.cinema_ratio"""
         final_ratio = ap / 10 * ratio * self.record.cinema_ratio
         dirge_of_destiny_anomaly.anomaly_dmg_ratio = final_ratio
-        dirge_of_destiny_anomaly.current_ndarray = (
-            dirge_of_destiny_anomaly.current_ndarray
-            / dirge_of_destiny_anomaly.current_anomaly
-        )
+        # dirge_of_destiny_anomaly.current_ndarray = (
+        #     dirge_of_destiny_anomaly.current_ndarray
+        #     / dirge_of_destiny_anomaly.current_anomaly
+        # )
         event_list.append(dirge_of_destiny_anomaly)
         if VIVIAN_REPORT:
             self.buff_instance.sim_instance.schedule_data.change_process_state()

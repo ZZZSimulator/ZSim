@@ -57,7 +57,7 @@ class MiyabiCoreSkill_IceFire(Buff.BuffLogic):
         mission_now = self.record.action_stack.peek()
         debuff_list = enemy.dynamic.dynamic_debuff_list
 
-        if mission_now.mission_node.skill.element_type != 5:
+        if mission_now.mission_node.element_type != 5:
             return False
         else:
             for debuff in debuff_list:

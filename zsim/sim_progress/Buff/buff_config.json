@@ -1210,5 +1210,33 @@
     "Buff-武器-精5「灰烬」-钴蓝-攻击力提升": {
         "module": ".BuffXLogic.CinderCobaltAtkBonus",
         "class": "CinderCobaltAtkBonus"
+    },
+    "Buff-角色-柚叶-甜蜜惊吓": {
+        "module": ".BuffXLogic.YuzuhaCorePassiveSweetScare",
+        "class": "YuzuhaCorePassiveSweetScare"
+    },
+    "Buff-角色-柚叶-硬糖射击触发器": {
+        "module": ".BuffXLogic.YuzuhaHardCandyShotTrigger",
+        "class": "YuzuhaHardCandyShotTrigger"
+    },
+    "Buff-角色-柚叶-彩糖花火积蓄值增加": {
+        "module": ".BuffXLogic.YuzuhaSugarBurstAnomalyBuildupBonus",
+        "class": "YuzuhaSugarBurstAnomalyBuildupBonus"
+    },
+    "Buff-角色-柚叶-彩糖花火·极积蓄值增加": {
+        "module": ".BuffXLogic.YuzuhaSugarBurstMaxAnomalyBuildupBonus",
+        "class": "YuzuhaSugarBurstMaxAnomalyBuildupBonus"
+    },
+    "Buff-角色-柚叶-核心被动-狸之愿-攻击力": {
+        "module": ".BuffXLogic.YuzuhaTanukiWishAtkBonus",
+        "class": "YuzuhaTanukiWishAtkBonus"
+    },
+    "Buff-角色-柚叶-组队被动-积蓄值增幅": {
+        "module": ".BuffXLogic.YuzuhaAdditionalAbilityAnomalyBuildupBonus",
+        "class": "YuzuhaAdditionalAbilityAnomalyBuildupBonus"
+    },
+    "Buff-角色-柚叶-组队被动-属性异常与紊乱伤害增幅": {
+        "module": ".BuffXLogic.YuzuhaAdditionalAbilityAnomalyDmgBonus",
+        "class": "YuzuhaAdditionalAbilityAnomalyDmgBonus"
     }
 }

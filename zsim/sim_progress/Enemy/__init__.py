@@ -16,10 +16,12 @@ from zsim.sim_progress.anomaly_bar import (
 from zsim.sim_progress.anomaly_bar.AnomalyBarClass import AnomalyBar
 from zsim.sim_progress.data_struct import SingleHit
 from zsim.sim_progress.Report import report_to_log
+from zsim.models.event_enums import SpecialStateUpdateSignal as SSUS
 
 from .EnemyAttack import EnemyAttackMethod
 from .EnemyUniqueMechanic import unique_mechanic_factory
 from .QTEManager import QTEManager
+from zsim.sim_progress.data_struct.enemy_special_state_manager import SpecialStateManager
 
 if TYPE_CHECKING:
     from zsim.simulator.simulator_class import Simulator
@@ -231,6 +233,7 @@ class Enemy:
         self.restore_stun()
 
         self.unique_machanic_manager = unique_mechanic_factory(self)  # 特殊机制管理器
+        self.special_state_manager = SpecialStateManager(enemy_instance=self)
 
         report_to_log(
             f"[ENEMY]: 怪物对象 {self.name} 已创建，怪物ID {self.index_ID}", level=4
@@ -487,7 +490,7 @@ class Enemy:
         # 怪物的扣血逻辑。
         self.__HP_update(single_hit.dmg_expect)
         # 更新异常值
-        self.__anomaly_prod(single_hit.snapshot)
+        self.__anomaly_prod(single_hit.snapshot, single_hit=single_hit)
 
         if self.unique_machanic_manager is not None:
             self.unique_machanic_manager.update_myself(single_hit, tick)
@@ -497,6 +500,8 @@ class Enemy:
         self.sim_instance.preload.preload_data.atk_manager.receive_single_hit(
             single_hit=single_hit, tick=tick
         )
+        # 在接收hit的时，向所有特殊状态进行广播，执行更新自检！
+        self.special_state_manager.broadcast_and_update(signal=SSUS.RECEIVE_HIT, single_hit=single_hit)
 
     # 遥远的需求：
     #  TODO：实时DPS的计算，以及预估战斗结束时间，用于进一步优化APL。（例：若目标预计死亡时间<5秒，则不补buff）
@@ -581,12 +586,12 @@ class Enemy:
             self.dynamic.lost_hp = -1 * minus
             report_to_log(f"怪物{self.name}死亡！")
 
-    def __anomaly_prod(self, snapshot: tuple[int, np.float64, np.ndarray]) -> None:
+    def __anomaly_prod(self, snapshot: tuple[int, np.float64, np.ndarray], single_hit: SingleHit) -> None:
         """用于更新异常条的角色面板快照"""
         if snapshot[1] >= 1e-6:  # 确保非零异常值才更新
             element_type_code = snapshot[0]
             updated_bar = self.anomaly_bars_dict[element_type_code]
-            updated_bar.update_snap_shot(snapshot)
+            updated_bar.update_snap_shot(snapshot, single_hit=single_hit)
 
     def reset_myself(self):
         self.dynamic.reset_myself()

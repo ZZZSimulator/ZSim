@@ -40,6 +40,7 @@ def process_csv_file(file_path):
 
     # 处理除首行首列外的数据
     for row_index in tqdm(range(1, len(rows))):
+    # for row_index in range(1, len(rows)):
         if row_index == "add_buff_to":
             continue
         for col_index in range(1, len(rows[row_index])):
@@ -64,8 +65,16 @@ def process_all_csv_files(directory):
 if __name__ == "__main__":
     # path = './data'
     # process_all_csv_files(path)
-    process_csv_file("./zsim/data/skill.csv")
-    process_csv_file("./zsim/data/character.csv")
-    process_csv_file("./zsim/data/enemy.csv")
-    process_csv_file("./zsim/data/enemy_adjustment.csv")
-    process_csv_file("./zsim/data/weapon.csv")
+    # 老配置
+    # process_csv_file("./zsim/data/skill.csv")
+    # process_csv_file("./zsim/data/character.csv")
+    # process_csv_file("./zsim/data/enemy.csv")
+    # process_csv_file("./zsim/data/enemy_adjustment.csv")
+    # process_csv_file("./zsim/data/weapon.csv")
+
+    # 新配置
+    process_csv_file("skill.csv")
+    process_csv_file("character.csv")
+    process_csv_file("enemy.csv")
+    process_csv_file("enemy_adjustment.csv")
+    process_csv_file("weapon.csv")

@@ -56,7 +56,7 @@ class FlightOfFancy(Buff.BuffLogic):
         if self.record.equipper != skill_node.char_name:
             return False
         # 滤去非以太伤害的技能
-        if skill_node.skill.element_type != 4:
+        if skill_node.element_type != 4:
             return False
         tick = find_tick(sim_instance=self.buff_instance.sim_instance)
         if skill_node.loading_mission.is_hit_now(tick):
