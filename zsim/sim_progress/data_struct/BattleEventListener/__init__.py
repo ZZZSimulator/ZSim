@@ -1,7 +1,7 @@
 import importlib
 from collections import defaultdict
 from typing import TYPE_CHECKING
-
+from zsim.models.event_enums import ListenerBroadcastSignal as LBS
 from .BaseListenerClass import BaseListener
 
 if TYPE_CHECKING:
@@ -25,6 +25,7 @@ class ListenerManger:
             "Heartstring_Nocturne_1": "HeartstringNocturneListener",
             "Yixuan_1": "YixuanAnomalyListener",
             "CinderCobalt_1": "CinderCobaltListener",
+            "Yuzuha_1": "YuzuhaC2QTEListener"
         }
 
     def add_listener(
@@ -49,12 +50,12 @@ class ListenerManger:
             raise TypeError(f"无法解析的监听器所有者类型: {type(listener_owner)}")
         listeners_group.pop(listener.listener_id)
 
-    def broadcast_event(self, event, **kwargs):
+    def broadcast_event(self, event, signal: LBS, **kwargs):
         """广播事件，kwargs参数中记录了事件类型"""
         for owner_id, owner_dict in self._listeners_group.items():
             for __listener in owner_dict.values():
                 __listener: BaseListener
-                __listener.listening_event(event, **kwargs)
+                __listener.listening_event(event=event, signal=signal, **kwargs)
 
     def listener_factory(
         self,

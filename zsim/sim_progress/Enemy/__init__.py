@@ -22,7 +22,7 @@ from .EnemyAttack import EnemyAttackMethod
 from .EnemyUniqueMechanic import unique_mechanic_factory
 from .QTEManager import QTEManager
 from zsim.sim_progress.data_struct.enemy_special_state_manager import SpecialStateManager
-
+from zsim.models.event_enums import ListenerBroadcastSignal as LBS
 if TYPE_CHECKING:
     from zsim.simulator.simulator_class import Simulator
 
@@ -570,7 +570,7 @@ class Enemy:
                     single_hit=single_hit, key="stun"
                 )
                 self.sim_instance.listener_manager.broadcast_event(
-                    single_hit, stun_event=1
+                    event=single_hit, signal=LBS.STUN
                 )
             if self.sim_instance.preload.preload_data.atk_manager.attacking:
                 self.sim_instance.preload.preload_data.atk_manager.interrupted(

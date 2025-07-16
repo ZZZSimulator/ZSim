@@ -1,5 +1,8 @@
 from dataclasses import dataclass
 import numpy as np
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from zsim.sim_progress.Preload import SkillNode
 
 
 @dataclass
@@ -21,6 +24,13 @@ class SingleHit:
     def effective_anomlay_buildup(self) -> bool:
         """是否是有效积蓄"""
         return self.skill_node.effective_anomaly_buildup
+
+    @property
+    def force_qte_trigger(self) -> bool:
+        if self.skill_node is None:
+            return False
+        skill_node: "SkillNode" = self.skill_node
+        return skill_node.force_qte_trigger
 
 
 @dataclass

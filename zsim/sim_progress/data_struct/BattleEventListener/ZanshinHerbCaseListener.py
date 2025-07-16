@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
 from .BaseListenerClass import BaseListener
-
+from zsim.models.event_enums import ListenerBroadcastSignal as LBS
 if TYPE_CHECKING:
     from zsim.simulator.simulator_class import Simulator
 
@@ -13,9 +13,9 @@ class ZanshinHerbCaseListener(BaseListener):
         super().__init__(listener_id, sim_instance=sim_instance)
         self.active_signal: tuple[object, bool] | None = None
 
-    def listening_event(self, event_obj=None, **kwargs):
+    def listening_event(self, event_obj, signal: LBS, **kwargs):
         """监听到失衡事件或是触发了新的异常事件时，记录这个信号。"""
-        if "stun_event" in kwargs or "anomaly_event" in kwargs:
+        if signal not in [LBS.STUN, LBS.ANOMALY]:
             self.active_signal = (event_obj, True)
 
     def listener_active(self):

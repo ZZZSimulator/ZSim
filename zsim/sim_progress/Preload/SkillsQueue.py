@@ -61,6 +61,7 @@ class SkillNode:
             self.loading_mission = None
             self._effective_anomaly_buildup: bool = True
             self._element_type_change: ElementType | None = None
+            self.force_qte_trigger: bool = False
 
     @property
     def element_type(self) -> ElementType:

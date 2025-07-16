@@ -59,7 +59,7 @@ class QTEData:
         }
         self.preload_data = None
 
-    def check_myself(self) -> bool:
+    def check_myself(self, single_hit: SingleHit = None) -> bool:
         """该函数用于检查自身目前的状态，即当前是彩色失衡还是灰色失衡；"""
         if self.qte_triggered_times > self.qte_triggerable_times:
             raise ValueError(
@@ -76,6 +76,15 @@ class QTEData:
                 self.qte_activation_available = False
                 return False
         else:
+            """
+            v0.3.1b2更新：
+            为了复现柚叶2画在非失衡期也能激发一次连携技的机制，
+            所以为single_hit以及skill_node添加了一个新参数——force_qte_trigger（强制激发QTE）
+            该参数可以让QTE管理器在非失衡期放行这个single_hit，并且使其顺利进入后续的判定。
+            """
+            if single_hit is not None:
+                if single_hit.force_qte_trigger:
+                    return True
             return False
 
     def try_qte(self, hit: SingleHit) -> None:
