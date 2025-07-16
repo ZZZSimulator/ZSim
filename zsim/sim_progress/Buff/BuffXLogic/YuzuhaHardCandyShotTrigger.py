@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ...Preload import SkillNode
     from ...Character.Yuzuha import Yuzuha
+    from zsim.simulator.simulator_class import Simulator
 
 
 class YuzuhaHardCandyShotTriggerRecord:
@@ -56,7 +57,10 @@ class YuzuhaHardCandyShotTrigger(Buff.BuffLogic):
 
         char: "Yuzuha" = self.record.char
         # 先保证角色有空
-        if not char.is_available(tick=tick):
+        # if not char.is_available(tick=tick):
+        #     return False
+        sim_instance: "Simulator" = self.buff_instance.sim_instance
+        if sim_instance.preload.preload_data.char_occupied_check(char_cid=char.CID, tick=tick):
             return False
         # 再保证甜度点足够
         if char.get_resources()[1] < 1:

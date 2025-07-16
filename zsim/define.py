@@ -103,7 +103,9 @@ ENEMY_ATK_PARAMETER_DICT: dict[str, int | float] = {
 PARRY_BASE_PARAMETERS: dict[str, int | float] = {
     "ChainParryActionTimeCost": 10,  # 连续招架动作的时间消耗
 }
-
+CHAR_PARRY_STRATEGY_MAP: dict = {
+    1411: "1411_Assault_Aid_A"
+}
 
 DEFAULT_APL_DIR: str = _config["apl_mode"]["default_apl_dir"]
 COSTOM_APL_DIR: str = _config["apl_mode"]["custom_apl_dir"]
