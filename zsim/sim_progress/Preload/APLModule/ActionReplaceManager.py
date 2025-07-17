@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 from zsim.define import ENEMY_ATTACK_REPORT
+from zsim.models.event_enums import ListenerBroadcastSignal as LBS
 
 if TYPE_CHECKING:
     from zsim.sim_progress.Character.character import Character
@@ -380,6 +381,8 @@ class ActionReplaceManager:
                 self.parry_interaction_in_progress = False
                 self.assault_aid_enable = True
                 self.assault_aid_disable_tick = tick + 60
+                listener_manager = self.preload_data.sim_instance.listener_manager
+                listener_manager.broadcast_event(event=skill_node, signal=LBS.PARRY)
             elif "Assault_Aid" in skill_node.skill_tag:
                 if tick > self.assault_aid_disable_tick:
                     raise ValueError(

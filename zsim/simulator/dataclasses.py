@@ -142,6 +142,30 @@ class CharacterData:
                 i += 1
         self.char_obj_dict = {char_obj.NAME: char_obj for char_obj in self.char_obj_list}
 
+    def find_next_char_obj(self, char_now: int, direction: int = 1) -> Character:
+        """输入查找起点（CID），以及查找方向，返回下一位角色"""
+        __index = 0
+        for char_obj in self.char_obj_list:
+            __index += 1
+            if char_now != char_obj.CID:
+                continue
+            if direction == 1:
+                """顺向查找"""
+                if __index + 1 == len(self.char_obj_list):
+                    return self.char_obj_list[0]
+                else:
+                    return self.char_obj_list[__index]
+            elif direction == -1:
+                """逆向查找"""
+                if __index == 0:
+                    return self.char_obj_list[-1]
+                else:
+                    return self.char_obj_list[__index - 1]
+            else:
+                raise ValueError("direction参数错误！")
+        else:
+            raise ValueError("未找到CID为%d的角色！" % char_now)
+
     def reset_myself(self):
         for obj in self.char_obj_list:
             obj.reset_myself()
