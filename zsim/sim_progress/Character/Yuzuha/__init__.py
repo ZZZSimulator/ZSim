@@ -85,10 +85,11 @@ class Yuzuha(Character):
         """柚叶的后置初始化函数，用于后置创建甜蜜惊吓特殊状态"""
         enemy = sim_insatnce.schedule_data.enemy
         self.sweet_scare = enemy.special_state_manager.special_state_factory(state_type=PIOT.SweetScare)
-        self.sp = 40.00 if self.cinema < 1 else 70.00 # 初始化能量值
+        self.sp = 40.00 if self.cinema < 1 else 70.00       # 初始化能量值
         if self.cinema >= 2:
-            sim_insatnce: "Simulator" = self.sim_instance
             sim_insatnce.listener_manager.listener_factory(listener_owner=self, initiate_signal="Yuzuha_1", sim_instance=sim_insatnce)
+        if self.cinema >= 6:
+            sim_insatnce.listener_manager.listener_factory(listener_owner=self, initiate_signal="Yuzuha_2", sim_instance=sim_insatnce)
 
     def get_resources(self, *args, **kwargs) -> tuple[str | None, int | float | None]:
         return "甜度点", self.sugar_points

@@ -27,4 +27,6 @@ class ListenerBroadcastSignal(Enum):
     ENTER_BATTLE = "enter_battle_event"     # 角色进入战斗
     ANOMALY = "anomaly_event"     # 属性异常事件
     STUN = "stun_event"     # 失衡事件
+    PARRY = "parry_event"       # 招架事件
+    BLOCK = "block_event"       # 格挡事件（其他具备格挡功能的技能响应进攻事件）
 

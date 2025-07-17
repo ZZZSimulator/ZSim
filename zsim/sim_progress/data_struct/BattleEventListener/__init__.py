@@ -25,7 +25,8 @@ class ListenerManger:
             "Heartstring_Nocturne_1": "HeartstringNocturneListener",
             "Yixuan_1": "YixuanAnomalyListener",
             "CinderCobalt_1": "CinderCobaltListener",
-            "Yuzuha_1": "YuzuhaC2QTEListener"
+            "Yuzuha_1": "YuzuhaC2QTEListener",
+            "Yuzuha_2": "YuzuhaC6ParryListener",
         }
 
     def add_listener(
