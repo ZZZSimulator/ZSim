@@ -206,6 +206,8 @@ def update_anomaly(
                 )
 
                 if element_type in [2, 5]:
+                    # if enemy.dynamic.frozen:
+                    #     event_list.append(last_anomaly_bar)
                     enemy.dynamic.frozen = True
                     # print("触发了新的冰异常！")
 
