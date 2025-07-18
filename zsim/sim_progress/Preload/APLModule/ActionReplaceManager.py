@@ -170,7 +170,7 @@ class ActionReplaceManager:
 
         @knock_back_signal.setter
         def knock_back_signal(self, value: bool):
-            print(f"【ActionReplaceManager】knock_back_signal被重新赋值为{value}")
+            # print(f"【ActionReplaceManager】knock_back_signal被重新赋值为{value}")
             self._knock_back_signal = value
 
         def condition_judge(

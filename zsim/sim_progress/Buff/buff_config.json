@@ -1242,5 +1242,9 @@
     "Buff-角色-柚叶-1画-全属性伤害抗性降低": {
         "module": ".BuffXLogic.YuzuhaCinem1EleResReduce",
         "class": "YuzuhaCinem1EleResReduce"
+    },
+    "Buff-角色-柚叶-2画-连携技触发器": {
+        "module": ".BuffXLogic.YuzuhaCinema2Trigger",
+        "class": "YuzuhaCinema2Trigger"
     }
 }
