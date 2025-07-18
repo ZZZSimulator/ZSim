@@ -56,6 +56,7 @@ class YuzuhaCinema2Trigger(Buff.BuffLogic):
         if not skill_node.is_last_hit(tick=tick):
             return False
         else:
+            self.record.skill_node_be_changed = skill_node
             return True
 
     @property

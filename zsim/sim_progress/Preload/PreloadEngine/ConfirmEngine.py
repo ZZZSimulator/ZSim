@@ -113,7 +113,7 @@ class ConfirmEngine(BasePreloadEngine):
                 if name_box[0] != old_name_box[0]:
                     """在更新name_box的时候，将切人事件对所有监听器进行广播。"""
                     self.data.sim_instance.listener_manager.broadcast_event(
-                        event=char, signal=LBS.SWITCHING_IN
+                        event=char, signal=LBS.SWITCHING_IN, skill_node=this_node
                     )
                     char.dynamic.on_field = True
             else:

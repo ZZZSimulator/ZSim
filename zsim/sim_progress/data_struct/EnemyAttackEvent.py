@@ -312,6 +312,7 @@ class EnemyAttackEventManager:
                     sim_instance.preload.strategy.apl_engine.apl.action_replace_manager
                 )
                 if self.action.hit == 1:
+                    self.enemy.sim_instance.schedule_data.change_process_state()
                     print(
                         f"【AtkEventManager】检测到来自角色{char_on_field}的招架技能{nodes.skill_tag}，进攻交互式时间提前结束，角色即将被击退！"
                     )
