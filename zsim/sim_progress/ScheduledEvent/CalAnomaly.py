@@ -46,7 +46,7 @@ class CalAnomaly:
             self.anomaly_obj.current_ndarray,
         )
         self.element_type: ElementType = snapshot[0]
-        # self.dmg_sp 以 array 形式储存，顺序为：基础伤害区、增伤区、异常精通区、等级、异常增伤区、异常暴击区、穿透率、穿透值、抗性穿透
+        # self.dmg_sp 以 array 形式储存，顺序为：基础伤害区、增伤区、异常精通区、等级、异常增伤区、异常暴击区、穿透率、穿透值、抗性穿透、冲击力、失衡值增幅
         self.dmg_sp: np.ndarray = snapshot[1]
         if anomaly_obj.activated_by is None:
             print(f"【CalAnomaly Warnning】:检测到异常实例(属性类型：{anomaly_obj.element_type}）的激活源为空，改异常实例将无法享受Buff加成。")
@@ -63,6 +63,7 @@ class CalAnomaly:
         v_char_level: int = int(
             np.floor(self.dmg_sp[0, 3] + 0.0000001)
         )  # 加一个极小的数避免精度向下丢失导致的误差
+        self.v_char_level = v_char_level
         # 等级系数
         k_level = self.cal_k_level(v_char_level)
 
@@ -85,6 +86,9 @@ class CalAnomaly:
         # 特殊乘区
         special_mul: float = Cal.RegularMul.cal_special_mul(self.data)
 
+        imp_mul = self.dmg_sp[0, 9]
+        stun_mul = self.dmg_sp[0, 10]
+
         self.final_multipliers: np.ndarray = self.set_final_multipliers(
             k_level,
             active_crit,
@@ -93,6 +97,8 @@ class CalAnomaly:
             vulnerability_mul,
             stun_vulnerability,
             special_mul,
+            imp_mul,
+            stun_mul
         )
 
     @staticmethod
@@ -163,9 +169,11 @@ class CalAnomaly:
         vulnerability_mul,
         stun_vulnerability,
         special_mul,
+        imp_mul,
+        stun_mul,
     ) -> np.ndarray:
         """将计算结果写入 self.final_multipliers"""
-        # self.dmg_sp 以 array 形式储存，顺序为：基础伤害区、增伤区、异常精通区、等级、异常增伤区、异常暴击区、穿透率、穿透值、抗性穿透
+        # self.dmg_sp 以 array 形式储存，顺序为：基础伤害区、增伤区、异常精通区、等级、异常增伤区、异常暴击区、穿透率、穿透值、抗性穿透、冲击力、失衡值增幅
         base_dmg = self.dmg_sp[0, 0]
         dmg_bonus = self.dmg_sp[0, 1]
         am_mul = self.dmg_sp[0, 2]
@@ -183,6 +191,8 @@ class CalAnomaly:
                 def_mul,
                 res_mul,
                 vulnerability_mul,
+                imp_mul,
+                stun_mul,
                 stun_vulnerability,
                 special_mul,
             ],
@@ -192,7 +202,8 @@ class CalAnomaly:
 
     def cal_anomaly_dmg(self) -> np.float64:
         """计算异常伤害期望"""
-        return np.float64(np.prod(self.final_multipliers))
+
+        return np.float64(np.prod(self.final_multipliers)/(self.dmg_sp[0,9] * self.dmg_sp[0,10]))
 
 
 class CalDisorder(CalAnomaly):
@@ -262,12 +273,13 @@ class CalDisorder(CalAnomaly):
 
     def cal_disorder_stun(self) -> np.float64:
         imp = self.final_multipliers[9]
-        stun_ratio = 3
+        stun_ratio = 2
         stun_res = Cal.StunMul.cal_stun_res(self.data, self.element_type)
         stun_bonus = self.final_multipliers[10]
         stun_received = Cal.StunMul.cal_stun_received(self.data)
+        k_level_for_stun = 1 + self.v_char_level * 0.0075
         return np.float64(
-            np.prod([imp, stun_ratio, stun_res, stun_bonus, stun_received])
+            np.prod([imp, stun_ratio, stun_res, stun_bonus, stun_received, k_level_for_stun])
         )
 
 

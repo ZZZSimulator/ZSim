@@ -126,7 +126,7 @@ class StatusSubUnit(BaseSubConditionUnit):
     class AssultHandler(CheckHandler):
         @classmethod
         def handler(cls, enemy):
-            return enemy.dynamic.assult
+            return enemy.dynamic.assault
 
     class FrostbiteHandler(CheckHandler):
         @classmethod
@@ -159,7 +159,7 @@ class StatusSubUnit(BaseSubConditionUnit):
         "is_under_anomaly": ActiveAnomalyHandler,
         "is_shock": ShockHandler,
         "is_burn": BurnHandler,
-        "is_assult": AssultHandler,
+        "is_assault": AssultHandler,
         "is_frostbite": FrostbiteHandler,
         "is_frost_frostbite": FrostFrostbiteHandler,
         "is_corruption": CorruptionHandler,

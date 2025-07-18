@@ -90,14 +90,16 @@ def ProcessFreezLikeDots(timetick: int, enemy, event_list: list, event):
         raise TypeError(
             f"ProcessFreezLikeDots函数接收到的{event}不是LoadingMission或是SkillNode类！"
         )
+
     if not is_heavy_attack:
         if "1291_CorePassive" not in skill_tag:
-            return
+            return False
     for dot in dot_list[:]:
         if not isinstance(dot, Dot.Dot):
             raise TypeError(f"{dot}不是Dot类！")
         if dot.ft.effect_rules != 4:
             continue
+
         dot.ready_judge(timetick)
         if dot.dy.ready:
             print(f"{skill_tag}结算了碎冰！")
