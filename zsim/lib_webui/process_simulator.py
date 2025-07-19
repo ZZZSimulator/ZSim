@@ -1,6 +1,7 @@
 import json
 from typing import Any, Iterator
-
+import shutil
+import os
 import polars as pl
 import streamlit as st
 
@@ -248,11 +249,40 @@ def save_enemy_selection(index_id: int, adjust_id: int):
         index_id: 选中的敌人基础ID
         adjust_id: 选中的敌人调整ID
     """
-    with open(CONFIG_PATH, "r", encoding="utf-8") as f:
-        config = json.load(f)
 
-    config["enemy"]["index_ID"] = index_id
-    config["enemy"]["adjust_ID"] = adjust_id
+    # 创建配置文件临时备份
+    backup_path = CONFIG_PATH + ".bak"
+    shutil.copy(CONFIG_PATH, backup_path)
 
-    with open(CONFIG_PATH, "w", encoding="utf-8") as f:
-        json.dump(config, f, indent=4)
+    try:
+        # 部分更新配置文件
+        with open(CONFIG_PATH, "r+", encoding="utf-8") as f:
+            config = json.load(f)
+
+            # 只更新需要的部分
+            config["enemy"]["index_ID"] = index_id
+            config["enemy"]["adjust_ID"] = adjust_id
+
+            # 写回文件
+            f.seek(0)
+            json.dump(config, f, indent=4)
+            f.truncate()
+
+    except Exception as e:
+        # 出错时恢复备份
+        print(f"保存配置出错: {e}")
+        shutil.move(backup_path, CONFIG_PATH)
+        raise
+    finally:
+        # 清理备份
+        if os.path.exists(backup_path):
+            os.remove(backup_path)
+    #
+    # with open(CONFIG_PATH, "r", encoding="utf-8") as f:
+    #     config = json.load(f)
+    #
+    # config["enemy"]["index_ID"] = index_id
+    # config["enemy"]["adjust_ID"] = adjust_id
+    #
+    # with open(CONFIG_PATH, "w", encoding="utf-8") as f:
+    #     json.dump(config, f, indent=4)

@@ -99,6 +99,15 @@ class SkillNode:
         """获取当前skill_node的唯一ID，该ID在skill_node被构造时就已经确定"""
         return cls._instance_counter
 
+    def have_label(self, label_key: str):
+        """判断当前skill_node是否拥有传入数值的skill_label"""
+        if self.skill.labels is None:
+            return False
+        if label_key in self.labels.keys():
+            return True
+        else:
+            return False
+
     def is_heavy_hit(self, tick: int) -> bool:
         """判断当前技能是否为重击"""
         if not self.skill.heavy_attack:

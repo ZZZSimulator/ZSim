@@ -1246,5 +1246,25 @@
     "Buff-角色-柚叶-2画-连携技触发器": {
         "module": ".BuffXLogic.YuzuhaCinema2Trigger",
         "class": "YuzuhaCinema2Trigger"
+    },
+    "Buff-武器-精1狸法七变化-全队异常精通": {
+        "module": ".BuffXLogic.MetanukiMorphosisAPBonus",
+        "class": "MetanukiMorphosisAPBonus"
+    },
+    "Buff-武器-精2狸法七变化-全队异常精通": {
+        "module": ".BuffXLogic.MetanukiMorphosisAPBonus",
+        "class": "MetanukiMorphosisAPBonus"
+    },
+    "Buff-武器-精3狸法七变化-全队异常精通": {
+        "module": ".BuffXLogic.MetanukiMorphosisAPBonus",
+        "class": "MetanukiMorphosisAPBonus"
+    },
+    "Buff-武器-精4狸法七变化-全队异常精通": {
+        "module": ".BuffXLogic.MetanukiMorphosisAPBonus",
+        "class": "MetanukiMorphosisAPBonus"
+    },
+    "Buff-武器-精5狸法七变化-全队异常精通": {
+        "module": ".BuffXLogic.MetanukiMorphosisAPBonus",
+        "class": "MetanukiMorphosisAPBonus"
     }
 }
