@@ -205,9 +205,8 @@ class Simulator:
             preload_list = self.preload.preload_data.preload_action
 
             if stop_tick is None:
-                if (
-                    not APL_MODE and self.preload.preload_data.skills_queue.head is None
-                ):  # Old Sequence mode left, not compatible with APL mode now
+                if not APL_MODE and self.preload.preload_data.skills_queue.head is None:
+                    # Old Sequence mode left, not compatible with APL mode now
                     stop_tick = self.tick + 120
             elif self.tick >= stop_tick:
                 break
@@ -265,7 +264,10 @@ class Simulator:
                     rest_seconds = 0
                     minutes += 1
                 print()
-                print(f"▲ ▲ ▲第{self.tick}帧({minutes:.0f}分 {rest_seconds:02.0f}秒)发生的事件如上▲ ▲ ▲\n ", end="")
+                print(
+                    f"▲ ▲ ▲第{self.tick}帧({minutes:.0f}分 {rest_seconds:02.0f}秒)发生的事件如上▲ ▲ ▲\n ",
+                    end="",
+                )
                 print("---------------------------------------------")
             self.tick += 1
             self.schedule_data.reset_processed_event()

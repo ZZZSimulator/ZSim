@@ -34,7 +34,7 @@ session_config = SessionRun(
 )
 """
 
-from typing import Any, Literal
+from typing import Literal, Self
 
 from pydantic import (
     BaseModel,
@@ -77,7 +77,7 @@ class CharConfig(BaseModel):
     crit_rate_limit: NonNegativeFloat = 0.95
 
     @model_validator(mode="after")
-    def validate_stats(self) -> "CharConfig":
+    def validate_stats(self) -> Self:
         """验证属性值是否合法"""
         # 验证暴击率上限
         if not 0.05 <= self.crit_rate_limit <= 1:
@@ -133,7 +133,7 @@ class CommonCfg(BaseModel):
     apl_path: str = ""
 
     @model_validator(mode="after")
-    def validate_char_config(self) -> "CommonCfg":
+    def validate_char_config(self) -> Self:
         """验证角色配置参数"""
         # 角色配置参数不能为空
         if len(self.char_config) != 3:
@@ -163,35 +163,9 @@ class ParallelCfg(BaseModel):
             name: str
             level: Literal[1, 2, 3, 4, 5] = 1
 
-    @classmethod
-    @model_validator(mode="before")
-    def _check_func_config_type(cls, data: Any) -> Any:
-        """根据 func 的值，自动将 func_config 字典转换为正确的模型实例"""
-        if not isinstance(data, dict):
-            return data
 
-        func = data.get("func")
-        func_config = data.get("func_config")
-
-        # 如果 func 为 None，func_config 必须也为 None
-        if func is None:
-            if func_config is not None:
-                raise ValidationError("当 func 为 None 时，func_config 必须为 None")
-            return data
-
-        # 如果 func_config 为 None，但 func 不为 None，报错
-        if func_config is None:
-            raise ValidationError(f"当 func 为 '{func}' 时，func_config 不能为 None")
-
-        # 根据 func 的值检查 func_config 的类型并转换
-        if func == "attr_curve":
-            if not isinstance(func_config, cls.AttrCurveConfig):
-                data["func_config"] = cls.AttrCurveConfig(**func_config)
-        elif func == "weapon":
-            if not isinstance(func_config, cls.WeaponConfig):
-                data["func_config"] = cls.WeaponConfig(**func_config)
-
-        return data
+ParallelCfg.model_rebuild()
+ParallelCfg.WeaponConfig.model_rebuild()
 
 
 class SessionRun(BaseModel):
@@ -204,7 +178,7 @@ class SessionRun(BaseModel):
     parallel_config: ParallelCfg | None = None
 
     @model_validator(mode="after")
-    def validate_common_config(self) -> "SessionRun":
+    def validate_common_config(self) -> Self:
         """验证通用配置参数"""
         if self.mode == "parallel" and self.parallel_config is None:
             raise ValidationError("并行模式下，parallel_config 不能为空")
