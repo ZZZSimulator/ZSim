@@ -579,6 +579,8 @@ class Calculator:
             base_dmg = ((dmg_ratio + data.dynamic.extra_damage_ratio) * attr) * (
                 1 + data.dynamic.base_dmg_increase_percentage
             ) + data.dynamic.base_dmg_increase
+            # if data.judge_node.char_name == "雅":
+            #     print(f"雅的基础乘区为：{dmg_ratio:.2f}, 基础攻击力{data.static.atk:.2f} 局内百分比 {data.dynamic.field_atk_percentage:.2f}固定攻击力{data.dynamic.atk:.2f}")
             return base_dmg
 
         def cal_base_attr(self, base_attr: int, data: MultiplierData):
@@ -1348,7 +1350,7 @@ class Calculator:
         multipliers: np.ndarray = self.regular_multipliers.get_array_expect()
         dmg_expect = np.prod(multipliers)
         # if any([__tag in self.skill_tag for __tag in
-        #         ["1371"]]):
+        #         ["1091"]]):
         #     tag_list = [
         #         "基础乘区",
         #         "增伤区",
