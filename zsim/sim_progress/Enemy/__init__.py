@@ -41,9 +41,9 @@ class Enemy:
         self,
         *,
         name: str | None = None,
-        index_ID: int | None = None,
+        index_id: int | None = None,
         sub_ID: int | None = None,
-        adjust_ID: int | None = None,
+        adjustment_id: int | None = None,
         difficulty: float = 1,
         sim_instance: "Simulator" = None,
     ):
@@ -70,12 +70,12 @@ class Enemy:
         _raw_enemy_dataframe = pd.read_csv(ENEMY_DATA_PATH)
         _raw_enemy_adjustment_dataframe = pd.read_csv(ENEMY_ADJUSTMENT_PATH)
         # !!!注意!!!因为可能存在重名敌人的问题，使用中文名称查找怪物时，只会返回ID更靠前的
-        enemy_info = self.__lookup_enemy(_raw_enemy_dataframe, name, index_ID, sub_ID)
+        enemy_info = self.__lookup_enemy(_raw_enemy_dataframe, name, index_id, sub_ID)
         self.name, self.index_ID, self.sub_ID, self.data_dict = enemy_info
         # 获取调整倍率
         self.enemy_adjust: dict[
             Literal["生命值", "攻击力", "失衡值上限", "防御力", "异常积蓄值上限"], float
-        ] = self.__lookup_enemy_adjustment(_raw_enemy_adjustment_dataframe, adjust_ID)
+        ] = self.__lookup_enemy_adjustment(_raw_enemy_adjustment_dataframe, adjustment_id)
         # 难度
         self.difficulty: float = difficulty
         # 初始化动态属性
@@ -732,5 +732,5 @@ class Enemy:
 
 
 if __name__ == "__main__":
-    test = Enemy(index_ID=11432, sub_ID=900011432)
+    test = Enemy(index_id=11432, sub_ID=900011432)
     print(test.ice_anomaly_bar.max_anomaly)

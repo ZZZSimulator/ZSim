@@ -8,5 +8,5 @@ class TestSimulator:
 
     def test_simulator_reset(self):
         sim = Simulator()
-        sim.reset_simulator(sim_cfg=None)
+        sim.cli_init_simulator(sim_cfg=None)
         assert sim.init_data is not None

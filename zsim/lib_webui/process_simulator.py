@@ -10,9 +10,7 @@ from zsim.simulator.config_classes import (
     ExecAttrCurveCfg,
     ExecWeaponCfg,
 )
-from zsim.simulator.config_classes import (
-    SimulationConfig as SimCfg,
-)
+from zsim.simulator.config_classes import SimulationConfig as SimCfg
 
 from .constants import stats_trans_mapping
 
@@ -149,13 +147,9 @@ def show_apl_judge_result(selected_title: str | None = None) -> bool:
         st.error("未找到APL数据，请检查APL文件是否正确。")
         return False
     apl_judge_tool = APLJudgeTool(apl_data)
-    required_chars_result: tuple[bool, list[str]] = (
-        apl_judge_tool.judge_requried_chars()
-    )
+    required_chars_result: tuple[bool, list[str]] = apl_judge_tool.judge_requried_chars()
     option_result_result: tuple[bool, list[str]] = apl_judge_tool.judge_optional_chars()
-    char_config_result: tuple[bool, dict[str, str | int]] = (
-        apl_judge_tool.judge_char_config()
-    )
+    char_config_result: tuple[bool, dict[str, str | int]] = apl_judge_tool.judge_char_config()
     if required_chars_result[0]:
         st.success("必选角色满足要求")
     else:
