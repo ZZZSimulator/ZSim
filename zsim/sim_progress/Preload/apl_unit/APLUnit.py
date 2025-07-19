@@ -24,14 +24,37 @@ class APLUnit(ABC):
         self.break_when_found_action = True
         self.result = None
         self.sub_conditions_unit_list = []
+        self.sub_conditions_ast = None
         self.apl_unit_type = None
         self.sim_instance = sim_instance
 
     @abstractmethod
     def check_all_sub_units(
-        self, found_char_dict, game_state, sim_instance: "Simulator", **kwargs
+            self, found_char_dict, game_state, sim_instance: "Simulator", **kwargs
     ):
         pass
+
+    def evaluate_condition_ast(self, node: "ExprNode", found_char_dict, game_state, sim_instance, tick, result_box):
+        """递归地评估逻辑树的表达式节点"""
+        if node.is_leaf():
+            if not isinstance(node.sub_condition, BaseSubConditionUnit):
+                raise TypeError("逻辑树中包含非 BaseSubConditionUnit 类型的叶子节点")
+            result = node.sub_condition.check_myself(
+                found_char_dict, game_state, tick=tick, sim_instance=sim_instance
+            )
+            result_box.append(result)
+            return result
+        else:
+            left_result = self.evaluate_condition_ast(node.left, found_char_dict, game_state, sim_instance, tick,
+                                                      result_box)
+            right_result = self.evaluate_condition_ast(node.right, found_char_dict, game_state, sim_instance, tick,
+                                                       result_box)
+            if node.operator == "and":
+                return left_result and right_result
+            elif node.operator == "or":
+                return left_result or right_result
+            else:
+                raise ValueError(f"未知逻辑运算符: {node.operator}")
 
 
 def spawn_sub_condition(
@@ -116,3 +139,45 @@ class SimpleUnitForForceAdd(APLUnit):
                 return False, result_box
         else:
             return True, result_box
+
+
+class ExprNode:
+    def __init__(self, operator=None, left=None, right=None, sub_condition: "BaseSubConditionUnit" = None):
+        """
+        - operator: "and", "or"（逻辑运算符）
+        - left/right: ExprNode 对象
+        - sub_condition: 原子条件（BaseSubConditionUnit 的实例），只在叶子节点设置
+        """
+        self.operator = operator
+        self.left = left
+        self.right = right
+        self.sub_condition = sub_condition
+
+    def is_leaf(self):
+        return self.operator is None
+
+
+def logic_tree_to_expr_node(priority: int, logic_tree: dict | str | None) -> ExprNode | None:
+    if logic_tree is None:
+        return None
+    # 如果是字符串（最小条件单元），构造叶子节点
+    if isinstance(logic_tree, str):
+        return ExprNode(sub_condition=spawn_sub_condition(priority, logic_tree))
+
+    # 应该只有一个操作符键
+    assert isinstance(logic_tree, dict) and len(logic_tree) == 1
+    operator = list(logic_tree.keys())[0]
+    children = logic_tree[operator]
+
+    # 如果只有两个元素，直接构造左右节点
+    if len(children) == 2:
+        left_node = logic_tree_to_expr_node(priority, children[0])
+        right_node = logic_tree_to_expr_node(priority, children[1])
+        return ExprNode(operator=operator, left=left_node, right=right_node)
+
+    # 如果超过两个，需要递归构造嵌套结构（左结合）
+    current = logic_tree_to_expr_node(priority, children[0])
+    for i in range(1, len(children)):
+        right = logic_tree_to_expr_node(priority, children[i])
+        current = ExprNode(operator=operator, left=current, right=right)
+    return current
