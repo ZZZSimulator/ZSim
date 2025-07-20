@@ -21,8 +21,8 @@
     "skipLibCheck": true
   },
   "include": [
-    "src/renderer/src/env.d.ts",
     "src/renderer/src/**/*",
+    "src/renderer/types/*.d.ts",
     "src/renderer/src/**/*.vue",
     "src/preload/*.d.ts"
   ]
