@@ -1,11 +1,12 @@
 {
   "name": "zsim",
   "version": "1.0.0",
-  "description": "绝区零模拟仿真程序客户端",
-  "main": "./out/main/index.js",
-  "author": "ZZZSimulator",
   "private": true,
+  "packageManager": "pnpm@10.12.4+sha512.5ea8b0deed94ed68691c9bad4c955492705c5eeb8a87ef86bc62c74a26b037b08ff9570f108b2e4dbd1dd1a9186fea925e527f141c648e85af45631074680184",
+  "description": "绝区零模拟仿真程序客户端",
+  "author": "ZZZSimulator",
   "homepage": "https://github.com/ZZZSimulator/ZSim",
+  "main": "./out/main/index.js",
   "scripts": {
     "format": "prettier --write .",
     "lint": "eslint --cache .",
@@ -30,22 +31,17 @@
     "unocss-preset-scrollbar-hide": "^1.0.1"
   },
   "devDependencies": {
-    "@electron-toolkit/eslint-config-prettier": "3.0.0",
-    "@electron-toolkit/eslint-config-ts": "^3.0.0",
-    "@electron-toolkit/tsconfig": "^1.0.1",
+    "@antfu/eslint-config": "4.17.0",
     "@types/node": "^22.14.1",
     "@vitejs/plugin-vue": "^6.0.0",
     "electron": "^37.2.3",
     "electron-builder": "^26.0.12",
     "electron-vite": "^4.0.0",
     "eslint": "^9.24.0",
-    "eslint-plugin-vue": "^10.0.0",
-    "prettier": "^3.5.3",
     "typescript": "^5.8.3",
     "unocss": "^66.3.3",
     "vite": "^7.0.5",
     "vue": "^3.5.17",
-    "vue-eslint-parser": "^10.1.3",
     "vue-tsc": "^3.0.3"
   }
 }
