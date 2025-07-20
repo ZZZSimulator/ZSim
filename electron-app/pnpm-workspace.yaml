@@ -1,3 +1,4 @@
 onlyBuiltDependencies:
+  - '@tailwindcss/oxide'
   - electron
   - esbuild
