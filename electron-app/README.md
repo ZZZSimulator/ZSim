@@ -1,34 +1,44 @@
-# electron-app
+# ZZZ Simulator
 
-An Electron application with Vue and TypeScript
+## 简述
 
-## Recommended IDE Setup
-
-- [VSCode](https://code.visualstudio.com/) + [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) + [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar)
+绝区零伤害仿真软件客户端
 
 ## Project Setup
+
+### Prepare
+
+1. vscode
+2. node >= 22.0
+3. pnpm >= 10.0
+
+### Select Package Manager
+
+```bash
+$ corepack install
+```
 
 ### Install
 
 ```bash
-$ npm install
+$ pnpm i
 ```
 
 ### Development
 
 ```bash
-$ npm run dev
+$ pnpm dev
 ```
 
 ### Build
 
 ```bash
 # For windows
-$ npm run build:win
+$ pnpm run build:win
 
 # For macOS
-$ npm run build:mac
+$ pnpm run build:mac
 
 # For Linux
-$ npm run build:linux
+$ pnpm run build:linux
 ```
