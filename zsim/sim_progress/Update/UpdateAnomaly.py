@@ -122,7 +122,6 @@ def update_anomaly(
     )
 
     if bar.current_anomaly >= bar.max_anomaly:
-        bar.is_full = True
         # 积蓄值蓄满了，但是属性异常不一定触发，还需要验证一下内置CD
         bar.ready_judge(time_now)
         if bar.ready:
