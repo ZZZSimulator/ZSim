@@ -204,7 +204,6 @@ def update_anomaly(
                 setattr(
                     enemy.dynamic, enemy.trans_anomaly_effect_to_str[element_type], True
                 )
-
                 if element_type in [2, 5]:
                     # if enemy.dynamic.frozen:
                     #     event_list.append(last_anomaly_bar)
@@ -255,29 +254,33 @@ def update_anomaly(
 
 def remove_dots_cause_disorder(disorder, enemy, event_list, time_now):
     """
-    该函数只负责移除buff。
+    该函数只负责移除dot。
     """
-    for dots in enemy.dynamic.dynamic_dot_list[:]:
+    remove_dots_list = []
+    for dots in enemy.dynamic.dynamic_dot_list:
         if not isinstance(dots, Dot):
             raise TypeError(f"{dots}不是DOT类！")
-        if dots.ft.index == "Freez":
+        if dots.ft.index in ["Freez", "Freezdot"] or dots.ft.index == disorder.accompany_dot:
             if dots.dy.effect_times > dots.ft.max_effect_times:
                 raise ValueError("该Dot任务已经完成，应当被删除！")
-            event_list.append(dots.anomaly_data)
-            dots.dy.ready = False
-            dots.dy.last_effect_ticks = time_now
-            dots.dy.effect_times += 1
-            dots.end(time_now)
-            enemy.dynamic.dynamic_dot_list.remove(dots)
-            enemy.dynamic.frozen = False
-            enemy.dynamic.frostbite = False
+            remove_dots_list.append(dots)
+    else:
+        for _dot in remove_dots_list:
+            if _dot.ft.index in ["Freez", "Freezdot"]:
+                event_list.append(_dot.anomaly_data)
+                _dot.dy.ready = False
+                _dot.dy.last_effect_ticks = time_now
+                _dot.dy.effect_times += 1
+                _dot.end(time_now)
+                enemy.dynamic.dynamic_dot_list.remove(_dot)
+                enemy.dynamic.frozen = False
+                enemy.dynamic.frostbite = False
+            else:
+                _dot.end(time_now)
+                enemy.dynamic.dynamic_dot_list.remove(_dot)
             sim_instance = enemy.sim_instance
             sim_instance.schedule_data.change_process_state()
-            print('因紊乱而强行移除碎冰')
-        else:
-            if dots.ft.index == anomlay_dot_dict[disorder.element_type]:
-                dots.end(time_now)
-                enemy.dynamic.dynamic_dot_list.remove(dots)
+            print(f'因紊乱而强行移除Dot {_dot.ft.index}')
 
 
 def check_anomaly_bar(enemy):
