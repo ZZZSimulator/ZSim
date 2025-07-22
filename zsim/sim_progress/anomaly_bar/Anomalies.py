@@ -23,7 +23,7 @@ class PhysicalAnomaly(AnomalyBar):
 class FireAnomaly(AnomalyBar):
     def __post_init__(self):
         super().__post_init__()  # 调用父类的初始化方法
-        self.accompany_dot = "灼烧"
+        self.accompany_dot = "Ignite"
         self.element_type = 1  # 火属性
         self.basic_max_duration = 600
         self.duration_buff_list = ["Buff-角色-柏妮思-组队被动-延长灼烧"]
@@ -42,7 +42,7 @@ class IceAnomaly(AnomalyBar):
         super().__post_init__()  # 调用父类的初始化方法
         self.element_type = 2  # 冰属性
         self.accompany_debuff = ["Buff-异常-霜寒"]
-        self.accompany_dot = "冻结"
+        self.accompany_dot = "Freez"
         self.basic_max_duration = 600
         self.max_duration = 0
         self.duration_buff_key_list = [
@@ -59,7 +59,7 @@ class ElectricAnomaly(AnomalyBar):
     def __post_init__(self):
         super().__post_init__()  # 调用父类的初始化方法
         self.element_type = 3  # 电属性
-        self.accompany_dot = "感电"
+        self.accompany_dot = "Shock"
         self.basic_max_duration = 600
         self.duration_buff_list = ["Buff-角色-丽娜-组队被动-延长感电"]
         self.max_duration = 0
@@ -76,7 +76,7 @@ class EtherAnomaly(AnomalyBar):
     def __post_init__(self):
         super().__post_init__()  # 调用父类的初始化方法
         self.element_type = 4  # 以太属性
-        self.accompany_dot = "侵蚀"
+        self.accompany_dot = "Corruption"
         self.basic_max_duration = 600
         self.max_duration = 0
         self.duration_buff_key_list = [
@@ -92,7 +92,7 @@ class FrostAnomaly(AnomalyBar):
     def __post_init__(self):
         super().__post_init__()  # 调用父类的初始化方法
         self.element_type = 5  # 烈霜属性（星见雅专属）
-        self.accompany_dot = "冻结"
+        self.accompany_dot = "Freez"
         self.basic_max_duration = 1200
         self.accompany_debuff = ["Buff-异常-烈霜霜寒", "Buff-角色-雅-核心被动-霜灼"]
         self.max_duration = 0
@@ -109,7 +109,7 @@ class AuricInkAnomaly(AnomalyBar):
     def __post_init__(self):
         super().__post_init__()  # 调用父类的初始化方法
         self.element_type = 6  # 玄墨侵蚀的属性也是以太
-        self.accompany_dot = "玄墨侵蚀"
+        self.accompany_dot = "AuricInkCorruption"
         self.basic_max_duration = 600
         self.max_duration = 0
         self.duration_buff_key_list = [

@@ -715,6 +715,7 @@ class Enemy:
                     self.burn,
                     self.corruption,
                     self.shock,
+                    self.auricink_corruption
                 ]
             )
 

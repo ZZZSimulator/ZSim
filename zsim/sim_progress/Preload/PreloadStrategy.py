@@ -63,10 +63,7 @@ class SwapCancelStrategy(BasePreloadStrategy):
             apl_skill_node = None
             priority = 0
         # print(apl_skill_tag, priority)
-
-        # TODO：新增功能：Enemy进攻模块，以及角色的响应APL（即红黄光到底是释放闪反 还是招架）
         # TODO：新增功能：Enemy进攻模块的反馈接口，即招架后Enemy动作被打断；或是角色动作被Enemy打断的功能；
-        # TODO：“快速支援亮起”功能，可能需要去Character下面写一个对应的Manager。
         # TODO：“破招”事件需通过decibel manager向角色发放对应的喧响值奖励；
 
         #  2、ForceAdd引擎处理旧有的强制添加逻辑；
@@ -84,6 +81,7 @@ class SwapCancelStrategy(BasePreloadStrategy):
             self.confirm_engine.run_myself(
                 tick, apl_skill_node=apl_skill_node, apl_skill_tag=apl_skill_tag
             )
+
 
     def check_myself(self, enemy, tick, *args, **kwargs):
         """准备工作"""
