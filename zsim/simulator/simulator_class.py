@@ -41,7 +41,7 @@ class Confirmation(BaseModel):
     run_turn_uuid: str
     status: str
     timestamp: int
-    sim_cfg: SimCfg | None = None
+    sim_cfg: "SimCfg | None" = None
 
 
 class Simulator:
