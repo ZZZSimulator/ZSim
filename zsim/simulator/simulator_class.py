@@ -38,7 +38,7 @@ if TYPE_CHECKING:
 
 
 class Confirmation(BaseModel):
-    run_turn_uuid: str
+    session_id: str
     status: str
     timestamp: int
     sim_cfg: "SimCfg | None" = None
@@ -137,7 +137,7 @@ class Simulator:
 
         # 返回确认信息
         confirmation = Confirmation(
-            run_turn_uuid=common_cfg.session_id,
+            session_id=common_cfg.session_id,
             status="completed",
             timestamp=int(time.time()),
             sim_cfg=sim_cfg,

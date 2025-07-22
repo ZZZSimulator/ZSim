@@ -2,12 +2,36 @@ import asyncio
 import logging
 import threading
 from concurrent.futures import ProcessPoolExecutor
-from typing import TYPE_CHECKING, Any, Iterator
+from typing import TYPE_CHECKING, Any, Iterator, Literal, Union, cast
 
 from zsim.api_src.services.database.session_db import get_session_db
 from zsim.lib_webui.constants import stats_trans_mapping
+from zsim.lib_webui.process_buff_result import (
+    prepare_buff_data_and_cache as process_buff,
+)
+from zsim.lib_webui.process_dmg_result import (
+    prepare_dmg_data_and_cache as process_dmg,
+)
+from zsim.lib_webui.process_parallel_data import (
+    judge_parallel_result,
+    merge_parallel_dmg_data,
+)
+from zsim.lib_webui.process_parallel_data import (
+    prepare_parallel_data_and_cache as prepare_parallel_cache,
+)
 from zsim.models.session.session_create import Session
-from zsim.models.session.session_result import SessionResult
+from zsim.models.session.session_result import (
+    AttrCurvePayload,
+    BuffResult,
+    DmgResult,
+    NormalModeResult,
+    NormalResultPayload,
+    ParallelAttrCurveResultPayload,
+    ParallelModeResult,
+    ParallelResultPayload,
+    ParallelWeaponResultPayload,
+    WeaponPayload,
+)
 from zsim.models.session.session_run import (
     CommonCfg,
     ExecAttrCurveCfg,
@@ -171,9 +195,11 @@ class SimController:
 
             # 处理模拟结果确认信息
             if isinstance(result, dict) and "run_turn_uuid" in result:
-                await self._process_simulation_result(result)
+                processed_result: (
+                    NormalModeResult | ParallelModeResult
+                ) = await self._process_simulation_result(result)
                 try:
-                    session.session_result = [SessionResult(**result)]
+                    session.session_result = [processed_result]
                 except Exception as e:
                     logger.error(f"TODO: 模拟任务 {session_id} 结果处理: {repr(e)}", exc_info=True)
         except Exception as e:
@@ -182,7 +208,9 @@ class SimController:
 
         await db.update_session(session)
 
-    async def _process_simulation_result(self, confirmation: "Confirmation") -> Any:
+    async def _process_simulation_result(
+        self, confirmation: "Confirmation"
+    ) -> NormalModeResult | ParallelModeResult:
         """
         处理模拟结果确认信息的函数stub。
 
@@ -193,18 +221,47 @@ class SimController:
                 - timestamp: 完成时间戳
                 - sim_cfg: 模拟配置（包含并行配置信息）
         """
+        rid = confirmation.session_id  # compatible to webui rid logic
+        logger.info(f"开始处理模拟结果: run_turn_uuid={rid}, status={confirmation.status}")
 
-        logger.info(
-            f"开始处理模拟结果: run_turn_uuid={confirmation.run_turn_uuid}, status={confirmation.status}"
-        )
+        if judge_parallel_result(rid):
+            await prepare_parallel_cache(rid)
+            parallel_dmg_data: tuple[str, dict[str, Any]] | None = await merge_parallel_dmg_data(rid)
+            if parallel_dmg_data is None:
+                raise ValueError("并行模式下合并结果失败")
 
-        # TODO: 实现结果处理逻辑
-        # 1. 根据run_turn_uuid获取对应的会话和任务信息
-        # 2. 合并并行运行的结果（如果是并行模式）
-        # 3. 更新会话状态和结果数据
-        # 4. 触发后续处理流程
+            func = cast(Literal["attr_curve", "weapon"], parallel_dmg_data[0])
+            result_data = parallel_dmg_data[1]
 
-        logger.info(f"模拟结果处理完成: run_turn_uuid={confirmation.run_turn_uuid}")
+            payload: Union[ParallelAttrCurveResultPayload, ParallelWeaponResultPayload]
+            if func == "attr_curve":
+                payload = ParallelAttrCurveResultPayload(
+                    func=func, result=AttrCurvePayload(root=result_data)
+                )
+            elif func == "weapon":
+                payload = ParallelWeaponResultPayload(
+                    func=func, result=WeaponPayload(root=result_data)
+                )
+            else:
+                raise NotImplementedError(f"未知的func类型: {func}")
+
+            result = ParallelModeResult(
+                mode="parallel", func=func, result=ParallelResultPayload(root=payload)
+            )
+        else:
+            # Single run.
+            dmg_result = process_dmg(rid)
+            buff_result = await process_buff(rid)
+            result = NormalModeResult(
+                mode="normal",
+                result=NormalResultPayload(
+                    dmg_result=DmgResult(root=dmg_result),
+                    buff_result=BuffResult(root=buff_result),  # type: ignore
+                ),
+            )
+
+        logger.info(f"模拟结果处理完成: run_turn_uuid={rid}")
+        return result
 
     async def shutdown(self) -> None:
         """优雅关闭控制器，等待所有任务完成并清理资源。"""
