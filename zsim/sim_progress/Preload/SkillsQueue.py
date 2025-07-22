@@ -38,9 +38,7 @@ class SkillNode:
             self.labels: dict[str, list[str] | str | int | float] | None = skill.labels
             self.skill: Skill.InitSkill = skill
             self.end_tick: int = self.preload_tick + self.skill.ticks
-            self.active_generation: bool = (
-                active_generation  # 构造函数的调用来源是否是主动动作
-            )
+            self.active_generation: bool = active_generation  # 构造函数的调用来源是否是主动动作
             # TODO：后续需用UUID替换skill_node实例ID
             self.instance_id = SkillNode._instance_counter
             SkillNode._instance_counter += 1
@@ -78,7 +76,9 @@ class SkillNode:
     @element_type_change.setter
     def element_type_change(self, value: ElementType):
         if self._element_type_change is not None:
-            raise ValueError(f"技能{self.skill_tag}已经被染色为【{etm.get(self.element_type_change)}】属性！不能被重复染色！")
+            raise ValueError(
+                f"技能{self.skill_tag}已经被染色为【{etm.get(self.element_type_change)}】属性！不能被重复染色！"
+            )
         self._element_type_change = value
 
     @property
@@ -126,7 +126,7 @@ class SkillNode:
             return tick - 1 < self.tick_list[-1] <= tick
 
 
-def spawn_node(tag: str, preload_tick: int, skills, **kwargs) -> SkillNode:
+def spawn_node(tag: str, preload_tick: int, skills: list[Skill], **kwargs) -> SkillNode:
     """
     通过输入的tag和preload_tick，直接创建SkillNode。
     """
@@ -144,7 +144,10 @@ def spawn_node(tag: str, preload_tick: int, skills, **kwargs) -> SkillNode:
             )
             return node
     else:
-        raise ValueError(f"预加载技能 {tag} 不存在于输入的 Skill 类中，请检查输入")
+        raise ValueError(
+            f"预加载技能 {tag} 不存在于输入的 Skill 类中，请检查输入, "
+            f"当前技能列表为：{[(skill.name, skill.skills_dict.keys()) for skill in skills]}"
+        )
 
 
 def get_skills_queue(
@@ -172,9 +175,7 @@ def get_skills_queue(
 
     skills_queue = LinkedList()  # 用于储存技能节点
     try:
-        preload_skills: pd.Series = preload_table[
-            "skill_tag"
-        ]  # 传入的数据必须包含 skill_tag 列
+        preload_skills: pd.Series = preload_table["skill_tag"]  # 传入的数据必须包含 skill_tag 列
     except KeyError:
         print("提供错误的预加载序列表，请检查输入")
 

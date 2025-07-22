@@ -34,8 +34,7 @@ class RNG:
             self._initialized = True
             self.NORMAL_TABLE_SIZE = 10000
             self.normal_table = None
-        else:
-            raise RuntimeError("RNG对象已初始化，请检查代码，不要重复调用RNG的构造函数")
+
 
     def get_seed(self) -> int:
         assert self.seed is not None

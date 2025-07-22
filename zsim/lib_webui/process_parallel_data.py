@@ -1,3 +1,7 @@
+"""
+这个模块应该在WebUI被启用后依然存在，可以转移到api_src中。
+"""
+
 import asyncio
 import json
 import os
@@ -112,7 +116,7 @@ async def prepare_parallel_data_and_cache(rid: int | str) -> None:
 
 
 # 统计并行模式的个子进程伤害归并结果
-def merge_parallel_dmg_data(
+async def merge_parallel_dmg_data(
     rid: int | str,
 ) -> tuple[str, dict[str, Any]] | None:
     """对并行模式的每一份报告进行数据预处理，并将结果缓存到本地。
@@ -123,25 +127,26 @@ def merge_parallel_dmg_data(
     result_dir = os.path.join(results_dir, str(rid))
     parallel_config_path = os.path.join(result_dir, ".parallel_config.json")
 
-    with open(parallel_config_path, "r", encoding="utf-8") as f:
-        parallel_config: dict = json.load(f)
+    async with aiofiles.open(parallel_config_path, "r", encoding="utf-8") as f:
+        parallel_config: dict = json.loads(await f.read())
 
     if parallel_config.get("adjust_sc", {}).get("enabled", False):
         # 属性收益曲线功能
         func = "attr_curve"
         merged_sc_file_path = os.path.join(result_dir, "merged_sc_data.json")
+        sc_merged_data = {}
         if os.path.exists(merged_sc_file_path):
-            with open(merged_sc_file_path, "r", encoding="utf-8") as f:
-                sc_merged_data = json.load(f)
+            async with aiofiles.open(merged_sc_file_path, "r", encoding="utf-8") as f:
+                sc_merged_data = json.loads(await f.read())
         else:
             try:
                 st.info("首次处理读取属性收益曲线数据，请稍等...")
-                sc_merged_data = asyncio.run(_merge_attr_curve_data(rid))
+                sc_merged_data = await _merge_attr_curve_data(rid)
                 st.success("属性收益曲线数据合并完成！")
                 # 将合并后的数据保存到 JSON 文件
                 try:
-                    with open(merged_sc_file_path, "w", encoding="utf-8") as f:
-                        json.dump(sc_merged_data, f, indent=4, ensure_ascii=False)
+                    async with aiofiles.open(merged_sc_file_path, "w", encoding="utf-8") as f:
+                        await f.write(json.dumps(sc_merged_data, indent=4, ensure_ascii=False))
                     st.success(f"合并的属性收益曲线数据已保存至 {merged_sc_file_path}")
                 except IOError as e:
                     st.error(f"保存合并的属性收益曲线数据失败: {e}")
@@ -153,18 +158,19 @@ def merge_parallel_dmg_data(
         # 武器切换功能
         func = "weapon"
         merged_weapon_file_path = os.path.join(result_dir, "merged_weapon_data.json")
+        weapon_merged_data = {}
         if os.path.exists(merged_weapon_file_path):
-            with open(merged_weapon_file_path, "r", encoding="utf-8") as f:
-                weapon_merged_data = json.load(f)
+            async with aiofiles.open(merged_weapon_file_path, "r", encoding="utf-8") as f:
+                weapon_merged_data = json.loads(await f.read())
         else:
             try:
                 st.info("首次处理读取武器切换数据，请稍等...")
-                weapon_merged_data = asyncio.run(_merge_weapon_data(rid))
+                weapon_merged_data = await _merge_weapon_data(rid)
                 st.success("武器切换数据合并完成！")
                 # 将合并后的数据保存到 JSON 文件
                 try:
-                    with open(merged_weapon_file_path, "w", encoding="utf-8") as f:
-                        json.dump(weapon_merged_data, f, indent=4, ensure_ascii=False)
+                    async with aiofiles.open(merged_weapon_file_path, "w", encoding="utf-8") as f:
+                        await f.write(json.dumps(weapon_merged_data, indent=4, ensure_ascii=False))
                     st.success(f"合并的武器切换数据已保存至 {merged_weapon_file_path}")
                 except IOError as e:
                     st.error(f"保存合并的武器切换数据失败: {e}")
@@ -184,22 +190,19 @@ def __draw_attr_curve(
         for char_name, char_data in sc_merged_data.items():
             fig = go.Figure()
             has_data = False  # 标记是否有数据添加到图表中
+            x_values = []  # 初始化x_values
 
             for sc_name, sc_values_results in char_data.items():
                 # sc_values_results 的结构现在是 {sc_value: {"result": float, "rate": float | None}}
                 # 数据在 merge_parallel_sc_data 中已经按 sc_value 排序
                 if not sc_values_results:
-                    st.warning(
-                        f"角色 '{char_name}' 的词条 '{sc_name}' 没有数据，跳过绘制。"
-                    )
+                    st.warning(f"角色 '{char_name}' 的词条 '{sc_name}' 没有数据，跳过绘制。")
                     continue
 
                 # 提取 x 值 (词条值) 和 y 值 (收益率)
                 x_values_raw = list(sc_values_results.keys())
                 # 提取预计算的收益率，跳过第一个点（收益率通常为None）
-                y_values_rate = [
-                    data.get("rate") for data in sc_values_results.values()
-                ]
+                y_values_rate = [data.get("rate") for data in sc_values_results.values()]
 
                 # 尝试将 x 值转换为浮点数
                 try:
@@ -247,9 +250,7 @@ def __draw_attr_curve(
                 # 计算整数刻度 (基于原始的所有 x_values)
                 try:
                     # 确保只使用数值类型的 x 值
-                    numeric_x_values = [
-                        x for x in x_values if isinstance(x, (int, float))
-                    ]
+                    numeric_x_values = [x for x in x_values if isinstance(x, (int, float))]
                     if not numeric_x_values:
                         raise ValueError("No numeric x values found")
                     min_x = min(numeric_x_values)
@@ -262,9 +263,7 @@ def __draw_attr_curve(
                         )
                     )
                     # 如果最小值本身是整数，也包含它
-                    if isinstance(min_x, int) or (
-                        isinstance(min_x, float) and min_x.is_integer()
-                    ):
+                    if isinstance(min_x, int) or (isinstance(min_x, float) and min_x.is_integer()):
                         if int(min_x) not in integer_ticks:
                             integer_ticks.insert(0, int(min_x))
                     integer_ticks.sort()  # 确保刻度排序
@@ -305,9 +304,7 @@ def __draw_weapon_data(
             weapons_data = {}
             for weapon_name, weapon_levels in char_data.items():
                 if not weapon_levels:
-                    st.warning(
-                        f"角色 '{char_name}' 的武器 '{weapon_name}' 没有数据，跳过绘制。"
-                    )
+                    st.warning(f"角色 '{char_name}' 的武器 '{weapon_name}' 没有数据，跳过绘制。")
                     continue
 
                 # 为每个精炼等级收集伤害数据
@@ -542,15 +539,11 @@ async def _merge_attr_curve_data(
             try:
                 # 尝试将键转换为浮点数进行排序
                 # 过滤掉 sc_value 为 None 的项再排序
-                filtered_items = [
-                    (k, v) for k, v in sc_values_data.items() if k is not None
-                ]
+                filtered_items = [(k, v) for k, v in sc_values_data.items() if k is not None]
                 sorted_items = sorted(filtered_items, key=lambda item: float(item[0]))
             except ValueError:
                 # 如果转换失败，按原始键（字符串）排序
-                sorted_items = [
-                    (k, v) for k, v in sc_values_data.items() if k is not None
-                ]
+                sorted_items = [(k, v) for k, v in sc_values_data.items() if k is not None]
                 sorted_items = sorted(sorted_items, key=lambda item: str(item[0]))
 
             # 更新排序后的字典，并计算收益率
@@ -649,13 +642,11 @@ def process_parallel_result(rid: int | str) -> None:
     result_dir = os.path.join(results_dir, str(rid))
 
     # 1. 预处理每个子目录的数据（伤害、Buff等）
-    with st.spinner(
-        "开始预处理并行子目录数据，初次处理会持续一段时间...", show_time=True
-    ):
+    with st.spinner("开始预处理并行子目录数据，初次处理会持续一段时间...", show_time=True):
         asyncio.run(prepare_parallel_data_and_cache(rid))
 
     # 2. 合并需要聚合的数据（例如属性收益曲线或武器对比）
-    result = merge_parallel_dmg_data(rid)
+    result = asyncio.run(merge_parallel_dmg_data(rid))
     # 3. 绘制图表
     if result:
         func, merged_data = result
@@ -677,25 +668,24 @@ def process_parallel_result(rid: int | str) -> None:
     st.markdown("--- ")
     st.write("选择要查看的子进程报告")
     col1, col2 = st.columns(2)
+    selected_key = sub_dirs[0]
     with col1:
         # 5. 添加下拉选择框以选择子进程报告
         if sub_dirs:
             selected_sub_dir = st.selectbox(
                 "选择要查看的子进程报告",
                 options=sub_dirs,
+                index=0,
                 key=f"selectbox_sub_dir_{rid}",
                 label_visibility="collapsed",
             )
             selected_key = f"{rid}/{selected_sub_dir}"
 
-        else:
-            st.info("未找到有效的子进程结果目录。")
-
     with col2:
         # 6. 提供按钮处理全部buff结果以节约储存
         if st.button(
             "处理全部BUFF结果",
-            key=f"toggle_buff_{selected_key}",
+            key="toggle_buff_all",
             help="处理所有buff结果可以节约大量储存空间，但耗时较长",
         ):
             with st.spinner("开始处理所有子进程BUFF结果...", show_time=True):
@@ -710,9 +700,11 @@ def process_parallel_result(rid: int | str) -> None:
 
                 asyncio.run(process_all_sub_buff())
 
-    if st.button("显示子进程伤害结果", key=f"toggle_dmg_{selected_key}"):
+    if st.button("显示子进程伤害结果", key="toggle_dmg_all"):
         show_dmg_result(selected_key)
         show_buff_result(selected_key)
+    else:
+        st.info("未找到有效的子进程结果目录。")
 
     # TODO: 添加其他并行结果的处理逻辑，例如生成聚合报告、绘制对比图表等。
     st.warning("并行模式的结果合并与展示功能仍在开发中。", icon="⚠️")
