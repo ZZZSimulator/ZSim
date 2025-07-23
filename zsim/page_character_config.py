@@ -15,6 +15,8 @@ def page_character_config():
         equip_set4_options,
         weapon_options,
         weapon_profession_map,
+        weapon_rarity_map,
+        weapon_char_map,
         char_profession_map,
     )
 
@@ -62,9 +64,11 @@ def page_character_config():
         with st.expander(f"{name}的配置"):
             col_weapon, col_level, col_cinema = st.columns(3)
             with col_weapon:
-                show_adapted_weapon = st.session_state.get(
-                    f"{name}_show_adapted_weapon", True
-                )
+                show_adapted_weapon = st.session_state.get(f"{name}_show_adapted_weapon", True)
+                show_rarity_s = st.session_state.get(f"{name}_show_rarity_s", True)
+                show_rarity_a = st.session_state.get(f"{name}_show_rarity_a", True)
+                show_rarity_b = st.session_state.get(f"{name}_show_rarity_b", False)
+                
                 char_profession = char_profession_map.get(name)
                 if show_adapted_weapon and char_profession:
                     filtered_weapon_options = [
@@ -74,6 +78,20 @@ def page_character_config():
                     ]
                 else:
                     filtered_weapon_options = list(weapon_options)
+                
+                # 根据稀有度筛选
+                filtered_weapon_options = [
+                    w for w in filtered_weapon_options
+                    if (show_rarity_s and weapon_rarity_map.get(w) == "S") or
+                       (show_rarity_a and weapon_rarity_map.get(w) == "A") or
+                       (show_rarity_b and weapon_rarity_map.get(w) == "B")
+                ]
+                rarity_order = {"S": 0, "A": 1, "B": 2}
+                filtered_weapon_options = sorted(
+                    filtered_weapon_options,
+                    key=lambda w: (rarity_order.get(weapon_rarity_map.get(w), 3), w)
+                )
+                
                 if name in saved_char_config:
                     current_weapon = saved_char_config[name].get("weapon")
                 else:
@@ -93,12 +111,37 @@ def page_character_config():
                         filtered_weapon_options,
                         index=filtered_weapon_options.index(current_weapon),
                         key=f"{name}_weapon",
+                        format_func=lambda x: (
+                            f"({weapon_rarity_map.get(x, '未知')}"
+                            f"{' ' + weapon_char_map.get(x) if weapon_char_map.get(x) else ''}) {x}"
+                        ),
                     )
-                show_adapted_weapon = st.checkbox(
-                    "只显示适配音擎",
-                    value=show_adapted_weapon,
-                    key=f"{name}_show_adapted_weapon",
-                )
+                
+                col_rarity = st.columns(4)
+                with col_rarity[0]:
+                    show_adapted_weapon = st.checkbox(
+                        "只显示适配音擎",
+                        value=show_adapted_weapon,
+                        key=f"{name}_show_adapted_weapon",
+                    )
+                with col_rarity[1]:
+                    show_rarity_s = st.checkbox(
+                        "S",
+                        value=show_rarity_s,
+                        key=f"{name}_show_rarity_s",
+                    )
+                with col_rarity[2]:
+                    show_rarity_a = st.checkbox(
+                        "A",
+                        value=show_rarity_a,
+                        key=f"{name}_show_rarity_a",
+                    )
+                with col_rarity[3]:
+                    show_rarity_b = st.checkbox(
+                        "B",
+                        value=show_rarity_b,
+                        key=f"{name}_show_rarity_b",
+                    )
             with col_level:
                 st.number_input(
                     "音擎精炼等级",
