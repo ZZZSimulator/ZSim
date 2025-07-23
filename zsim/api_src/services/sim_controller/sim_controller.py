@@ -73,19 +73,13 @@ class SimController:
         self._initialized = True
         """初始化模拟控制器"""
         self._executor: ProcessPoolExecutor | None = None
-        self._executor: ProcessPoolExecutor | None = None
         self._queue: asyncio.Queue = asyncio.Queue()
-        self._running_tasks: set[asyncio.Future[Any]] = set()
-        self._loop: asyncio.AbstractEventLoop | None = None
         self._running_tasks: set[asyncio.Future[Any]] = set()
         self._loop: asyncio.AbstractEventLoop | None = None
 
     @property
     def executor(self) -> ProcessPoolExecutor:
         """获取进程池执行器，延迟初始化。"""
-        with self._lock:
-            if self._executor is None:
-                self._executor = ProcessPoolExecutor()
         with self._lock:
             if self._executor is None:
                 self._executor = ProcessPoolExecutor()
@@ -171,6 +165,188 @@ class SimController:
             except Exception as e:
                 logger.error(f"执行模拟任务时发生错误: {e}", exc_info=True)
                 await asyncio.sleep(1)  # 错误后短暂延迟
+
+    async def execute_simulation_test(self, max_tasks: int = 1) -> list[str]:
+        """
+        执行模拟任务的测试版本，处理有限数量的任务。
+
+        Args:
+            max_tasks: 最大处理任务数，默认为1
+
+        Returns:
+            list[str]: 完成的任务的 session_id 列表
+        """
+        from concurrent.futures import ThreadPoolExecutor
+
+        event_loop = asyncio.get_event_loop()
+        db = await get_session_db()
+        completed_sessions = []
+
+        for _ in range(max_tasks):
+            session_id = None
+            try:
+                # 如果队列为空，跳出循环
+                if self._queue.empty():
+                    break
+
+                session_id, common_cfg, sim_cfg = await self.get_from_queue()
+                session = await db.get_session(session_id)
+                if not session or not session.session_run:
+                    logger.error(f"无法获取会话 {session_id} 或其运行配置")
+                    continue
+
+                stop_tick = (
+                    sim_cfg.stop_tick
+                    if sim_cfg and sim_cfg.stop_tick is not None
+                    else session.session_run.stop_tick
+                )
+                if stop_tick is None:
+                    logger.warning(f"会话 {session_id} 未设置 stop_tick，使用默认值 3600")
+                    stop_tick = 3600
+
+                def run_simulator(
+                    _common_cfg: CommonCfg, _sim_cfg: SimCfg | None, _stop_tick: int
+                ) -> "Confirmation":
+                    simulator = Simulator()
+                    return simulator.api_run_simulator(_common_cfg, _sim_cfg, _stop_tick)
+
+                # 使用 ThreadPoolExecutor 避免序列化问题
+                with ThreadPoolExecutor() as thread_executor:
+                    future: asyncio.Future["Confirmation"] = event_loop.run_in_executor(
+                        thread_executor, run_simulator, common_cfg, sim_cfg, stop_tick
+                    )
+
+                    result = await future  # noqa: F841
+                    logger.info(f"测试模拟任务 {session_id} 完成")
+
+                    # 更新会话状态
+                    session.status = "completed"
+                    await db.update_session(session)
+                    completed_sessions.append(session_id)
+
+            except Exception as e:
+                logger.error(f"执行测试模拟任务时发生错误: {e}", exc_info=True)
+                if session_id:
+                    session = await db.get_session(session_id)
+                    if session:
+                        session.status = "failed"
+                        await db.update_session(session)
+
+        return completed_sessions
+
+    async def execute_simulation_test_parallel(
+        self, session_id: str, parallel_count: int = 2
+    ) -> list[str]:
+        """
+        执行并行模拟任务的测试版本。
+
+        Args:
+            session_id: 会话ID
+            parallel_count: 并行任务数量
+
+        Returns:
+            list[str]: 完成的任务的 session_id 列表
+        """
+        from concurrent.futures import ThreadPoolExecutor
+
+        event_loop = asyncio.get_event_loop()
+        db = await get_session_db()
+        completed_sessions = []
+
+        # 等待队列中有足够的任务
+        tasks_to_process = []
+        for _ in range(parallel_count):
+            if self._queue.empty():
+                break
+            task = await self.get_from_queue()
+            tasks_to_process.append(task)
+
+        if not tasks_to_process:
+            return completed_sessions
+
+        def run_simulator(
+            session_id_inner: str, common_cfg: CommonCfg, sim_cfg: SimCfg | None, stop_tick: int
+        ) -> tuple[str, "Confirmation"]:
+            simulator = Simulator()
+            result = simulator.api_run_simulator(common_cfg, sim_cfg, stop_tick)
+            return session_id_inner, result
+
+        # 并行执行所有任务
+        with ThreadPoolExecutor(max_workers=parallel_count) as thread_executor:
+            futures = []
+            for session_id_inner, common_cfg, sim_cfg in tasks_to_process:
+                session = await db.get_session(session_id_inner)
+                if not session or not session.session_run:
+                    logger.error(f"无法获取会话 {session_id_inner} 或其运行配置")
+                    continue
+
+                stop_tick = (
+                    sim_cfg.stop_tick
+                    if sim_cfg and sim_cfg.stop_tick is not None
+                    else session.session_run.stop_tick
+                )
+                if stop_tick is None:
+                    stop_tick = 1000
+
+                future = event_loop.run_in_executor(
+                    thread_executor, run_simulator, session_id_inner, common_cfg, sim_cfg, stop_tick
+                )
+                futures.append(future)
+
+            # 等待所有任务完成
+            if futures:
+                results = await asyncio.gather(*futures, return_exceptions=True)
+
+                for result in results:
+                    if isinstance(result, BaseException):
+                        logger.error(f"并行任务执行失败: {result}")
+                        continue
+
+                    if not isinstance(result, tuple) or len(result) != 2:
+                        logger.error(f"并行任务结果格式错误: {result}")
+                        continue
+
+                    session_id_inner, confirmation = result
+
+                    # 更新会话状态
+                    session = await db.get_session(session_id_inner)
+                    if session:
+                        session.status = "completed"
+                        await db.update_session(session)
+                        completed_sessions.append(session_id_inner)
+                        logger.info(f"并行测试模拟任务 {session_id_inner} 完成")
+
+        return completed_sessions
+
+    async def run_single_simulation(
+        self, common_cfg: CommonCfg, sim_cfg: SimCfg | None, stop_tick: int
+    ) -> "Confirmation":
+        """
+        运行单个模拟任务的异步方法，用于测试。
+
+        Args:
+            common_cfg: 通用配置
+            sim_cfg: 模拟配置
+            stop_tick: 停止帧数
+
+        Returns:
+            Confirmation: 模拟结果确认信息
+        """
+        loop = asyncio.get_event_loop()
+
+        # Use ThreadPoolExecutor instead of ProcessPoolExecutor for compatibility
+        from concurrent.futures import ThreadPoolExecutor
+
+        def _run_simulator() -> "Confirmation":
+            simulator = Simulator()
+            return simulator.api_run_simulator(common_cfg, sim_cfg, stop_tick)
+
+        if isinstance(self.executor, ProcessPoolExecutor):
+            # For testing, use thread executor to avoid serialization issues
+            with ThreadPoolExecutor() as thread_executor:
+                return await loop.run_in_executor(thread_executor, _run_simulator)
+        else:
+            return await loop.run_in_executor(self.executor, _run_simulator)
 
     def _task_done_callback(self, future: asyncio.Future["Confirmation"], session_id: str) -> None:
         """
