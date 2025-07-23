@@ -2,9 +2,8 @@ import asyncio
 import logging
 import threading
 from concurrent.futures import ProcessPoolExecutor
-from typing import TYPE_CHECKING, Any, Iterator
+from typing import TYPE_CHECKING, Any, Iterator, Literal
 
-from zsim.api_src.services.database.session_db import get_session_db
 from zsim.api_src.services.database.session_db import get_session_db
 from zsim.lib_webui.constants import stats_trans_mapping
 from zsim.lib_webui.process_buff_result import (
@@ -21,16 +20,22 @@ from zsim.lib_webui.process_parallel_data import (
     prepare_parallel_data_and_cache as prepare_parallel_cache,
 )
 from zsim.models.session.session_create import Session
-from zsim.models.session.session_result import SessionResult
+from zsim.models.session.session_result import (
+    AttrCurvePayload,
+    BuffResult,
+    DmgResult,
+    NormalModeResult,
+    NormalResultPayload,
+    ParallelAttrCurveResultPayload,
+    ParallelModeResult,
+    ParallelResultPayload,
+    ParallelWeaponResultPayload,
+    WeaponPayload,
+)
 from zsim.models.session.session_run import (
-    CommonCfg,
     CommonCfg,
     ExecAttrCurveCfg,
     ExecWeaponCfg,
-    ParallelCfg,
-    SessionRun,
-)
-from zsim.models.session.session_run import (
     ParallelCfg,
     SessionRun,
 )
@@ -39,10 +44,8 @@ from zsim.models.session.session_run import (
 )
 from zsim.simulator import Simulator
 
-from zsim.simulator.simulator_class import Confirmation
-
 if TYPE_CHECKING:
-    pass
+    from zsim.simulator.simulator_class import Confirmation
 
 logger = logging.getLogger(__name__)
 
@@ -50,13 +53,8 @@ logger = logging.getLogger(__name__)
 class SimController:
     _instance = None
     _lock = threading.Lock()
-    _lock = threading.Lock()
 
     def __new__(cls, *args, **kwargs):
-        if cls._instance is None:
-            with cls._lock:
-                if cls._instance is None:
-                    cls._instance = super(SimController, cls).__new__(cls)
         if cls._instance is None:
             with cls._lock:
                 if cls._instance is None:
@@ -108,21 +106,6 @@ class SimController:
             finally:
                 self._executor = None
 
-    def __del__(self):
-        """析构函数，确保资源清理。"""
-        self._shutdown_executor()
-
-    def _shutdown_executor(self):
-        """关闭进程池执行器。"""
-        if self._executor is not None:
-            try:
-                self._executor.shutdown(wait=True)
-                logger.info("进程池已关闭")
-            except Exception as e:
-                logger.error(f"关闭进程池时发生错误: {e}")
-            finally:
-                self._executor = None
-
     async def put_into_queue(
         self, session_id: str, common_cfg: CommonCfg, sim_cfg: SimCfg | None
     ) -> None:
@@ -135,7 +118,6 @@ class SimController:
         """
         await self._queue.put((session_id, common_cfg, sim_cfg))
 
-    async def get_from_queue(self) -> tuple[str, CommonCfg, SimCfg | None]:
     async def get_from_queue(self) -> tuple[str, CommonCfg, SimCfg | None]:
         """
         从队列中获取模拟任务。
@@ -154,28 +136,8 @@ class SimController:
         event_loop = asyncio.get_event_loop()
         db = await get_session_db()
 
-        db = await get_session_db()
-
         while True:
             try:
-                session_id, common_cfg, sim_cfg = await self.get_from_queue()
-                session = await db.get_session(session_id)
-                if not session or not session.session_run:
-                    logger.error(f"无法获取会话 {session_id} 或其运行配置")
-                    continue
-
-                stop_tick = (
-                    sim_cfg.stop_tick
-                    if sim_cfg and sim_cfg.stop_tick is not None
-                    else session.session_run.stop_tick
-                )
-                if stop_tick is None:
-                    logger.warning(f"会话 {session_id} 未设置 stop_tick，使用默认值 3600")
-                    stop_tick = 3600
-
-                def run_simulator(
-                    _common_cfg: CommonCfg, _sim_cfg: SimCfg | None, _stop_tick: int
-                ) -> "Confirmation":
                 session_id, common_cfg, sim_cfg = await self.get_from_queue()
                 session = await db.get_session(session_id)
                 if not session or not session.session_run:
@@ -239,18 +201,23 @@ class SimController:
 
             # 处理模拟结果确认信息
             if isinstance(result, dict) and "run_turn_uuid" in result:
-                await self._process_simulation_result(result)
+                processed_result: (
+                    NormalModeResult | ParallelModeResult
+                ) = await self._process_simulation_result(result)
                 try:
-                    session.session_result = [SessionResult(**result)]
+                    session.session_result = [processed_result]
                 except Exception as e:
                     logger.error(f"TODO: 模拟任务 {session_id} 结果处理: {repr(e)}", exc_info=True)
+
         except Exception as e:
             logger.error(f"模拟任务 {session_id} 执行失败: {e}", exc_info=True)
             session.status = "failed"
 
         await db.update_session(session)
 
-    async def _process_simulation_result(self, confirmation: "Confirmation") -> Any:
+    async def _process_simulation_result(
+        self, confirmation: "Confirmation"
+    ) -> NormalModeResult | ParallelModeResult:
         """
         处理模拟结果确认信息的函数stub。
 
@@ -261,18 +228,47 @@ class SimController:
                 - timestamp: 完成时间戳
                 - sim_cfg: 模拟配置（包含并行配置信息）
         """
+        rid = confirmation.session_id  # compatible to webui rid logic
+        logger.info(f"开始处理模拟结果: session_id={rid}, status={confirmation.status}")
 
-        logger.info(
-            f"开始处理模拟结果: run_turn_uuid={confirmation.run_turn_uuid}, status={confirmation.status}"
-        )
+        if judge_parallel_result(rid):
+            await prepare_parallel_cache(rid)
+            parallel_dmg_data = await merge_parallel_dmg_data(rid)
+            if parallel_dmg_data is None:
+                raise ValueError("并行模式下合并结果失败")
 
-        # TODO: 实现结果处理逻辑
-        # 1. 根据run_turn_uuid获取对应的会话和任务信息
-        # 2. 合并并行运行的结果（如果是并行模式）
-        # 3. 更新会话状态和结果数据
-        # 4. 触发后续处理流程
+            func: Literal["attr_curve", "weapon"] = parallel_dmg_data[0]  # type: ignore
+            result_data = parallel_dmg_data[1]
 
-        logger.info(f"模拟结果处理完成: run_turn_uuid={confirmation.run_turn_uuid}")
+            payload: ParallelAttrCurveResultPayload | ParallelWeaponResultPayload
+            if func == "attr_curve":
+                payload = ParallelAttrCurveResultPayload(
+                    func=func, result=AttrCurvePayload(root=result_data)
+                )
+            elif func == "weapon":
+                payload = ParallelWeaponResultPayload(
+                    func=func, result=WeaponPayload(root=result_data)
+                )
+            else:
+                raise NotImplementedError(f"未知的func类型: {func}")
+
+            result = ParallelModeResult(
+                mode="parallel", func=func, result=ParallelResultPayload(root=payload)
+            )
+        else:
+            # Single run.
+            dmg_result = process_dmg(rid)
+            buff_result = await process_buff(rid)
+            result = NormalModeResult(
+                mode="normal",
+                result=NormalResultPayload(
+                    dmg_result=DmgResult(root=dmg_result),
+                    buff_result=BuffResult(root=buff_result),  # type: ignore
+                ),
+            )
+
+        logger.info(f"模拟结果处理完成: run_turn_uuid={rid}")
+        return result
 
     async def shutdown(self) -> None:
         """优雅关闭控制器，等待所有任务完成并清理资源。"""

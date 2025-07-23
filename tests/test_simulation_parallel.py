@@ -14,7 +14,7 @@ from zsim.models.session.session_run import (
     SessionRun,
 )
 from zsim.models.session.session_create import Session
-from zsim.simulator.simulator_class import Simulator
+from zsim.simulator.simulator_class import Confirmation, Simulator
 
 
 class TestSimulationParallel:
@@ -182,14 +182,14 @@ class TestSimulationParallel:
         """测试 API 运行模拟器（正常模式）."""
         # 创建配置
         common_cfg = self.create_common_config()
-        session_run_config = self.create_session_run_config("normal")
+        session_run_config = self.create_session_run_config("normal")  # noqa: F841
 
         # 运行模拟器
         simulator = Simulator()
-        result = simulator.api_run_simulator(common_cfg, None, session_run_config.stop_tick)
+        result = simulator.api_run_simulator(common_cfg, None, 1000)
 
         # 验证结果
-        assert result.run_turn_uuid == common_cfg.session_id
+        assert result.session_id == common_cfg.session_id
         assert result.status == "completed"
         assert result.sim_cfg is None
 
@@ -197,24 +197,24 @@ class TestSimulationParallel:
         """测试 API 运行模拟器（并行模式）."""
         # 创建配置
         common_cfg = self.create_common_config()
-        session_run_config = self.create_session_run_config("parallel")
+        session_run_config: SessionRun = self.create_session_run_config("parallel")
 
         # 获取第一个并行参数
         controller = SimController()
         session = Session()
         args_iterator = controller.generate_parallel_args(session, session_run_config)
-        
+
         # 运行所有并行模拟
         results = []
         for sim_cfg in args_iterator:
             simulator = Simulator()
-            result = simulator.api_run_simulator(common_cfg, sim_cfg, session_run_config.stop_tick)
+            result: Confirmation = simulator.api_run_simulator(common_cfg, sim_cfg, 1000)
             results.append(result)
 
         # 验证结果
         assert len(results) == 12
         for result in results:
-            assert result.run_turn_uuid == common_cfg.session_id
+            assert result.session_id == common_cfg.session_id
             assert result.status == "completed"
             assert result.sim_cfg is not None
             assert isinstance(result.sim_cfg, ExecAttrCurveCfg)

@@ -27,9 +27,7 @@ result*
 .clinerules/
 venv/
 node_modules/
-
-# 测试文件
-test.py
+.claude/
 
 # 运行时生成的文件
 build*
@@ -58,3 +56,4 @@ htmlcov/
 # 生成文件
 zsim/data/APLData/custom/*
 *out*
+

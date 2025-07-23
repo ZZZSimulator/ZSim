@@ -232,7 +232,7 @@ class TestSimulation1000Ticks:
         result = sim.api_run_simulator(common_cfg, None, 1000)
 
         # Verify result
-        assert result.run_turn_uuid == common_cfg.session_id
+        assert result.session_id == common_cfg.session_id
         assert result.status == "completed"
         assert result.sim_cfg is None
         assert sim.tick >= 1000
