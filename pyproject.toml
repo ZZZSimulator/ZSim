@@ -80,4 +80,5 @@ dev = [
     "cx-freeze>=6.15.0",
     "objprint>=0.3.0",
     "pytest-cov>=5.0.0",
+    "pytest-asyncio>=1.1.0",
 ]
