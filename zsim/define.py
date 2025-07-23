@@ -108,8 +108,8 @@ CHAR_PARRY_STRATEGY_MAP: dict = {
 }
 
 # debug参数，用于检查APL在窗口期间的想法
-APL_THOUGHT_CHECK: bool = _config["apl_mode"]["apl_thought_check"]
-APL_THOUGHT_CHECK_WINDOW: list[int] = _config["apl_mode"]["apl_thought_check_window"]
+APL_THOUGHT_CHECK: bool = _config["apl_mode"].get("apl_thought_check", False)
+APL_THOUGHT_CHECK_WINDOW: list[int] = _config["apl_mode"].get("apl_thought_check_window", [0, 1])
 
 
 DEFAULT_APL_DIR: str = _config["apl_mode"]["default_apl_dir"]
