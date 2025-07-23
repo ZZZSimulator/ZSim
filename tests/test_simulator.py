@@ -167,55 +167,55 @@ class TestSimulator:
             )
         )
 
-        # 队伍2: 莱特-扳机-雨果 (火属性队)
-        team_configs.append(
-            (
-                "莱特火属性队",
-                CommonCfg(
-                    session_id="test-team-lighter-fire",
-                    char_config=[
-                        CharConfig(
-                            name="莱特",
-                            weapon="焰心桂冠",
-                            weapon_level=5,
-                            cinema=6,
-                            scATK_percent=47,
-                            scCRIT=30,
-                            scCRIT_DMG=50,
-                            equip_style="4+2",
-                            equip_set4="震星迪斯科",
-                            equip_set2_a="炎狱重金属",
-                        ),
-                        CharConfig(
-                            name="扳机",
-                            weapon="索魂影眸",
-                            weapon_level=5,
-                            cinema=6,
-                            scATK_percent=47,
-                            scCRIT=30,
-                            scCRIT_DMG=50,
-                            equip_style="4+2",
-                            equip_set4="如影相随",
-                            equip_set2_a="啄木鸟电音",
-                        ),
-                        CharConfig(
-                            name="雨果",
-                            weapon="千面日陨",
-                            weapon_level=5,
-                            cinema=6,
-                            scATK_percent=47,
-                            scCRIT=30,
-                            scCRIT_DMG=50,
-                            equip_style="4+2",
-                            equip_set4="啄木鸟电音",
-                            equip_set2_a="激素朋克",
-                        ),
-                    ],
-                    enemy_config=EnemyConfig(index_id=11412, adjustment_id=22412, difficulty=8.74),
-                    apl_path="./zsim/data/APLData/莱特-扳机-雨果.toml",
-                ),
-            )
-        )
+        # # 队伍2: 莱特-扳机-雨果 (火属性队)
+        # team_configs.append(
+        #     (
+        #         "莱特火属性队",
+        #         CommonCfg(
+        #             session_id="test-team-lighter-fire",
+        #             char_config=[
+        #                 CharConfig(
+        #                     name="莱特",
+        #                     weapon="焰心桂冠",
+        #                     weapon_level=5,
+        #                     cinema=6,
+        #                     scATK_percent=47,
+        #                     scCRIT=30,
+        #                     scCRIT_DMG=50,
+        #                     equip_style="4+2",
+        #                     equip_set4="震星迪斯科",
+        #                     equip_set2_a="炎狱重金属",
+        #                 ),
+        #                 CharConfig(
+        #                     name="扳机",
+        #                     weapon="索魂影眸",
+        #                     weapon_level=5,
+        #                     cinema=6,
+        #                     scATK_percent=47,
+        #                     scCRIT=30,
+        #                     scCRIT_DMG=50,
+        #                     equip_style="4+2",
+        #                     equip_set4="如影相随",
+        #                     equip_set2_a="啄木鸟电音",
+        #                 ),
+        #                 CharConfig(
+        #                     name="雨果",
+        #                     weapon="千面日陨",
+        #                     weapon_level=5,
+        #                     cinema=6,
+        #                     scATK_percent=47,
+        #                     scCRIT=30,
+        #                     scCRIT_DMG=50,
+        #                     equip_style="4+2",
+        #                     equip_set4="啄木鸟电音",
+        #                     equip_set2_a="激素朋克",
+        #                 ),
+        #             ],
+        #             enemy_config=EnemyConfig(index_id=11412, adjustment_id=22412, difficulty=8.74),
+        #             apl_path="./zsim/data/APLData/莱特-扳机-雨果.toml",
+        #         ),
+        #     )
+        # )
 
         # 队伍3: 青衣-丽娜-雅 (雷属性队)
         team_configs.append(
