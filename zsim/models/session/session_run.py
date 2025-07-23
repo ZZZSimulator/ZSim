@@ -181,7 +181,7 @@ class SessionRun(BaseModel):
     def validate_common_config(self) -> Self:
         """验证通用配置参数"""
         if self.mode == "parallel" and self.parallel_config is None:
-            raise ValidationError("并行模式下，parallel_config 不能为空")
+            raise ValueError("并行模式下，parallel_config 不能为空")
         return self
 
 

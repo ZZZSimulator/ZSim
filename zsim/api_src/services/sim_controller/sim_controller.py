@@ -20,8 +20,10 @@ from zsim.models.session.session_run import (
 )
 from zsim.simulator import Simulator
 
+from zsim.simulator.simulator_class import Confirmation
+
 if TYPE_CHECKING:
-    from zsim.simulator.simulator_class import Confirmation
+    pass
 
 logger = logging.getLogger(__name__)
 

@@ -46,6 +46,9 @@ zsim/config.json
 
 # pytest相关
 .tests
+.coverage
+coverage.xml
+htmlcov/
 
 # 临时文件
 *.tmp

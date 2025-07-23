@@ -32,9 +32,10 @@ from zsim.simulator.dataclasses import (
     ScheduleData,
 )
 
+from zsim.simulator.dataclasses import SimCfg
+
 if TYPE_CHECKING:
     from zsim.models.session.session_run import CommonCfg
-    from zsim.simulator.dataclasses import SimCfg
 
 
 class Confirmation(BaseModel):
@@ -42,6 +43,8 @@ class Confirmation(BaseModel):
     status: str
     timestamp: int
     sim_cfg: "SimCfg | None" = None
+
+Confirmation.model_rebuild()
 
 
 class Simulator:
