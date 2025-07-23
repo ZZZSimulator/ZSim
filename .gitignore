@@ -27,9 +27,7 @@ result*
 .clinerules/
 venv/
 node_modules/
-
-# 测试文件
-test.py
+.claude/
 
 # 运行时生成的文件
 build*
@@ -46,6 +44,9 @@ zsim/config.json
 
 # pytest相关
 .tests
+.coverage
+coverage.xml
+htmlcov/
 
 # 临时文件
 *.tmp
@@ -55,3 +56,4 @@ zsim/config.json
 # 生成文件
 zsim/data/APLData/custom/*
 *out*
+

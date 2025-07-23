@@ -2,7 +2,7 @@ import asyncio
 import logging
 import threading
 from concurrent.futures import ProcessPoolExecutor
-from typing import TYPE_CHECKING, Any, Iterator, Literal, Union, cast
+from typing import TYPE_CHECKING, Any, Iterator, Literal
 
 from zsim.api_src.services.database.session_db import get_session_db
 from zsim.lib_webui.constants import stats_trans_mapping
@@ -73,13 +73,19 @@ class SimController:
         self._initialized = True
         """初始化模拟控制器"""
         self._executor: ProcessPoolExecutor | None = None
+        self._executor: ProcessPoolExecutor | None = None
         self._queue: asyncio.Queue = asyncio.Queue()
+        self._running_tasks: set[asyncio.Future[Any]] = set()
+        self._loop: asyncio.AbstractEventLoop | None = None
         self._running_tasks: set[asyncio.Future[Any]] = set()
         self._loop: asyncio.AbstractEventLoop | None = None
 
     @property
     def executor(self) -> ProcessPoolExecutor:
         """获取进程池执行器，延迟初始化。"""
+        with self._lock:
+            if self._executor is None:
+                self._executor = ProcessPoolExecutor()
         with self._lock:
             if self._executor is None:
                 self._executor = ProcessPoolExecutor()
@@ -202,6 +208,7 @@ class SimController:
                     session.session_result = [processed_result]
                 except Exception as e:
                     logger.error(f"TODO: 模拟任务 {session_id} 结果处理: {repr(e)}", exc_info=True)
+
         except Exception as e:
             logger.error(f"模拟任务 {session_id} 执行失败: {e}", exc_info=True)
             session.status = "failed"
@@ -222,18 +229,18 @@ class SimController:
                 - sim_cfg: 模拟配置（包含并行配置信息）
         """
         rid = confirmation.session_id  # compatible to webui rid logic
-        logger.info(f"开始处理模拟结果: run_turn_uuid={rid}, status={confirmation.status}")
+        logger.info(f"开始处理模拟结果: session_id={rid}, status={confirmation.status}")
 
         if judge_parallel_result(rid):
             await prepare_parallel_cache(rid)
-            parallel_dmg_data: tuple[str, dict[str, Any]] | None = await merge_parallel_dmg_data(rid)
+            parallel_dmg_data = await merge_parallel_dmg_data(rid)
             if parallel_dmg_data is None:
                 raise ValueError("并行模式下合并结果失败")
 
-            func = cast(Literal["attr_curve", "weapon"], parallel_dmg_data[0])
+            func: Literal["attr_curve", "weapon"] = parallel_dmg_data[0]  # type: ignore
             result_data = parallel_dmg_data[1]
 
-            payload: Union[ParallelAttrCurveResultPayload, ParallelWeaponResultPayload]
+            payload: ParallelAttrCurveResultPayload | ParallelWeaponResultPayload
             if func == "attr_curve":
                 payload = ParallelAttrCurveResultPayload(
                     func=func, result=AttrCurvePayload(root=result_data)
