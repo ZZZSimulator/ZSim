@@ -5,13 +5,32 @@ from concurrent.futures import ProcessPoolExecutor
 from typing import TYPE_CHECKING, Any, Iterator
 
 from zsim.api_src.services.database.session_db import get_session_db
+from zsim.api_src.services.database.session_db import get_session_db
 from zsim.lib_webui.constants import stats_trans_mapping
+from zsim.lib_webui.process_buff_result import (
+    prepare_buff_data_and_cache as process_buff,
+)
+from zsim.lib_webui.process_dmg_result import (
+    prepare_dmg_data_and_cache as process_dmg,
+)
+from zsim.lib_webui.process_parallel_data import (
+    judge_parallel_result,
+    merge_parallel_dmg_data,
+)
+from zsim.lib_webui.process_parallel_data import (
+    prepare_parallel_data_and_cache as prepare_parallel_cache,
+)
 from zsim.models.session.session_create import Session
 from zsim.models.session.session_result import SessionResult
 from zsim.models.session.session_run import (
     CommonCfg,
+    CommonCfg,
     ExecAttrCurveCfg,
     ExecWeaponCfg,
+    ParallelCfg,
+    SessionRun,
+)
+from zsim.models.session.session_run import (
     ParallelCfg,
     SessionRun,
 )
@@ -31,8 +50,13 @@ logger = logging.getLogger(__name__)
 class SimController:
     _instance = None
     _lock = threading.Lock()
+    _lock = threading.Lock()
 
     def __new__(cls, *args, **kwargs):
+        if cls._instance is None:
+            with cls._lock:
+                if cls._instance is None:
+                    cls._instance = super(SimController, cls).__new__(cls)
         if cls._instance is None:
             with cls._lock:
                 if cls._instance is None:
@@ -51,7 +75,10 @@ class SimController:
         self._initialized = True
         """初始化模拟控制器"""
         self._executor: ProcessPoolExecutor | None = None
+        self._executor: ProcessPoolExecutor | None = None
         self._queue: asyncio.Queue = asyncio.Queue()
+        self._running_tasks: set[asyncio.Future[Any]] = set()
+        self._loop: asyncio.AbstractEventLoop | None = None
         self._running_tasks: set[asyncio.Future[Any]] = set()
         self._loop: asyncio.AbstractEventLoop | None = None
 
@@ -61,7 +88,25 @@ class SimController:
         with self._lock:
             if self._executor is None:
                 self._executor = ProcessPoolExecutor()
+        with self._lock:
+            if self._executor is None:
+                self._executor = ProcessPoolExecutor()
         return self._executor
+
+    def __del__(self):
+        """析构函数，确保资源清理。"""
+        self._shutdown_executor()
+
+    def _shutdown_executor(self):
+        """关闭进程池执行器。"""
+        if self._executor is not None:
+            try:
+                self._executor.shutdown(wait=True)
+                logger.info("进程池已关闭")
+            except Exception as e:
+                logger.error(f"关闭进程池时发生错误: {e}")
+            finally:
+                self._executor = None
 
     def __del__(self):
         """析构函数，确保资源清理。"""
@@ -91,6 +136,7 @@ class SimController:
         await self._queue.put((session_id, common_cfg, sim_cfg))
 
     async def get_from_queue(self) -> tuple[str, CommonCfg, SimCfg | None]:
+    async def get_from_queue(self) -> tuple[str, CommonCfg, SimCfg | None]:
         """
         从队列中获取模拟任务。
 
@@ -108,8 +154,28 @@ class SimController:
         event_loop = asyncio.get_event_loop()
         db = await get_session_db()
 
+        db = await get_session_db()
+
         while True:
             try:
+                session_id, common_cfg, sim_cfg = await self.get_from_queue()
+                session = await db.get_session(session_id)
+                if not session or not session.session_run:
+                    logger.error(f"无法获取会话 {session_id} 或其运行配置")
+                    continue
+
+                stop_tick = (
+                    sim_cfg.stop_tick
+                    if sim_cfg and sim_cfg.stop_tick is not None
+                    else session.session_run.stop_tick
+                )
+                if stop_tick is None:
+                    logger.warning(f"会话 {session_id} 未设置 stop_tick，使用默认值 3600")
+                    stop_tick = 3600
+
+                def run_simulator(
+                    _common_cfg: CommonCfg, _sim_cfg: SimCfg | None, _stop_tick: int
+                ) -> "Confirmation":
                 session_id, common_cfg, sim_cfg = await self.get_from_queue()
                 session = await db.get_session(session_id)
                 if not session or not session.session_run:

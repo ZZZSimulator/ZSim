@@ -19,18 +19,15 @@ def _load_dmg_data(rid: int | str) -> pl.DataFrame | None:
     Returns:
         Optional[pd.DataFrame]: 加载的伤害数据DataFrame，如果文件未找到则返回None。
     """
+    csv_file_path = os.path.join(results_dir, str(rid), "damage.csv")
     try:
-        csv_file_path = os.path.join(results_dir, str(rid), "damage.csv")
-        df = pl.scan_csv(csv_file_path)
+        lf = pl.scan_csv(csv_file_path)
         # 去除列名中的特殊字符
-        schema_names = df.collect_schema().names()
-        df = df.rename(
-            {
-                col: col.replace("\r", "").replace("\n", "").strip()
-                for col in schema_names
-            }
+        schema_names = lf.collect_schema().names()
+        lf = lf.rename(
+            {col: col.replace("\r", "").replace("\n", "").strip() for col in schema_names}
         )
-        return df.collect()
+        return lf.collect()
     except FileNotFoundError:
         st.error(f"未找到文件：{csv_file_path}")
         return None
@@ -240,9 +237,7 @@ def prepare_char_chart_data(uuid_df: pl.DataFrame) -> dict[str, pl.DataFrame]:
 
     # 角色失衡占比
     char_stun_df = (
-        uuid_df.filter(pl.col("stun_sum") > 0)
-        .group_by("name")
-        .agg(pl.col("stun_sum").sum())
+        uuid_df.filter(pl.col("stun_sum") > 0).group_by("name").agg(pl.col("stun_sum").sum())
     )
 
     # 角色技能输出占比
@@ -405,9 +400,7 @@ def draw_char_chart(chart_data: dict[str, pl.DataFrame]) -> None:
             st.info("没有属性积蓄数据可供显示")
 
 
-def _find_consecutive_true_ranges(
-    df: pl.DataFrame, column: str
-) -> list[tuple[int, int]]:
+def _find_consecutive_true_ranges(df: pl.DataFrame, column: str) -> list[tuple[int, int]]:
     """查找DataFrame列中连续为True的范围。
 
     Args:
@@ -532,9 +525,9 @@ def calculate_and_save_anomaly_attribution(
                 anomaly_damage_totals[anomaly_name] += row["dmg_expect_sum"]
 
     # 初始化一个包含所有角色的字典
-    all_characters = set(
-        char_dmg_df.filter(~pl.col("is_anomaly"))["name"].to_list()
-    ).union(set(char_element_df["name"]))
+    all_characters = set(char_dmg_df.filter(~pl.col("is_anomaly"))["name"].to_list()).union(
+        set(char_element_df["name"])
+    )
 
     # 初始化角色伤害数据
     attribution_data: dict[str, dict[str, float]] = {
@@ -557,12 +550,10 @@ def calculate_and_save_anomaly_attribution(
 
         # 计算角色的异常伤害归因
         if total_anomaly_damage > 0:
-            element_total = char_element_df.filter(
-                pl.col("element_type") == element_type
-            )["buildup_sum"].sum()
-            anomaly_damage_attribution = (
-                buildup_sum / element_total
-            ) * total_anomaly_damage
+            element_total = char_element_df.filter(pl.col("element_type") == element_type)[
+                "buildup_sum"
+            ].sum()
+            anomaly_damage_attribution = (buildup_sum / element_total) * total_anomaly_damage
         else:
             anomaly_damage_attribution = 0
 
