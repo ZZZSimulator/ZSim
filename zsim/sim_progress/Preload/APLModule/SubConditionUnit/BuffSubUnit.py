@@ -43,9 +43,7 @@ class BuffSubUnit(BaseSubConditionUnit):
             search_result = find_buff(game_state, char, buff_0.ft.index)
             if search_result is None:
                 return 0
-            from zsim.sim_progress.Buff import find_tick
-
-            tick = find_tick(sim_instance=char.sim_instance)
+            tick = char.sim_instance.tick
             return max(search_result.dy.endticks - tick, 0)
 
     BuffHandlerMap = {
