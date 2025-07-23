@@ -118,6 +118,10 @@ weapon_options = __lf.select("名称").unique().collect().to_series().to_list()
 weapon_profession_map = {
     row["名称"]: row["职业"] for row in __lf.collect().iter_rows(named=True)
 }
+# 音擎名称->稀有度
+weapon_rarity_map = {
+    row["名称"]: row["稀有度"] for row in __lf.collect().iter_rows(named=True)
+}
 
 # 驱动盘套装选项
 __lf = pl.scan_csv("./zsim/data/equip_set_2pc.csv")
