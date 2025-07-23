@@ -63,7 +63,9 @@ url = "https://pypi.tuna.tsinghua.edu.cn/simple"
 default = true
 
 [tool.pytest.ini_options]
-pythonpath = ["./zsim/"]
+testpaths = ["tests"]
+pythonpath = ["."]
+asyncio_mode = "auto"
 
 [project.scripts]
 zsim = "zsim.run:main"

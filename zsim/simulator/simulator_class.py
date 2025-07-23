@@ -1,5 +1,8 @@
 import gc
+import time
 from typing import TYPE_CHECKING, Any
+
+from pydantic import BaseModel
 
 from zsim.define import (
     APL_MODE,
@@ -32,6 +35,13 @@ from zsim.simulator.dataclasses import (
 if TYPE_CHECKING:
     from zsim.models.session.session_run import CommonCfg
     from zsim.simulator.dataclasses import SimCfg
+
+
+class Confirmation(BaseModel):
+    session_id: str
+    status: str
+    timestamp: int
+    sim_cfg: "SimCfg | None" = None
 
 
 class Simulator:
@@ -100,7 +110,7 @@ class Simulator:
         self.init_data = InitData(common_cfg=common_cfg, sim_cfg=sim_cfg)
         self.enemy = Enemy(
             index_id=common_cfg.enemy_config.index_id,
-            adjustment_id=common_cfg.enemy_config.adjustment_id,
+            adjustment_id=int(common_cfg.enemy_config.adjustment_id),
             difficulty=common_cfg.enemy_config.difficulty,
             sim_instance=self,
         )
@@ -111,7 +121,7 @@ class Simulator:
 
     def api_run_simulator(
         self, common_cfg: "CommonCfg", sim_cfg: "SimCfg | None", stop_tick: int = 10800
-    ):
+    ) -> Confirmation:
         """api运行模拟器实例的接口。
 
         Args:
@@ -120,10 +130,20 @@ class Simulator:
             stop_tick: 停止模拟的帧数，默认为10800帧（3分钟）
 
         Returns:
-            模拟结果数据
+            包含运行确认信息的字典
         """
         self.api_init_simulator(common_cfg, sim_cfg)
-        return self.main_loop(stop_tick=stop_tick, sim_cfg=sim_cfg, use_api=True)
+        self.main_loop(stop_tick=stop_tick, sim_cfg=sim_cfg, use_api=True)
+
+        # 返回确认信息
+        confirmation = Confirmation(
+            session_id=common_cfg.session_id,
+            status="completed",
+            timestamp=int(time.time()),
+            sim_cfg=sim_cfg,
+        )
+
+        return confirmation
 
     def __detect_parallel_mode(self, sim_cfg):
         if sim_cfg is not None:
