@@ -32,9 +32,20 @@ from zsim.simulator.dataclasses import (
     ScheduleData,
 )
 
+from zsim.simulator.dataclasses import SimCfg
+
 if TYPE_CHECKING:
     from zsim.models.session.session_run import CommonCfg
-    from zsim.simulator.dataclasses import SimCfg
+
+
+class Confirmation(BaseModel):
+    session_id: str
+    status: str
+    timestamp: int
+    sim_cfg: "SimCfg | None" = None
+
+
+Confirmation.model_rebuild()
 
 
 class Confirmation(BaseModel):
@@ -120,7 +131,7 @@ class Simulator:
         )  # 启动线程以处理日志和结果写入
 
     def api_run_simulator(
-        self, common_cfg: "CommonCfg", sim_cfg: "SimCfg | None", stop_tick: int = 10800
+        self, common_cfg: "CommonCfg", sim_cfg: "SimCfg | None", stop_tick: int | None = None
     ) -> Confirmation:
         """api运行模拟器实例的接口。
 
@@ -132,6 +143,8 @@ class Simulator:
         Returns:
             包含运行确认信息的字典
         """
+        if stop_tick is None:
+            stop_tick = 10800
         self.api_init_simulator(common_cfg, sim_cfg)
         self.main_loop(stop_tick=stop_tick, sim_cfg=sim_cfg, use_api=True)
 

@@ -72,6 +72,7 @@ class Enemy:
         # !!!注意!!!因为可能存在重名敌人的问题，使用中文名称查找怪物时，只会返回ID更靠前的
         enemy_info = self.__lookup_enemy(_raw_enemy_dataframe, name, index_id, sub_ID)
         self.name, self.index_ID, self.sub_ID, self.data_dict = enemy_info
+        self.adjustment_id = adjustment_id
         # 获取调整倍率
         self.enemy_adjust: dict[
             Literal["生命值", "攻击力", "失衡值上限", "防御力", "异常积蓄值上限"], float

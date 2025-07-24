@@ -20,6 +20,7 @@ class PreloadClass:
         self.preload_data = PreloadData(
             skills, load_data=load_data, sim_instance=sim_instance
         )
+        self.apl_path = apl_path
         self.strategy = SwapCancelStrategy(self.preload_data, apl_path)
 
     def do_preload(self, tick, enemy, name_box, char_data):

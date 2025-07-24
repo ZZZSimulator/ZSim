@@ -10,8 +10,10 @@ from ..utils.filters import (
 )
 from .StanceManager import StanceManager
 
+from zsim.sim_progress.Preload import SkillNode
+
 if TYPE_CHECKING:
-    from zsim.sim_progress.Preload import SkillNode
+    pass
 
 
 class Yanagi(Character):
