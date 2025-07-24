@@ -48,13 +48,6 @@ class Confirmation(BaseModel):
 Confirmation.model_rebuild()
 
 
-class Confirmation(BaseModel):
-    session_id: str
-    status: str
-    timestamp: int
-    sim_cfg: "SimCfg | None" = None
-
-
 class Simulator:
     """模拟器类。
 
