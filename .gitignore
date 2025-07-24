@@ -28,6 +28,7 @@ result*
 venv/
 node_modules/
 .claude/
+CLAUDE.md
 
 # 运行时生成的文件
 build*
