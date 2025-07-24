@@ -53,6 +53,7 @@ dependencies = [
     "fastapi>=0.115.12",
     "uvicorn>=0.35.0",
     "aiosqlite>=0.21.0",
+    "httpx>=0.28.1",
 ]
 
 [tool.ruff]
