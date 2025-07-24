@@ -1,6 +1,6 @@
 import pytest
 from fastapi.testclient import TestClient
-from zsim.main import app
+from zsim.api import app
 from zsim.api_src.services.database.enemy_db import get_enemy_db, EnemyDB
 from zsim.models.enemy.enemy_config import EnemyConfig
 import asyncio
@@ -39,6 +39,7 @@ async def test_create_enemy_config(enemy_config_data):
 async def test_get_enemy_config(enemy_config_data):
     # 首先创建一个配置
     db = await get_enemy_db()
+    await db.delete_enemy_config("test_enemy_config")
     config = EnemyConfig(**enemy_config_data)
     await db.add_enemy_config(config)
     
@@ -53,6 +54,7 @@ async def test_get_enemy_config(enemy_config_data):
 async def test_list_enemy_configs(enemy_config_data):
     # 首先创建一个配置
     db = await get_enemy_db()
+    await db.delete_enemy_config("test_enemy_config")
     config = EnemyConfig(**enemy_config_data)
     await db.add_enemy_config(config)
     
@@ -67,6 +69,7 @@ async def test_list_enemy_configs(enemy_config_data):
 async def test_update_enemy_config(enemy_config_data):
     # 首先创建一个配置
     db = await get_enemy_db()
+    await db.delete_enemy_config("test_enemy_config")
     config = EnemyConfig(**enemy_config_data)
     await db.add_enemy_config(config)
     
@@ -82,6 +85,7 @@ async def test_update_enemy_config(enemy_config_data):
 async def test_delete_enemy_config(enemy_config_data):
     # 首先创建一个配置
     db = await get_enemy_db()
+    await db.delete_enemy_config("test_enemy_config")
     config = EnemyConfig(**enemy_config_data)
     await db.add_enemy_config(config)
     

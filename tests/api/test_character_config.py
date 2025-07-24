@@ -1,6 +1,6 @@
 import pytest
 from fastapi.testclient import TestClient
-from zsim.main import app
+from zsim.api import app
 from zsim.api_src.services.database.character_db import get_character_db, CharacterDB
 from zsim.models.character.character_config import CharacterConfig
 import asyncio
@@ -10,6 +10,7 @@ client = TestClient(app)
 @pytest.fixture
 def character_config_data():
     return {
+        "config_id": "Hugo_test_config",
         "config_name": "test_config",
         "name": "Hugo",
         "weapon": "音擎A",
@@ -54,8 +55,8 @@ async def test_create_character_config(character_config_data):
 async def test_get_character_config(character_config_data):
     # 首先创建一个配置
     db = await get_character_db()
+    await db.delete_character_config("Hugo", "test_config")
     config = CharacterConfig(**character_config_data)
-    config.config_id = f"{config.name}_{config.config_name}"
     await db.add_character_config(config)
     
     # 获取角色配置
@@ -69,8 +70,8 @@ async def test_get_character_config(character_config_data):
 async def test_list_character_configs(character_config_data):
     # 首先创建一个配置
     db = await get_character_db()
+    await db.delete_character_config("Hugo", "test_config")
     config = CharacterConfig(**character_config_data)
-    config.config_id = f"{config.name}_{config.config_name}"
     await db.add_character_config(config)
     
     # 获取角色的所有配置
@@ -84,8 +85,8 @@ async def test_list_character_configs(character_config_data):
 async def test_update_character_config(character_config_data):
     # 首先创建一个配置
     db = await get_character_db()
+    await db.delete_character_config("Hugo", "test_config")
     config = CharacterConfig(**character_config_data)
-    config.config_id = f"{config.name}_{config.config_name}"
     await db.add_character_config(config)
     
     # 更新角色配置
@@ -100,8 +101,8 @@ async def test_update_character_config(character_config_data):
 async def test_delete_character_config(character_config_data):
     # 首先创建一个配置
     db = await get_character_db()
+    await db.delete_character_config("Hugo", "test_config")
     config = CharacterConfig(**character_config_data)
-    config.config_id = f"{config.name}_{config.config_name}"
     await db.add_character_config(config)
     
     # 删除角色配置
