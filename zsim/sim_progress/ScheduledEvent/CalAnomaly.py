@@ -53,6 +53,7 @@ class CalAnomaly:
         else:
             char_obj = anomaly_obj.activated_by.skill.char_obj
         # 根据动态buff读取怪物面板
+
         self.data: MulData = MulData(
             enemy_obj=self.enemy_obj,
             dynamic_buff=self.dynamic_buff,
@@ -261,6 +262,7 @@ class CalDisorder(CalAnomaly):
         disorder_base_dmg *= 1 + (
             disorder_basic_mul_map[self.element_type] + disorder_basic_mul_map["all"]
         )
+        # print(f"111111，计算紊乱！{disorder_basic_mul_map}")
         return np.float64(disorder_base_dmg)
 
     def cal_disorder_extra_mul(self) -> np.float64:

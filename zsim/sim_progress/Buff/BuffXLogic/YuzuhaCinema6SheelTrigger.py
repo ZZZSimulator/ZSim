@@ -83,6 +83,7 @@ class YuzuhaCinema6SheelTrigger(Buff.BuffLogic):
             preload_data=preload_data,
             sim_instance=sim_instance)
         self.record.sheel_counter += 1
+        self.record.charging_tick = 0
         if YUZUHA_REPORT:
             sim_instance.schedule_data.change_process_state()
             print(f"【柚叶6画】检测到正在›蓄力支援突击，将发射1枚炮弹，这是本次蓄力的第{self.record.sheel_counter}枚")

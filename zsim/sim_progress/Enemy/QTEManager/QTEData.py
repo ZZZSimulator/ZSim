@@ -265,10 +265,12 @@ class SingleQTE:
             )
         else:
             """角色响应了QTE，释放连携技"""
-            if _single_hit.skill_node.char_name == self.active_by.skill_node.char_name:
+            if _single_hit.skill_node.char_name == self.active_by.skill_node.char_name and not self.active_by.skill_node.force_qte_trigger:
                 raise ValueError(
                     f"{_single_hit.skill_node.char_name}  企图响应自己激发的QTE！"
                 )
+                # FIXME：由于柚叶2画有强行在非失衡期触发连携技的特性，为了系统稳定暂时让这个激发在后台也能生效。
+                #  所以这里的验错也需要避开这个情况，否则就会报“自己响应自己QTE”的错误
             self.qte_data.enemy_instance.sim_instance.schedule_data.change_process_state()
             print(
                 f"【QTE事件】 {_single_hit.skill_node.char_name}  响应了强制触发的连携，释放连携技 {_single_hit.skill_node.skill.skill_text}（skill_tag为{_single_hit.skill_tag})"

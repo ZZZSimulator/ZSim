@@ -323,16 +323,7 @@ class MultiplierData:
             self.disorder_dmg_mul: float = 0.0
             self.all_anomaly_dmg_mul: float = 0.0
 
-            self.ano_extra_bonus: dict[ElementType | str, float] = {
-                0: self.assault_dmg_mul,
-                1: self.burn_dmg_mul,
-                2: self.freeze_dmg_mul,
-                3: self.shock_dmg_mul,
-                4: self.chaos_dmg_mul,
-                5: self.freeze_dmg_mul,
-                -1: self.disorder_dmg_mul,
-                "all": self.all_anomaly_dmg_mul,
-            }
+
 
             self.special_multiplier_zone: float = 0.0
 
@@ -360,6 +351,38 @@ class MultiplierData:
             self.all_anomaly_time_increase: float = 0.0
             self.all_anomaly_time_increase_percentage: float = 0.0
 
+            self.strike_crit_rate_increase: float = 0.0
+            self.strike_crit_dmg_increase: float = 0.0
+            self.strike_ignore_defense: float = 0.0
+
+            # 异常其他属性
+            self.strike_crit_rate_increase: float = 0.0
+            self.strike_crit_dmg_increase: float = 0.0
+            self.strike_ignore_defense: float = 0.0
+
+            self.all_disorder_basic_mul: float = 0.0
+            self.strike_disorder_basic_mul: float = 0.0
+            self.burn_disorder_basic_mul: float = 0.0
+            self.frostbite_disorder_basic_mul: float = 0.0
+            self.shock_disorder_basic_mul: float = 0.0
+            self.chaos_disorder_basic_mul: float = 0.0
+
+            self.sheer_atk: float = 0.0  # 固定贯穿力增幅
+            self.field_sheer_atk_percentage: float = 0.0  # 局内百分比贯穿力增幅
+            self.sheer_dmg_bonus: float = 0.0  # 贯穿伤害增加
+
+            self.__read_dynamic_statement(dynamic_statement)
+            """在更新完全部Buff效果后，再组成字典（提前组成字典会导致字典内容和后置的赋值脱钩）"""
+            self.ano_extra_bonus: dict[ElementType | str, float] = {
+                0: self.assault_dmg_mul,
+                1: self.burn_dmg_mul,
+                2: self.freeze_dmg_mul,
+                3: self.shock_dmg_mul,
+                4: self.chaos_dmg_mul,
+                5: self.freeze_dmg_mul,
+                -1: self.disorder_dmg_mul,
+                "all": self.all_anomaly_dmg_mul,
+            }
             self.anomaly_time_increase: dict[ElementType | str, float] = {
                 0: self.assault_time_increase,
                 1: self.burn_time_increase,
@@ -380,22 +403,6 @@ class MultiplierData:
                 "all": self.all_anomaly_time_increase_percentage,
             }
 
-            self.strike_crit_rate_increase: float = 0.0
-            self.strike_crit_dmg_increase: float = 0.0
-            self.strike_ignore_defense: float = 0.0
-
-            # 异常其他属性
-            self.strike_crit_rate_increase: float = 0.0
-            self.strike_crit_dmg_increase: float = 0.0
-            self.strike_ignore_defense: float = 0.0
-
-            self.all_disorder_basic_mul: float = 0.0
-            self.strike_disorder_basic_mul: float = 0.0
-            self.burn_disorder_basic_mul: float = 0.0
-            self.frostbite_disorder_basic_mul: float = 0.0
-            self.shock_disorder_basic_mul: float = 0.0
-            self.chaos_disorder_basic_mul: float = 0.0
-
             self.disorder_basic_mul_map: dict[ElementType | str, float] = {
                 0: self.strike_disorder_basic_mul,
                 1: self.burn_disorder_basic_mul,
@@ -406,11 +413,6 @@ class MultiplierData:
                 6: self.chaos_disorder_basic_mul,
                 "all": self.all_disorder_basic_mul,
             }
-            self.sheer_atk: float = 0.0  # 固定贯穿力增幅
-            self.field_sheer_atk_percentage: float = 0.0  # 局内百分比贯穿力增幅
-            self.sheer_dmg_bonus: float = 0.0  # 贯穿伤害增加
-
-            self.__read_dynamic_statement(dynamic_statement)
 
         def __read_dynamic_statement(self, dynamic_statement: dict) -> None:
             """使用翻译json初始化动态面板"""
@@ -421,12 +423,12 @@ class MultiplierData:
             #     if not hasattr(self, value):
             #         setattr(self, value, 0.0)
             # 遍历dynamic_statement，根据json翻译，设置对应的属性值
-            for key, value in dynamic_statement.items():
-                if key in buff_effect_trans:
-                    attr_name = buff_effect_trans[key]
+            for CNkey, value in dynamic_statement.items():
+                if CNkey in buff_effect_trans:
+                    attr_name = buff_effect_trans[CNkey]
                     setattr(self, attr_name, getattr(self, attr_name) + value)
                 else:
-                    raise KeyError(f"Invalid buff multiplier key: {key}")
+                    raise KeyError(f"Invalid buff multiplier key: {CNkey}")
 
 
 class Calculator:

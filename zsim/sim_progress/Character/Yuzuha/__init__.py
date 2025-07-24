@@ -26,6 +26,9 @@ class Yuzuha(Character):
         for node in skill_nodes:
             sim_instance: "Simulator" = self.sim_instance
             sim_instance.schedule_data.enemy.special_state_manager.broadcast_and_update(signal=SSUS.CHARACTER, skill_node=node)
+            if node.skill_tag == "1411_Assault_Aid_B" and self.cinema < 6:
+                raise ValueError(f"企图在非6画状态下对支援突击进行蓄力！请检查define中的招架支援配置！")
+
             if node.char_name != self.NAME:
                 continue
             if node.skill.labels is not None and "sugar_points" in node.skill.labels:

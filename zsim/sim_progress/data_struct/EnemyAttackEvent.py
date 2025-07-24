@@ -140,7 +140,10 @@ class EnemyAttackEventManager:
         theta = ENEMY_ATK_PARAMETER_DICT.get("theta", None)
         if theta is None:
             raise ValueError("ENEMY_ATK_PARAMETER_DICT中没有theta参数，请检查配置！")
-
+        perfect_player: bool = ENEMY_ATK_PARAMETER_DICT.get("perfect_player")
+        if perfect_player:
+            """若是完美玩家将直接应用最短反应时间"""
+            return round(theta / 1000 * 60)
         Lp = ENEMY_ATK_PARAMETER_DICT.get("PlayerLevel", None)
         if Lp is None:
             raise ValueError(
