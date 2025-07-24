@@ -311,6 +311,8 @@ class Enemy:
                 row = enemy_df[enemy_df["CN_enemy_ID"] == enemy_name].to_dict("records")
             else:
                 row = enemy_df[enemy_df["IndexID"] == 11531].to_dict("records")  # 默认打尼尼微（因为全部0抗）
+            if not row:
+                raise ValueError(f"找不到对应的敌人，请检查输入参数：name={enemy_name}, index_id={enemy_index_ID}, sub_id={enemy_sub_ID}")
         except IndexError:
             raise ValueError("找不到对应的敌人")
         # fmt: on

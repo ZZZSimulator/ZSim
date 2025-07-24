@@ -48,6 +48,7 @@ async def run_session(
     session_run: SessionRun,
     background_tasks: BackgroundTasks,
     db: SessionDB = Depends(get_session_db),
+    test_mode: bool = False,
 ):
     """启动一个会话模拟。"""
     session = await db.get_session(session_id)
@@ -62,7 +63,10 @@ async def run_session(
     await db.update_session(session)
 
     sim_controller = SimController()
-    background_tasks.add_task(sim_controller.execute_simulation)
+    if test_mode:
+        background_tasks.add_task(sim_controller.execute_simulation_test)
+    else:
+        background_tasks.add_task(sim_controller.execute_simulation)
 
     if session_run.mode == "parallel" and session_run.parallel_config:
         args_iterator = sim_controller.generate_parallel_args(session, session_run)
@@ -94,7 +98,7 @@ async def stop_session(session_id: str, db: SessionDB = Depends(get_session_db))
     await db.update_session(session)
     logger.warning(f"Stopping session {session_id} is not fully implemented.")
 
-    return {"code": 0, "message": "Session stopped successfully", "session_id": session.session_id}
+    return session
 
 
 @router.put("/sessions/{session_id}", response_model=Session)
@@ -111,7 +115,7 @@ async def update_session(
         raise HTTPException(status_code=404, detail="Session not found")
 
     await db.update_session(session)
-    return {"code": 0, "message": "Session updated successfully", "session_id": session.session_id}
+    return session
 
 
 @router.delete("/sessions/{session_id}", status_code=204)
