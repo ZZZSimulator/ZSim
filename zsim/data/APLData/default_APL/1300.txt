@@ -1,1 +1,0 @@
-#status.1300:lasting_node_tag==1300_NA_3_NFC|status.1300:lasting_node_tick>=180|!action.after:skill_tag==1300_NA_3_NFC;status.1300:lasting_node_tag==1300_NA_3_NFC|status.1300:lasting_node_tick<180|!action.after:skill_tag==1300_NA_3_NFC

@@ -362,7 +362,7 @@ AP代码主体记录了角色的输出逻辑，它主要由一行行的APL语句
     <tr>
       <td><code>→</code></td>
       <td>复杂数据集中的子项名称（特殊字符，中文输入法输入"You"打出）</td>
-      <td><code>attribute.1300:special_state→醉花月云转可用次数>=0</code></td>
+      <td><code>attribute.1251:special_state→醉花月云转可用次数>=0</code></td>
       <td>青衣的特殊状态中的<strong>醉花月云转可用次数</strong>≥0</td>
     </tr>
   </tbody>
@@ -846,7 +846,7 @@ APL语法中的检索内容种类繁多，其中的绝大部分都只要填入�
 > <td>0~3</td>
 > </tr>
 > <tr>
-> <td>1301</td>
+> <td>1261</td>
 > <td>简</td>
 > <td>狂热心流</td>
 > <td>狂热心流值</td>
@@ -861,7 +861,7 @@ APL语法中的检索内容种类繁多，其中的绝大部分都只要填入�
 > <td>0~100</td>
 > </tr>
 > <tr>
-> <td>1300</td>
+> <td>1251</td>
 > <td>青衣</td>
 > <td>闪络电压</td>
 > <td>闪络电压值</td>
@@ -968,7 +968,7 @@ APL语法中的检索内容种类繁多，其中的绝大部分都只要填入�
 > <td class="color-2"; colspan=3>该角色没有可以被检索的特殊状态</td>
 > </tr>
 > <tr>
-> <td rowspan="3"; class="color-0">1301<br>（简）</td>
+> <td rowspan="3"; class="color-0">1261<br>（简）</td>
 > <td class="color-0">狂热心流</td>
 > <td class="color-0"><font class="color-number">数值比较</font></td>
 > <td class="color-0">检索 简当前的狂热心流数值</td>
@@ -990,7 +990,7 @@ APL语法中的检索内容种类繁多，其中的绝大部分都只要填入�
 > <td class="color-1">检索 莱特当前的士气值</td>
 > </tr>
 > <tr>
-> <td rowspan="3"; class="color-3">1300<br>（青衣）</td>
+> <td rowspan="3"; class="color-3">1251<br>（青衣）</td>
 > <td class="color-3">闪络电压</td>
 > <td class="color-3"; rowspan=2><font class="color-number">数值比较</font></td>
 > <td class="color-3">检索 青衣当前的闪络电压值</td>
@@ -1088,8 +1088,8 @@ APL语法中的检索内容种类繁多，其中的绝大部分都只要填入�
 > </tr>
 > <tr>
 > <td>APL代码</td>
-> <td><code>attribute.1300:special_state→醉花月云转可用次数>1</code></td>
-> <td><code>attribute.1301:special_state→狂热状态==False</code></td>
+> <td><code>attribute.1251:special_state→醉花月云转可用次数>1</code></td>
+> <td><code>attribute.1261:special_state→狂热状态==False</code></td>
 > <td><code>attribute.1381:special_state→E连击==True</code></td>
 > </tr>
 > </table>

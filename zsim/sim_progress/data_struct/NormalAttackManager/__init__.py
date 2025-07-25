@@ -29,5 +29,5 @@ def na_manager_factory(char_obj) -> BaseNAManager:
 
 
 if __name__ == "__main__":
-    na_manager = na_manager_factory(1300)
+    na_manager = na_manager_factory(1251)
     print(na_manager.na_rule_selector())

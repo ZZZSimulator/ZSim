@@ -14,18 +14,18 @@ class Qingyi(Character):
         )
         self.__FLASH_THRESHOLD: float = self.__MAX_VOLTAGE * 0.75
         self.VOLTAGE_MAP: dict = {
-            "1300_NA_3_NFC": self.__QUAN_VOLTAGE * 4.6875,
-            "1300_NA_3_FC": self.__QUAN_VOLTAGE * 4.6875 * 16,
-            "1300_SNA": self.__QUAN_VOLTAGE * 1.94,
-            "1300_NA_4": self.__QUAN_VOLTAGE * 7.7,
-            "1300_CA": self.__QUAN_VOLTAGE * 16.08,
-            "1300_BH_Aid": self.__QUAN_VOLTAGE * 6.08,
-            "1300_Assault_Aid": self.__QUAN_VOLTAGE * 14.89,
-            "1300_E": self.__QUAN_VOLTAGE * 2.83,
-            "1300_E_EX_NFC": self.__QUAN_VOLTAGE * 22.29,
-            "1300_E_EX_FC": self.__QUAN_VOLTAGE * 30,
-            "1300_QTE": self.__QUAN_VOLTAGE * 25,
-            "1300_Q": self.__QUAN_VOLTAGE * 80,
+            "1251_NA_3_NFC": self.__QUAN_VOLTAGE * 4.6875,
+            "1251_NA_3_FC": self.__QUAN_VOLTAGE * 4.6875 * 16,
+            "1251_SNA": self.__QUAN_VOLTAGE * 1.94,
+            "1251_NA_4": self.__QUAN_VOLTAGE * 7.7,
+            "1251_CA": self.__QUAN_VOLTAGE * 16.08,
+            "1251_BH_Aid": self.__QUAN_VOLTAGE * 6.08,
+            "1251_Assault_Aid": self.__QUAN_VOLTAGE * 14.89,
+            "1251_E": self.__QUAN_VOLTAGE * 2.83,
+            "1251_E_EX_NFC": self.__QUAN_VOLTAGE * 22.29,
+            "1251_E_EX_FC": self.__QUAN_VOLTAGE * 30,
+            "1251_QTE": self.__QUAN_VOLTAGE * 25,
+            "1251_Q": self.__QUAN_VOLTAGE * 80,
         }
 
         self.flash_connect_voltage: int = (
@@ -52,13 +52,13 @@ class Qingyi(Character):
                 self.rush_attack_available_times = 5
             if self.flash_connect:
                 # 闪络状态执行逻辑
-                if node.skill_tag == "1300_SNA_1":
+                if node.skill_tag == "1251_SNA_1":
                     self.flash_connect_voltage = 0
                     self.rush_attack_available_times -= 1
                     self.flash_connect = False
             else:
                 # 非闪络状态执行逻辑
-                if node.skill_tag == "1300_SNA_1":
+                if node.skill_tag == "1251_SNA_1":
                     # 醉花月云转-突进攻击可用次数减一
                     if self.rush_attack_available_times in [0, 5]:
                         print(
