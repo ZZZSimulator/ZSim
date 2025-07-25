@@ -33,7 +33,7 @@ class JanePassionStateTrigger(Buff.BuffLogic):
     def special_judge_logic(self, **kwargs):
         """简的狂热状态触发器，其取值狂热状态同步"""
         self.check_record_module()
-        self.get_prepared(char_CID=1301)
+        self.get_prepared(char_CID=1261)
         passion_state = self.record.char.get_special_stats().get("狂热状态")
         if passion_state is None:
             raise ValueError(

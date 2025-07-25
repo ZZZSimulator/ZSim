@@ -52,13 +52,13 @@ class QingYiCoreSkillExtraStunBonus(Buff.BuffLogic):
         其他分支，更新电压后，直接返回False
         """
         self.check_record_module()
-        self.get_prepared(char_CID=1300, action_stack=1)
-        if self.record.action_stack.peek().mission_tag == "1300_SNA_1":
+        self.get_prepared(char_CID=1251, action_stack=1)
+        if self.record.action_stack.peek().mission_tag == "1251_SNA_1":
             # 这个count哪怕每次SNA_1都计算也不要紧，因为SNA_1分支不会清空电压记录，
             # 所以每次算出来都是一样的。
             self.record.count = max(self.record.last_update_voltage - 75, 0)
             return True
-        elif self.record.action_stack.peek().mission_tag == "1300_SNA_2":
+        elif self.record.action_stack.peek().mission_tag == "1251_SNA_2":
             self.record.last_update_voltage = 0
             return True
         else:
@@ -71,13 +71,13 @@ class QingYiCoreSkillExtraStunBonus(Buff.BuffLogic):
         此时，应该从record获取层数，并且激活buff。
         """
         self.check_record_module()
-        self.get_prepared(char_CID=1300, sub_exist_buff_dict=1, action_stack=1)
+        self.get_prepared(char_CID=1251, sub_exist_buff_dict=1, action_stack=1)
         tick_now = JudgeTools.find_tick(sim_instance=self.buff_instance.sim_instance)
         self.buff_instance.simple_start(tick_now, self.record.sub_exist_buff_dict)
         self.buff_0.dy.count -= self.buff_0.ft.step
         count = min(self.record.count, self.buff_instance.ft.maxcount)
         self.buff_instance.dy.count = count - 1
         self.buff_instance.update_to_buff_0(self.buff_0)
-        if self.record.action_stack.peek().mission_tag == "1300_SNA_2":
+        if self.record.action_stack.peek().mission_tag == "1251_SNA_2":
             # 在增幅完SNA_2后，本轮次的record.count使命完成，进行重置。
             self.record.count = 0
