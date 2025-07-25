@@ -18,38 +18,60 @@ def page_character_config():
         weapon_rarity_map,
         weapon_char_map,
         char_profession_map,
+        profession_chars_map,
     )
 
-    col1, col2, col3 = st.columns(3)
+    col0, col1, col2, col3, col4, col5, col6, col7 = st.columns([1, 1, 1, 1, 1, 1, 1, 1])
+    with col0:
+        profession_0 = st.selectbox(
+            "角色1特性",
+            list(profession_chars_map.keys()),
+            index=list(profession_chars_map.keys()).index("不限特性"),
+            key="profession_select_0",
+        )
     with col1:
         name_box_0 = [
             st.selectbox(
                 "角色1",
-                char_options,
-                index=char_options.index(default_chars[0])
-                if len(default_chars) > 0
+                profession_chars_map[profession_0],
+                index=profession_chars_map[profession_0].index(default_chars[0])
+                if len(default_chars) > 0 and default_chars[0] in profession_chars_map[profession_0]
                 else 0,
                 key="char_select_0",
             )
         ]
-    with col2:
+    with col3:
+        profession_1 = st.selectbox(
+            "角色2特性",
+            list(profession_chars_map.keys()),
+            index=list(profession_chars_map.keys()).index("不限特性"),
+            key="profession_select_1",
+        )
+    with col4:
         name_box_1 = [
             st.selectbox(
                 "角色2",
-                char_options,
-                index=char_options.index(default_chars[1])
-                if len(default_chars) > 1
+                profession_chars_map[profession_1],
+                index=profession_chars_map[profession_1].index(default_chars[1])
+                if len(default_chars) > 1 and default_chars[1] in profession_chars_map[profession_1]
                 else 0,
                 key="char_select_1",
             )
         ]
-    with col3:
+    with col6:
+        profession_2 = st.selectbox(
+            "角色3特性",
+            list(profession_chars_map.keys()),
+            index=list(profession_chars_map.keys()).index("不限特性"),
+            key="profession_select_2",
+        )
+    with col7:
         name_box_2 = [
             st.selectbox(
                 "角色3",
-                char_options,
-                index=char_options.index(default_chars[2])
-                if len(default_chars) > 2
+                profession_chars_map[profession_2],
+                index=profession_chars_map[profession_2].index(default_chars[2])
+                if len(default_chars) > 2 and default_chars[2] in profession_chars_map[profession_2]
                 else 0,
                 key="char_select_2",
             )

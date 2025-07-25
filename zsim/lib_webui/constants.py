@@ -111,6 +111,15 @@ char_profession_map = {
     row["name"]: row["角色特性"] for row in __lf_character.collect().iter_rows(named=True)
 }
 
+# 职业特性->角色名称列表
+profession_chars_map = {}
+for char_name, profession in char_profession_map.items():
+    if profession not in profession_chars_map:
+        profession_chars_map[profession] = []
+    profession_chars_map[profession].append(char_name)
+
+profession_chars_map["不限特性"] = char_options
+
 # 武器选项
 __lf_weapon = pl.scan_csv("./zsim/data/weapon.csv")
 weapon_options = __lf_weapon.select("名称").unique().collect().to_series().to_list()
