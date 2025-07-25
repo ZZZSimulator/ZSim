@@ -30,7 +30,7 @@
         "perfect_player": true,
         "default_apl_dir": "./zsim/data/APLData",
         "custom_apl_dir": "./zsim/data/APLData/custom",
-        "apl_thought_check": true,
+        "apl_thought_check": false,
         "apl_thought_check_window": [
             1500,
             1600
