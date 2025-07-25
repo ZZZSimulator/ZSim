@@ -125,7 +125,7 @@ weapon_rarity_map = {
 # 音擎名称->角色名称 (仅限部分 S 级和 A 级)
 weapon_char_map: dict[str, str] = {}
 for row in __lf_weapon.collect().iter_rows(named=True):
-    cid = int(str(row["ID"])[-3:]) * 10 + 1
+    cid = row["ID"] % 1000 * 10 + 1
     names = (
         __lf_character
         .filter(pl.col("CID") == cid)
