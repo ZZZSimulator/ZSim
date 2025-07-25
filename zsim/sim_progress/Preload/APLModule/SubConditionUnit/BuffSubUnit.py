@@ -13,6 +13,7 @@ class BuffSubUnit(BaseSubConditionUnit):
         )
         self.buff_0 = None
         self.char = None
+        self.apl_warnning_dict = {}
 
     class BuffCheckHandler:
         @classmethod
@@ -43,9 +44,7 @@ class BuffSubUnit(BaseSubConditionUnit):
             search_result = find_buff(game_state, char, buff_0.ft.index)
             if search_result is None:
                 return 0
-            from zsim.sim_progress.Buff import find_tick
-
-            tick = find_tick(sim_instance=char.sim_instance)
+            tick = char.sim_instance.tick
             return max(search_result.dy.endticks - tick, 0)
 
     BuffHandlerMap = {
@@ -66,9 +65,12 @@ class BuffSubUnit(BaseSubConditionUnit):
             if search_resurt is not None:
                 self.buff_0 = search_resurt
             else:
-                raise ValueError(
-                    f"在{self.char.NAME}身上并未找到名为{buff_index}的Buff！"
-                )
+                if self.priority not in self.apl_warnning_dict:
+                    print(
+                        f"【非法APL警告】优先级为{self.priority}的APL似乎与当前模拟条件不匹配！原因：在{self.char.NAME}身上并未找到名为{buff_index}的Buff！"
+                    )
+                    self.apl_warnning_dict[self.priority] = True
+                return False
         handler_cls = self.BuffHandlerMap[self.check_stat]
         handler = handler_cls() if handler_cls else None
         if not handler:

@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
 from .BaseListenerClass import BaseListener
-
+from zsim.models.event_enums import ListenerBroadcastSignal as LBS
 if TYPE_CHECKING:
     from zsim.simulator.simulator_class import Simulator
 
@@ -13,9 +13,9 @@ class HugoCorePassiveBuffListener(BaseListener):
         super().__init__(listener_id, sim_instance=sim_instance)
         self.buff_index = "Buff-角色-雨果-核心被动-暗渊回响"
 
-    def listening_event(self, event, **kwargs):
+    def listening_event(self, event, signal: LBS, **kwargs):
         """监听到雨果的single_hit后，直接添加Buff"""
-        if "stun_event" not in kwargs:
+        if signal != LBS.STUN:
             return
         from zsim.sim_progress.data_struct import SingleHit
 

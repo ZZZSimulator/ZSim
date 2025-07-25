@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 from zsim.define import YIXUAN_REPORT
 
 from .BaseListenerClass import BaseListener
-
+from zsim.models.event_enums import ListenerBroadcastSignal as LBS
 if TYPE_CHECKING:
     from zsim.sim_progress.Character.character import Character
     from zsim.sim_progress.Character.Yixuan import Yixuan
@@ -28,14 +28,14 @@ class YixuanAnomalyListener(BaseListener):
             else self.last_active_tick + self.cd <= self.sim_instance.tick
         )
 
-    def listening_event(self, event_obj, **kwargs):
+    def listening_event(self, event_obj, signal: LBS, **kwargs):
         """监听到新的anomlay创建后，检查属性类型，通过判定则恢复闪能。"""
         if self.char is None:
             char_obj: "Yixuan | Character | None" = (
                 self.sim_instance.char_data.find_char_obj(CID=1371)
             )
             self.char = char_obj
-        if "anomaly_event" not in kwargs:
+        if signal != LBS.ANOMALY:
             return
         from zsim.sim_progress.anomaly_bar import AnomalyBar
 

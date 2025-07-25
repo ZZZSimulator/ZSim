@@ -1238,5 +1238,45 @@
     "Buff-角色-柚叶-组队被动-属性异常与紊乱伤害增幅": {
         "module": ".BuffXLogic.YuzuhaAdditionalAbilityAnomalyDmgBonus",
         "class": "YuzuhaAdditionalAbilityAnomalyDmgBonus"
+    },
+    "Buff-角色-柚叶-1画-全属性伤害抗性降低": {
+        "module": ".BuffXLogic.YuzuhaCinem1EleResReduce",
+        "class": "YuzuhaCinem1EleResReduce"
+    },
+    "Buff-角色-柚叶-2画-连携技触发器": {
+        "module": ".BuffXLogic.YuzuhaCinema2Trigger",
+        "class": "YuzuhaCinema2Trigger"
+    },
+    "Buff-角色-柚叶-4画-快支触发器": {
+        "module": ".BuffXLogic.YuzuhaCinema4QuickAssistTrigger",
+        "class": "YuzuhaCinema4QuickAssistTrigger"
+    },
+    "Buff-角色-柚叶-6画-炮弹触发器": {
+        "module": ".BuffXLogic.YuzuhaCinema6SheelTrigger",
+        "class": "YuzuhaCinema6SheelTrigger"
+    },
+    "Buff-角色-柚叶-6画-彩糖花火极触发器": {
+        "module": ".BuffXLogic.YuzuhaCinema6SugarBurstMaxTrigger",
+        "class": "YuzuhaCinema6SugarBurstMaxTrigger"
+    },
+    "Buff-武器-精1狸法七变化-全队异常精通": {
+        "module": ".BuffXLogic.MetanukiMorphosisAPBonus",
+        "class": "MetanukiMorphosisAPBonus"
+    },
+    "Buff-武器-精2狸法七变化-全队异常精通": {
+        "module": ".BuffXLogic.MetanukiMorphosisAPBonus",
+        "class": "MetanukiMorphosisAPBonus"
+    },
+    "Buff-武器-精3狸法七变化-全队异常精通": {
+        "module": ".BuffXLogic.MetanukiMorphosisAPBonus",
+        "class": "MetanukiMorphosisAPBonus"
+    },
+    "Buff-武器-精4狸法七变化-全队异常精通": {
+        "module": ".BuffXLogic.MetanukiMorphosisAPBonus",
+        "class": "MetanukiMorphosisAPBonus"
+    },
+    "Buff-武器-精5狸法七变化-全队异常精通": {
+        "module": ".BuffXLogic.MetanukiMorphosisAPBonus",
+        "class": "MetanukiMorphosisAPBonus"
     }
 }

@@ -7,7 +7,7 @@ from zsim.sim_progress.data_struct import (
 )
 
 from . import SkillNode
-
+from zsim.models.event_enums import ListenerBroadcastSignal as LBS
 if TYPE_CHECKING:
     from zsim.simulator.simulator_class import Simulator
 
@@ -70,7 +70,7 @@ class PreloadData:
         if self.personal_node_stack[char_cid].is_empty():
             """检测角色的第一个动作抛出。"""
             self.sim_instance.listener_manager.broadcast_event(
-                event=node, enter_battle_event=1
+                event=node, signal=LBS.ENTER_BATTLE
             )
         self.personal_node_stack[char_cid].push(node)
         if node.active_generation:
@@ -160,3 +160,15 @@ class PreloadData:
                 mission_key_to_remove.append(mission_key)
         for key in mission_key_to_remove:
             self.load_mission_dict.pop(key)
+
+    def char_occupied_check(self, char_cid: int, tick: int):
+        """检查角色当前是否存在动作（无论主动、被动）"""
+        char_stack = self.personal_node_stack.get(char_cid, None)
+        if char_stack is None:
+            return True
+        latest_node = char_stack.get_effective_node()
+        if latest_node is None:
+            return True
+        if latest_node.end_tick > tick:
+            return True
+        return False

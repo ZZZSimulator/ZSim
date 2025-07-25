@@ -1,7 +1,7 @@
 import json
 from typing import TYPE_CHECKING
 
-from zsim.define import APL_NA_ORDER_PATH
+from zsim.define import APL_NA_ORDER_PATH, CHAR_PARRY_STRATEGY_MAP
 from zsim.sim_progress.data_struct.NormalAttackManager import (
     BaseNAManager,
     na_manager_factory,
@@ -125,7 +125,10 @@ class APLClass:
             else:
                 output = current_na_manager.spawn_out_na(last_action)
         elif action == "assault_after_parry":
-            output = f"{CID}_Assault_Aid"
+            if CID in CHAR_PARRY_STRATEGY_MAP:
+                output = CHAR_PARRY_STRATEGY_MAP[CID]
+            else:
+                output = f"{CID}_Assault_Aid"
         else:
             output = action
         return output

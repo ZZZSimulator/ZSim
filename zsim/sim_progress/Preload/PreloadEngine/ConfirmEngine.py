@@ -4,7 +4,7 @@ from zsim.sim_progress.Report import report_to_log
 
 from .. import SkillNode, SkillsQueue
 from ..PreloadEngine import BasePreloadEngine
-
+from zsim.models.event_enums import ListenerBroadcastSignal as LBS
 if TYPE_CHECKING:
     from zsim.sim_progress.Character import Character
     from zsim.sim_progress.Preload.PreloadDataClass import PreloadData
@@ -113,7 +113,7 @@ class ConfirmEngine(BasePreloadEngine):
                 if name_box[0] != old_name_box[0]:
                     """在更新name_box的时候，将切人事件对所有监听器进行广播。"""
                     self.data.sim_instance.listener_manager.broadcast_event(
-                        char, switching_in_event=1
+                        event=char, signal=LBS.SWITCHING_IN, skill_node=this_node
                     )
                     char.dynamic.on_field = True
             else:
