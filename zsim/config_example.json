@@ -27,8 +27,14 @@
         "enemy_attack_action_data": "./zsim/data/enemy_attack_action.csv",
         "enemy_attack_report": true,
         "player_level": 5,
+        "perfect_player": true,
         "default_apl_dir": "./zsim/data/APLData",
         "custom_apl_dir": "./zsim/data/APLData/custom",
+        "apl_thought_check": true,
+        "apl_thought_check_window": [
+            1500,
+            1600
+        ],
         "Yanagi": "./zsim/data/DefaultConfig/1221.json",
         "Hugo": "./zsim/data/DefaultConfig/1291.json"
     },
