@@ -3,6 +3,9 @@ from zsim.sim_progress.ScheduledEvent import Calculator
 from zsim.sim_progress.ScheduledEvent.Calculator import MultiplierData
 
 from .. import Buff, JudgeTools, check_preparation
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from zsim.sim_progress.Preload import SkillNode
 
 
 class MiyabiCoreSkillIF:
@@ -25,8 +28,8 @@ class MiyabiCoreSkill_IceFire(Buff.BuffLogic):
         super().__init__(buff_instance)
         self.buff_instance: Buff = buff_instance
         self.xjudge = self.special_judge_logic
-        self.xexit = self.special_exit_logic
         self.xhit = self.special_hit_logic
+        self.xexit = self.special_exit_logic
         self.buff_0 = None
         self.record = None
 
@@ -49,13 +52,15 @@ class MiyabiCoreSkill_IceFire(Buff.BuffLogic):
         两者都通过，才会return True
         """
         self.check_record_module()
-        self.get_prepared(enemy=1, action_stack=1)
-
+        self.get_prepared(char_CID=1091, enemy=1, action_stack=1)
         enemy = self.record.enemy
-        mission_now = self.record.action_stack.peek()
         debuff_list = enemy.dynamic.dynamic_debuff_list
-
-        if mission_now.mission_node.element_type != 5:
+        skill_node: "SkillNode" = kwargs.get("skill_node")
+        if skill_node is None:
+            return False
+        if skill_node.char_name != self.record.char.NAME:
+            return False
+        if skill_node.skill.element_type != 5:
             return False
         else:
             for debuff in debuff_list:

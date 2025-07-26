@@ -22,7 +22,7 @@ from .EnemyAttack import EnemyAttackMethod
 from .EnemyUniqueMechanic import unique_mechanic_factory
 from .QTEManager import QTEManager
 from zsim.sim_progress.data_struct.enemy_special_state_manager import SpecialStateManager
-
+from zsim.models.event_enums import ListenerBroadcastSignal as LBS
 if TYPE_CHECKING:
     from zsim.simulator.simulator_class import Simulator
 
@@ -631,7 +631,10 @@ class Enemy:
             self.auricink_corruption = False  # 玄墨侵蚀状态
 
             self.dynamic_debuff_list = []  # 用来装debuff的list
+            # from zsim.sim_progress.data_struct.monitor_list_class import MonitoredList
+            # self.dynamic_dot_list = MonitoredList()  # 用来装dot的list
             self.dynamic_dot_list = []  # 用来装dot的list
+
             self.active_anomaly_bar_dict = {
                 number: AnomalyBar for number in range(6)
             }  # 用来装激活属性异常的字典。
@@ -647,6 +650,7 @@ class Enemy:
             self.shock_tick = 0
             self.burn_tick = 0
             self.corruption_tick = 0
+
 
         def __str__(self):
             return f"失衡: {self.stun}, 失衡条: {self.stun_bar:.2f}, 冻结: {self.frozen}, 霜寒: {self.frostbite}, 畏缩: {self.assault}, 感电: {self.shock}, 灼烧: {self.burn}, 侵蚀：{self.corruption}, 烈霜霜寒：{self.frost_frostbite}"
@@ -700,6 +704,7 @@ class Enemy:
                     self.burn,
                     self.corruption,
                     self.shock,
+                    self.auricink_corruption
                 ]
             )
 

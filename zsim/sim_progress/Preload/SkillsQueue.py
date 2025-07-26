@@ -59,6 +59,7 @@ class SkillNode:
             self.loading_mission = None
             self._effective_anomaly_buildup: bool = True
             self._element_type_change: ElementType | None = None
+            self.force_qte_trigger: bool = False
 
     @property
     def element_type(self) -> ElementType:
@@ -97,6 +98,15 @@ class SkillNode:
     def get_total_instances(cls) -> int:
         """获取当前skill_node的唯一ID，该ID在skill_node被构造时就已经确定"""
         return cls._instance_counter
+
+    def have_label(self, label_key: str):
+        """判断当前skill_node是否拥有传入数值的skill_label"""
+        if self.skill.labels is None:
+            return False
+        if label_key in self.labels.keys():
+            return True
+        else:
+            return False
 
     def is_heavy_hit(self, tick: int) -> bool:
         """判断当前技能是否为重击"""

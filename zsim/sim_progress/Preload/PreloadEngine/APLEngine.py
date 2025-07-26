@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from zsim.define import APL_PATH
+from zsim.define import APL_PATH, APL_THOUGHT_CHECK, APL_THOUGHT_CHECK_WINDOW as ATCW
 
 from .. import SkillNode, SkillsQueue
 from ..APLModule import APLManager
@@ -32,6 +32,9 @@ class APLEngine(BasePreloadEngine):
     def run_myself(self, tick) -> SkillNode | None:
         """APL模块运行的最终结果：技能名、最终通过的APL代码优先级"""
         skill_tag, apl_priority, apl_unit = self.apl.execute(tick, mode=0)
+        if APL_THOUGHT_CHECK:
+            if tick in range(ATCW[0], ATCW[1]):
+                print(f"当前tick为：{tick}，APL引擎在本tick想要运行的技能是：{skill_tag}，该技能来自于优先级为 {apl_priority} 的APL单元（属于角色 {apl_unit.char_CID}）")
         if skill_tag == "wait":
             return None
         node = SkillsQueue.spawn_node(

@@ -102,21 +102,48 @@ default_chars = [
     "丽娜",
     "零号·安比",
 ]  # 这个值其实没啥意义，但是必须是三个角色，否则可能会报错
-__lf = pl.scan_csv("./zsim/data/character.csv")
-char_options = __lf.select("name").unique().collect().to_series().to_list()
+__lf_character = pl.scan_csv("./zsim/data/character.csv")
+char_options = __lf_character.select("name").unique().collect().to_series().to_list()
 # 角色名称->职业特性
 char_profession_map = {row["name"]: row["角色特性"] for row in __lf.collect().iter_rows(named=True)}
 
+# 职业特性->角色名称列表
+profession_chars_map = {}
+for char_name, profession in char_profession_map.items():
+    if profession not in profession_chars_map:
+        profession_chars_map[profession] = []
+    profession_chars_map[profession].append(char_name)
+
+profession_chars_map["不限特性"] = char_options
+
 # 武器选项
-__lf = pl.scan_csv("./zsim/data/weapon.csv")
-weapon_options = __lf.select("名称").unique().collect().to_series().to_list()
+__lf_weapon = pl.scan_csv("./zsim/data/weapon.csv")
+weapon_options = __lf_weapon.select("名称").unique().collect().to_series().to_list()
 # 音擎名称->职业
 weapon_profession_map = {row["名称"]: row["职业"] for row in __lf.collect().iter_rows(named=True)}
+# 音擎名称->稀有度
+weapon_rarity_map = {
+    row["名称"]: row["稀有度"] for row in __lf_weapon.collect().iter_rows(named=True)
+}
+# 音擎名称->角色名称 (仅限部分 S 级和 A 级)
+weapon_char_map: dict[str, str] = {}
+for row in __lf_weapon.collect().iter_rows(named=True):
+    cid = row["ID"] % 1000 * 10 + 1
+    names = (
+        __lf_character
+        .filter(pl.col("CID") == cid)
+        .select("name")
+        .collect()
+        .to_series()
+        .to_list()
+    )
+    # 如果没有对应角色，默认用空字符串
+    weapon_char_map[row["名称"]] = names[0] if names else ""
 
 # 驱动盘套装选项
-__lf = pl.scan_csv("./zsim/data/equip_set_2pc.csv")
+__lf_equip = pl.scan_csv("./zsim/data/equip_set_2pc.csv")
 equip_set_ids = (
-    __lf.select("set_ID")
+    __lf_equip.select("set_ID")
     .filter(pl.col("set_ID").is_not_null())
     .unique()
     .collect()
@@ -216,5 +243,7 @@ class IDDuplicateError(Exception):
 
     pass
 
-
-del __lf  # 确保在文件末尾删除临时变量
+# 确保在文件末尾删除临时变量
+del __lf_character 
+del __lf_weapon
+del __lf_equip

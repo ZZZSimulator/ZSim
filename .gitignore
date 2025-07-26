@@ -18,6 +18,7 @@ result*
 .idea
 .vscode
 .venv
+.env
 .ipynb_checkpoints
 .run
 .env
@@ -31,6 +32,7 @@ node_modules/
 .claude/
 CLAUDE.md
 .mcp.json
+QWEN.md
 
 # 运行时生成的文件
 build*

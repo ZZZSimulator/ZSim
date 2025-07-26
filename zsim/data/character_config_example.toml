@@ -402,3 +402,27 @@ drive6 = "冲击力%"
 equip_style = "4+2"
 equip_set4 = "震星迪斯科"
 equip_set2_a = "啄木鸟电音"
+
+["柚叶"]
+name = "柚叶"
+weapon = "狸法七变化"
+weapon_level = 1
+cinema = 0
+crit_balancing = false
+crit_rate_limit = 0.95
+scATK_percent = 10
+scATK = 0
+scHP_percent = 0
+scHP = 0
+scDEF_percent = 0
+scDEF = 0
+scAnomalyProficiency = 0
+scPEN = 0
+scCRIT = 0
+scCRIT_DMG = 0
+drive4 = "攻击力%"
+drive5 = "攻击力%"
+drive6 = "异常掌控"
+equip_style = "4+2"
+equip_set4 = "摇摆爵士"
+equip_set2_a = "法厄同之歌"

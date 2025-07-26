@@ -43,6 +43,4 @@ class YuzuhaTanukiWishAtkBonus(Buff.BuffLogic):
         self.buff_instance.update_to_buff_0(buff_0=self.buff_0)
         if YUZUHA_REPORT:
             self.buff_instance.sim_instance.schedule_data.change_process_state()
-            print(
-                f"【狸之愿】柚叶核心被动触发！柚叶场外站街攻击力为{static_atk:.2f}点，【狸之愿】为队友提供{count}点攻击力！"
-            )
+            print(f"【狸之愿】柚叶核心被动触发！柚叶场外站街攻击力为{static_atk:.2f}点，【狸之愿】为队友提供{count:.2f}点攻击力！")

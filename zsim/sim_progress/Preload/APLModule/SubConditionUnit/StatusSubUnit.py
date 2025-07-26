@@ -46,6 +46,15 @@ class StatusSubUnit(BaseSubConditionUnit):
         def handler(self, enemy):
             return enemy.anomaly_bars_dict[self.anomaly_number].get_buildup_pct()
 
+    class BuildupPctHandler(CheckHandler):
+        def __init__(self, element_type_1: int, element_type_2: int):
+            self.element_type_1 = element_type_1
+            self.element_type_2 = element_type_2
+
+        def handler(self, enemy):
+            result = enemy.anomaly_bars_dict[self.element_type_1].get_buildup_pct() - enemy.anomaly_bars_dict[self.element_type_2].get_buildup_pct()
+            return result
+
     class StunPctHandler(CheckHandler):
         @classmethod
         def handler(cls, enemy):
@@ -122,7 +131,7 @@ class StatusSubUnit(BaseSubConditionUnit):
     class AssultHandler(CheckHandler):
         @classmethod
         def handler(cls, enemy):
-            return enemy.dynamic.assult
+            return enemy.dynamic.assault
 
     class FrostbiteHandler(CheckHandler):
         @classmethod
@@ -155,12 +164,13 @@ class StatusSubUnit(BaseSubConditionUnit):
         "is_under_anomaly": ActiveAnomalyHandler,
         "is_shock": ShockHandler,
         "is_burn": BurnHandler,
-        "is_assult": AssultHandler,
+        "is_assault": AssultHandler,
         "is_frostbite": FrostbiteHandler,
         "is_frost_frostbite": FrostFrostbiteHandler,
         "is_corruption": CorruptionHandler,
         "quick_assist_available": QuickAssistHandler,
         "assist_waiting_for_anwser": WaitingAssistHandler,
+        "buildup_pct_delta": BuildupPctHandler
     }
 
     def check_myself(
@@ -178,6 +188,11 @@ class StatusSubUnit(BaseSubConditionUnit):
             if "anomaly_pct" in self.check_stat:
                 anomaly_number = int(self.check_stat[-1])
                 handler = self.HANDLE_MAP["anomaly_pct"](anomaly_number)
+            elif "buildup_pct_delta" in self.check_stat:
+                stat_str = self.check_stat.strip().split("_")
+                anomaly_number_1 = int(stat_str[-1])
+                anomaly_number_2 = int(stat_str[-2])
+                handler = self.HANDLE_MAP["buildup_pct_delta"](anomaly_number_1, anomaly_number_2)
             else:
                 handler_cls = self.HANDLE_MAP.get(self.check_stat)
                 handler = handler_cls() if handler_cls else None

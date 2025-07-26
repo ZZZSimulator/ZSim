@@ -14,7 +14,7 @@ class BuffXLogicName(Buff.BuffLogic):
         self.xjudge = self.special_judge_logic
         self.equipper = None
         self.buff_0 = None
-        self.record = None
+        self.record: BuffXLogicNameRecord | None = None
 
     def get_prepared(self, **kwargs):
         return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)

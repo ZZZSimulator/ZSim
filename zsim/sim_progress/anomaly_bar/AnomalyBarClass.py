@@ -21,7 +21,6 @@ class AnomalyBar:
     sim_instance: "Simulator"
     element_type: int = 0  # 属性种类编号(1~5)
     is_disorder: bool = False  # 是否是紊乱实例
-    is_full: bool = False  # 是否积满了
     current_ndarray: np.ndarray | None = None  # 当前快照总和
     current_anomaly: np.float64 | None = None  # 当前已经累计的积蓄值
     current_effective_anomaly: np.float64 | None = None  # 有效积蓄值（参与快照的）
@@ -45,6 +44,10 @@ class AnomalyBar:
         self.current_ndarray: np.ndarray = np.zeros((1, 1), dtype=np.float64)
         self.current_anomaly: np.float64 = np.float64(0)
         self.UUID = uuid.uuid4()
+
+    @property
+    def is_full(self):
+        return self.current_anomaly >= self.max_anomaly
 
     def remaining_tick(self):
         timetick = self.sim_instance.tick
@@ -133,7 +136,6 @@ class AnomalyBar:
         重置和属性积蓄条以及快照相关的信息。
         该函数通常位于抛出异常实例之前调用，
         """
-        self.is_full = False
         self.current_effective_anomaly = np.float64(0)
         self.current_anomaly = np.float64(0)
         self.current_ndarray = np.zeros((1, self.current_ndarray.shape[0]), dtype=np.float64)
@@ -142,11 +144,12 @@ class AnomalyBar:
     def get_buildup_pct(self):
         if self.max_anomaly is None:
             return 0
+        if self.is_full:
+            return 1
         pct = self.current_anomaly / self.max_anomaly
         return pct
 
     def reset_myself(self):
-        self.is_full = False
         self.current_ndarray = None
         self.current_anomaly = None
         self.anomaly_times = 0

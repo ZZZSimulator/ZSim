@@ -39,7 +39,7 @@ class MiyabiCoreSkill_FrostBurn(Buff.BuffLogic):
         """
         self.check_record_module()
         self.get_prepared(enemy=1)
-        frostbite_now = self.record.enemy.dynamic.frostbite
+        frostbite_now = self.record.enemy.dynamic.frost_frostbite
         frostbite_statement = [self.record.last_frostbite, frostbite_now]
 
         def mode_func(a, b):
