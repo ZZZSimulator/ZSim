@@ -55,23 +55,19 @@ def buff_add_strategy(
                     # 创建新的 Buff 实例
                     adding_buff_code = str(int(copyed_buff.ft.add_buff_to)).zfill(4)
                     selected_characters = (
-                        get_selected_character(
-                            adding_buff_code, all_name_order_box, copyed_buff
-                        )
+                        get_selected_character(adding_buff_code, all_name_order_box, copyed_buff)
                         if benifit_list is None
                         else benifit_list
                     )
                     for names in selected_characters:
                         from copy import deepcopy
+
                         buff_new = deepcopy(copyed_buff)
                         buff_new.ft.operator = copyed_buff.ft.operator
                         buff_new.ft.passively_updating = copyed_buff.ft.passively_updating
                         buff_new.ft.beneficiary = copyed_buff.ft.beneficiary
                         # buff_new = Buff.create_new_from_existing(copyed_buff)
-                        if (
-                            copyed_buff.ft.simple_start_logic
-                            and buff_new.ft.simple_effect_logic
-                        ):
+                        if copyed_buff.ft.simple_start_logic and buff_new.ft.simple_effect_logic:
                             if specified_count is not None:
                                 buff_new.simple_start(
                                     tick,
@@ -103,9 +99,7 @@ def buff_add_strategy(
 
                         # 如果是敌人，更新动态 Debuff 列表
                         if names == "enemy":
-                            enemy_dynamic_debuff_list = (
-                                enemy.dynamic.dynamic_debuff_list
-                            )
+                            enemy_dynamic_debuff_list = enemy.dynamic.dynamic_debuff_list
                             debuff_existing_check = next(
                                 (
                                     existing_buff
@@ -125,8 +119,6 @@ def get_selected_character(adding_buff_code, all_name_order_box, copyed_buff):
     else:
         name_box_now = all_name_order_box[copyed_buff.ft.operator]
         selected_characters = [
-            name_box_now[i]
-            for i in range(len(name_box_now))
-            if adding_buff_code[i] == "1"
+            name_box_now[i] for i in range(len(name_box_now)) if adding_buff_code[i] == "1"
         ]
     return selected_characters

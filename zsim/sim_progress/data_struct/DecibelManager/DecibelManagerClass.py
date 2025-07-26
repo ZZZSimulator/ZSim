@@ -55,9 +55,7 @@ class Decibelmanager:
     def add_decibel_to_char(self, decibel_value, char_name, output_key):
         from zsim.sim_progress.data_struct import ScheduleRefreshData
 
-        refresh_data = ScheduleRefreshData(
-            decibel_target=(char_name,), decibel_value=decibel_value
-        )
+        refresh_data = ScheduleRefreshData(decibel_target=(char_name,), decibel_value=decibel_value)
         self.game_state["schedule_data"].event_list.append(refresh_data)
         # print(f"{char_name}因{self.REPORT_MAP[output_key]}获得了{decibel_value}点喧响值！")
 
@@ -87,9 +85,7 @@ class Decibelmanager:
                 if node.active_generation:
                     # EXPLAIN: 这里要筛选重攻击标签——因为像雅这种角色的连携技分3段，如果不筛选主动动作，那么雅就会多次吃到连携技的喧响值奖励
                     #  风险：暂未发现该筛选存在Bug风险。
-                    decibel_value = self.DECIBEL_EVENT_MAP[
-                        node.skill.trigger_buff_level
-                    ][0]
+                    decibel_value = self.DECIBEL_EVENT_MAP[node.skill.trigger_buff_level][0]
                     output_key = node.skill.trigger_buff_level
                 else:
                     decibel_value = 0

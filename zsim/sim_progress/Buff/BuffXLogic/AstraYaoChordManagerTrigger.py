@@ -19,9 +19,7 @@ class AstraYaoChordManagerTrigger(Buff.BuffLogic):
         self.xstart = self.special_start_logic
 
     def get_prepared(self, **kwargs):
-        return check_preparation(
-            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
-        )
+        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
 
     def check_record_module(self):
         if self.buff_0 is None:
@@ -38,10 +36,7 @@ class AstraYaoChordManagerTrigger(Buff.BuffLogic):
         self.get_prepared(char_CID=1311)
         skill_node = kwargs["skill_node"]
         if skill_node.skill.trigger_buff_level in [5, 7, 8]:
-            if (
-                find_tick(sim_instance=self.buff_instance.sim_instance)
-                == skill_node.preload_tick
-            ):
+            if find_tick(sim_instance=self.buff_instance.sim_instance) == skill_node.preload_tick:
                 self.record.last_update_node = skill_node
                 return True
         return False
@@ -62,6 +57,4 @@ class AstraYaoChordManagerTrigger(Buff.BuffLogic):
         )
         if ASTRAYAO_REPORT:
             self.buff_instance.sim_instance.schedule_data.change_process_state()
-            print(
-                f"检测到入场动作{skill_node.skill_tag}，尝试调用震音管理器，触发协同攻击！"
-            )
+            print(f"检测到入场动作{skill_node.skill_tag}，尝试调用震音管理器，触发协同攻击！")

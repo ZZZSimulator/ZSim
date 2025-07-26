@@ -38,9 +38,7 @@ class BreakingLegManager:
         minor_ratio = (1 - major_ratio) / 2
         ratio_tuple = (minor_ratio, major_ratio, minor_ratio)
         for i in range(len(leg_index_tuple)):
-            self.leg_group[leg_index_tuple[i]].update_myself(
-                single_hit, tick, ratio_tuple[i]
-            )
+            self.leg_group[leg_index_tuple[i]].update_myself(single_hit, tick, ratio_tuple[i])
 
     def select_target(self) -> tuple[int, int, int]:
         """选腿！"""
@@ -133,9 +131,7 @@ class SingleLeg(BaseUniqueMechanic):
         self.lost_leg_hp += single_hit.dmg_expect * ratio
         if self.broken_leg_judge(tick):
             self.event_active(single_hit, tick)
-            self.enemy.sim_instance.decibel_manager.update(
-                single_hit=single_hit, key="part_break"
-            )
+            self.enemy.sim_instance.decibel_manager.update(single_hit=single_hit, key="part_break")
 
     def reset_single_leg(self):
         """重置单条腿"""
@@ -188,9 +184,7 @@ class BreakingEvent:
         if char_cid not in self.found_char_dict:
             from zsim.sim_progress.Buff import find_char_from_CID
 
-            self.found_char_dict[char_cid] = find_char_from_CID(
-                char_cid, self.enemy.sim_instance
-            )
+            self.found_char_dict[char_cid] = find_char_from_CID(char_cid, self.enemy.sim_instance)
         char_obj = self.found_char_dict[char_cid]
         char_name = char_obj.NAME
         from zsim.sim_progress.data_struct import ScheduleRefreshData

@@ -1,5 +1,6 @@
 from .. import Buff, JudgeTools, check_preparation
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from ...Preload import SkillNode
     from ...Character.Yuzuha import Yuzuha
@@ -26,9 +27,7 @@ class YuzuhaHardCandyShotTrigger(Buff.BuffLogic):
         self.xhit = self.special_hit_logic
 
     def get_prepared(self, **kwargs):
-        return check_preparation(
-            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
-        )
+        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
 
     def check_record_module(self):
         if self.buff_0 is None:
@@ -42,9 +41,7 @@ class YuzuhaHardCandyShotTrigger(Buff.BuffLogic):
     def special_judge_logic(self, **kwargs):
         """队友的攻击命中时放行"""
         self.check_record_module()
-        self.get_prepared(
-            char_CID=1411
-        )
+        self.get_prepared(char_CID=1411)
         skill_node: "SkillNode" = kwargs.get("skill_node")
         # 筛选出队友的攻击命中
         if skill_node is None:
@@ -72,12 +69,12 @@ class YuzuhaHardCandyShotTrigger(Buff.BuffLogic):
     def special_hit_logic(self, **kwargs):
         """触发硬糖射击，首先要进行一次simple_start保证触发内置CD，然后再执行业务逻辑"""
         self.check_record_module()
-        self.get_prepared(
-            char_CID=1411, sub_exist_buff_dict=1
-        )
+        self.get_prepared(char_CID=1411, sub_exist_buff_dict=1)
         char: "Yuzuha" = self.record.char
         tick = self.buff_instance.sim_instance.tick
-        self.buff_instance.simple_start(timenow=tick, sub_exist_buff_dict=self.record.sub_exist_buff_dict)
+        self.buff_instance.simple_start(
+            timenow=tick, sub_exist_buff_dict=self.record.sub_exist_buff_dict
+        )
         char.spawn_hard_candy_shot(update_signal=self.record.update_signal)
         self.record.last_update_tick = tick
         self.record.update_signal = None
@@ -92,4 +89,3 @@ class YuzuhaHardCandyShotTrigger(Buff.BuffLogic):
             return True
         else:
             return False
-

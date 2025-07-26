@@ -21,14 +21,10 @@ class PreloadData:
         self.preload_action: list[SkillNode] = []  # 最终return返回给外部申请的数据结构
         from zsim.sim_progress.Character.skill_class import Skill
 
-        self.skills: list[Skill] = (
-            skills  # 用于创建SkillNode，是SkillNode构造函数的必要参数。
-        )
+        self.skills: list[Skill] = skills  # 用于创建SkillNode，是SkillNode构造函数的必要参数。
 
         self.personal_node_stack: dict[int, NodeStack] = {}  # 个人的技能栈
-        self.current_node_stack: NodeStack = NodeStack(
-            length=5
-        )  # Preload阶段的总技能栈
+        self.current_node_stack: NodeStack = NodeStack(length=5)  # Preload阶段的总技能栈
         self.latest_active_generation_node: SkillNode | None = (
             None  # 最近一次主动生成的skillnode，#TODO：可能是无用参数！
         )
@@ -69,9 +65,7 @@ class PreloadData:
                 self.force_change_action(node)
         if self.personal_node_stack[char_cid].is_empty():
             """检测角色的第一个动作抛出。"""
-            self.sim_instance.listener_manager.broadcast_event(
-                event=node, signal=LBS.ENTER_BATTLE
-            )
+            self.sim_instance.listener_manager.broadcast_event(event=node, signal=LBS.ENTER_BATTLE)
         self.personal_node_stack[char_cid].push(node)
         if node.active_generation:
             self.latest_active_generation_node = node
@@ -89,9 +83,7 @@ class PreloadData:
         action_replace_manager: ActionReplaceManager = (
             self.sim_instance.preload.strategy.apl_engine.apl.action_replace_manager
         )
-        action_replace_manager.parry_aid_strategy.update_myself(
-            skill_node=node, tick=tick
-        )
+        action_replace_manager.parry_aid_strategy.update_myself(skill_node=node, tick=tick)
 
     def check_myself_before_push_node(self):
         """Confirm阶段自检"""
@@ -139,10 +131,7 @@ class PreloadData:
             )
         self.delete_mission_in_preload_data(node_be_changed)
 
-        if (
-            node_be_changed.skill.do_immediately
-            and "dodge" not in node_be_changed.skill_tag
-        ):
+        if node_be_changed.skill.do_immediately and "dodge" not in node_be_changed.skill_tag:
             raise ValueError(
                 f"{skill_node.skill_tag}正在尝试顶替一个最高优先级的技能：{node_be_changed.skill_tag}"
             )

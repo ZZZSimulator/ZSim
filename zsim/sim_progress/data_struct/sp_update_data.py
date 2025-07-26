@@ -17,9 +17,7 @@ class SPUpdateData:
     @staticmethod
     def __cal_dynamic_sp_regen(enabled_buff: Generator):
         buff_bonus: dict = cal_buff_total_bonus(enabled_buff)
-        dynamic_sp_regen = buff_bonus.get("能量自动恢复", 0) + buff_bonus.get(
-            "局内能量自动恢复", 0
-        )
+        dynamic_sp_regen = buff_bonus.get("能量自动恢复", 0) + buff_bonus.get("局内能量自动恢复", 0)
         return dynamic_sp_regen
 
     def get_sp_regen(self) -> float:
@@ -38,9 +36,7 @@ class ScheduleRefreshData:
     ):
         # 避免可变默认参数
         self.sp_target: tuple[str] = sp_target if sp_target is not None else ("",)
-        self.decibel_target: tuple[str] = (
-            decibel_target if decibel_target is not None else ("",)
-        )
+        self.decibel_target: tuple[str] = decibel_target if decibel_target is not None else ("",)
 
         # 类型检查和异常处理
         if not isinstance(sp_value, (float, int)):
@@ -52,9 +48,7 @@ class ScheduleRefreshData:
         self.decibel_value = decibel_value
 
         # 输入验证
-        if not self.sp_target or not all(
-            isinstance(item, str) for item in self.sp_target
-        ):
+        if not self.sp_target or not all(isinstance(item, str) for item in self.sp_target):
             raise ValueError("sp_target must be a non-empty tuple of strings")
         if not self.decibel_target or not all(
             isinstance(item, str) for item in self.decibel_target

@@ -19,9 +19,7 @@ class LunarNoviluna(Buff.BuffLogic):
         self.record = None
 
     def get_prepared(self, **kwargs):
-        return check_preparation(
-            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
-        )
+        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
 
     def check_record_module(self):
         if self.equipper is None:
@@ -42,9 +40,7 @@ class LunarNoviluna(Buff.BuffLogic):
 
         from zsim.sim_progress.data_struct import ScheduleRefreshData
 
-        event_list = JudgeTools.find_event_list(
-            sim_instance=self.buff_instance.sim_instance
-        )
+        event_list = JudgeTools.find_event_list(sim_instance=self.buff_instance.sim_instance)
         energy_value = self.record.enegy_value_map[self.buff_instance.ft.refinement]
         refresh_data = ScheduleRefreshData(
             sp_target=(self.record.char.NAME,),

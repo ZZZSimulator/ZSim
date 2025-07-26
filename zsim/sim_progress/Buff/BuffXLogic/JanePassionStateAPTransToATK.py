@@ -31,9 +31,7 @@ class JanePassionStateAPTransToATK(Buff.BuffLogic):
         self.xexit = self.special_exit_logic
 
     def get_prepared(self, **kwargs):
-        return check_preparation(
-            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
-        )
+        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
 
     def check_record_module(self):
         if self.buff_0 is None:
@@ -47,9 +45,7 @@ class JanePassionStateAPTransToATK(Buff.BuffLogic):
     def special_judge_logic(self, **kwargs):
         """精通转攻击力部分的触发行为与触发器对齐；"""
         self.check_record_module()
-        self.get_prepared(
-            char_CID=1301, trigger_buff_0=("简", "Buff-角色-简-狂热状态触发器")
-        )
+        self.get_prepared(char_CID=1301, trigger_buff_0=("简", "Buff-角色-简-狂热状态触发器"))
         if self.record.trigger_buff_0.dy.active:
             return True
         else:
@@ -65,17 +61,13 @@ class JanePassionStateAPTransToATK(Buff.BuffLogic):
             enemy=1,
             sub_exist_buff_dict=1,
         )
-        mul_data = Mul(
-            self.record.enemy, self.record.dynamic_buff_list, self.record.char
-        )
+        mul_data = Mul(self.record.enemy, self.record.dynamic_buff_list, self.record.char)
         ap = Cal.AnomalyMul.cal_ap(mul_data)
         count = floor(
             max(ap - 120, 0)
         )  # 超过120点的部分，每1点叠1层，这里应该是向下取证，比如120.1，那就不叠层。
         tick = find_tick(sim_instance=self.buff_instance.sim_instance)
-        self.buff_instance.simple_start(
-            tick, self.record.sub_exist_buff_dict, no_count=1
-        )
+        self.buff_instance.simple_start(tick, self.record.sub_exist_buff_dict, no_count=1)
         self.buff_instance.dy.count = count
         self.buff_instance.update_to_buff_0(self.buff_0)
 

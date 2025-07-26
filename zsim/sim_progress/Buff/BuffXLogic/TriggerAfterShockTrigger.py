@@ -20,9 +20,7 @@ class TriggerAfterShockTrigger(Buff.BuffLogic):
         self.xhit = self.special_hit_logic
 
     def get_prepared(self, **kwargs):
-        return check_preparation(
-            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
-        )
+        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
 
     def check_record_module(self):
         if self.buff_0 is None:
@@ -85,6 +83,4 @@ class TriggerAfterShockTrigger(Buff.BuffLogic):
         )
         if after_shock_tag is not None:
             insert_tuple = (after_shock_tag, False, 0)
-            self.record.preload_data.preload_action_list_before_confirm.append(
-                insert_tuple
-            )
+            self.record.preload_data.preload_action_list_before_confirm.append(insert_tuple)

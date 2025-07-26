@@ -8,9 +8,7 @@ from zsim.sim_progress.Preload.APLModule.SubConditionUnit import BaseSubConditio
 
 class BuffSubUnit(BaseSubConditionUnit):
     def __init__(self, priority: int, sub_condition_dict: dict = None, mode=0):
-        super().__init__(
-            priority=priority, sub_condition_dict=sub_condition_dict, mode=mode
-        )
+        super().__init__(priority=priority, sub_condition_dict=sub_condition_dict, mode=mode)
         self.buff_0 = None
         self.char = None
         self.apl_warnning_dict = {}

@@ -96,9 +96,7 @@ class AfterShockManager:
     def __init__(self, char_instance):
         self.char = char_instance
         normal_after_shock_cd = 180 if self.char.cinema < 1 else 120
-        self.normal_after_shock = AfterShock(
-            "1361_CoAttack_A", normal_after_shock_cd, mode=0
-        )
+        self.normal_after_shock = AfterShock("1361_CoAttack_A", normal_after_shock_cd, mode=0)
         self.strong_after_shock = AfterShock("1361_CoAttack_1", 300, mode=1)
         self.coordinated_support_manager = CoordinatedSupportManager()
 
@@ -111,18 +109,15 @@ class AfterShockManager:
             return None
         skill_node = loading_mission.mission_node
         """优先判断强协同攻击: 只有重击的最后一跳才能触发！"""
-        if (
-            tick - 1 < loading_mission.get_last_hit() <= tick
-            and skill_node.skill.heavy_attack
-        ):
+        if tick - 1 < loading_mission.get_last_hit() <= tick and skill_node.skill.heavy_attack:
             if skill_node.skill.trigger_buff_level in [2, 6, 9]:
                 if self.strong_after_shock.is_ready(skill_node, tick):
                     if self.char.get_resources()[1] >= 5:
                         if self.strong_after_shock.complex_cd_manager.is_available(
                             skill_node, tick
                         ):
-                            strong_after_shock_tag = (
-                                self.strong_after_shock.after_shock_happend(tick)
+                            strong_after_shock_tag = self.strong_after_shock.after_shock_happend(
+                                tick
                             )
                             self.char.update_purge(strong_after_shock_tag)
                             return strong_after_shock_tag
@@ -138,9 +133,7 @@ class AfterShockManager:
         if skill_node.skill.trigger_buff_level in [0, 1, 3, 4, 7]:
             if self.normal_after_shock.is_ready(skill_node, tick):
                 if self.char.get_resources()[1] >= 3:
-                    normal_after_shock_tag = (
-                        self.normal_after_shock.after_shock_happend(tick)
-                    )
+                    normal_after_shock_tag = self.normal_after_shock.after_shock_happend(tick)
                     self.char.update_purge(normal_after_shock_tag)
                     return normal_after_shock_tag
                 # else:

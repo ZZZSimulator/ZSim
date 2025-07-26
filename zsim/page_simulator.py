@@ -185,13 +185,9 @@ def page_simulator():
                     # Determine the default selected function based on config
                     default_function_index = 0  # Default to the first function
                     if parallel_cfg["adjust_sc"]["enabled"]:
-                        default_function_index = SIMULATION_FUNCTIONS.index(
-                            "属性收益曲线"
-                        )
+                        default_function_index = SIMULATION_FUNCTIONS.index("属性收益曲线")
                     elif parallel_cfg["adjust_weapon"]["enabled"]:
-                        default_function_index = SIMULATION_FUNCTIONS.index(
-                            "音擎伤害期望对比"
-                        )
+                        default_function_index = SIMULATION_FUNCTIONS.index("音擎伤害期望对比")
 
                     selected_func = st.radio(
                         "模拟功能",
@@ -255,9 +251,7 @@ def page_simulator():
                             unsafe_allow_html=True,
                         )
                         # 模拟武器列表
-                        default_weapon_list_cfg = parallel_cfg["adjust_weapon"][
-                            "weapon_list"
-                        ]
+                        default_weapon_list_cfg = parallel_cfg["adjust_weapon"]["weapon_list"]
 
                         # Use a list of selectboxes and number inputs for weapon and level
                         weapon_configs = []
@@ -316,9 +310,7 @@ def page_simulator():
                         with open(CONFIG_PATH, "r+", encoding="utf-8") as f:
                             config = json.load(f)
                             config["parallel_mode"]["enabled"] = mode_bool
-                            config["parallel_mode"]["adjust_char"] = int(
-                                adjust_char.split("号")[0]
-                            )
+                            config["parallel_mode"]["adjust_char"] = int(adjust_char.split("号")[0])
                             if selected_func == SIMULATION_FUNCTIONS[0]:  # 属性收益曲线
                                 config["parallel_mode"]["adjust_sc"] = {
                                     "enabled": True,
@@ -330,9 +322,7 @@ def page_simulator():
                                     "enabled": False,
                                     "weapon_list": DEFAULT_WEAPON_LIST,
                                 }
-                            elif (
-                                selected_func == SIMULATION_FUNCTIONS[1]
-                            ):  # 音擎伤害期望对比
+                            elif selected_func == SIMULATION_FUNCTIONS[1]:  # 音擎伤害期望对比
                                 config["parallel_mode"]["adjust_sc"] = {
                                     "enabled": False,
                                     "sc_range": list(DEFAULT_SC_RANGE),
@@ -384,7 +374,8 @@ def page_simulator():
                 if (
                     st.button(
                         "开始模拟-单进程",
-                        disabled=st.session_state["simulation_running"] or st.session_state.get("enemy_config_unsaved", False),
+                        disabled=st.session_state["simulation_running"]
+                        or st.session_state.get("enemy_config_unsaved", False),
                         type="primary",
                     )
                     and not st.session_state["simulation_running"]
@@ -397,9 +388,7 @@ def page_simulator():
                     st.rerun(scope="fragment")
                 elif not st.session_state["simulation_running"]:
                     st.stop()
-            with st.spinner(
-                "单进程模拟中，这可能会持续数十秒，请稍候...", show_time=True
-            ):
+            with st.spinner("单进程模拟中，这可能会持续数十秒，请稍候...", show_time=True):
                 if not NEW_SIM_BOOT:
                     future = get_executor().submit(go_single_subprocess, stop_tick)
                 else:
@@ -420,7 +409,8 @@ def page_simulator():
             with col1:
                 if st.button(
                     "开始模拟-多进程",
-                    disabled=st.session_state["simulation_running"] or st.session_state.get("enemy_config_unsaved", False),
+                    disabled=st.session_state["simulation_running"]
+                    or st.session_state.get("enemy_config_unsaved", False),
                     type="primary",
                 ):
                     allow_simulation = show_apl_judge_result()
@@ -431,19 +421,13 @@ def page_simulator():
                     st.rerun(scope="fragment")
                 elif not st.session_state["simulation_running"]:
                     st.stop()
-            with st.spinner(
-                "多进程模拟中，这可能会持续数十秒，请稍候...", show_time=True
-            ):
+            with st.spinner("多进程模拟中，这可能会持续数十秒，请稍候...", show_time=True):
                 # 每个进程的参数
                 run_turn_uuid = PARALLEL_RUN_PREFIX + str(
                     uuid.uuid4()
                 )  # 为本轮并行运行生成统一的UUID
-                cfg_dump_dir = (
-                    RESULTS_DIR_PREFIX + run_turn_uuid + PARALLEL_CONFIG_SUFFIX
-                )
-                os.makedirs(
-                    os.path.dirname(cfg_dump_dir), exist_ok=True
-                )  # 创建结果文件夹
+                cfg_dump_dir = RESULTS_DIR_PREFIX + run_turn_uuid + PARALLEL_CONFIG_SUFFIX
+                os.makedirs(os.path.dirname(cfg_dump_dir), exist_ok=True)  # 创建结果文件夹
 
                 # 将配置存入结果文件根目录
                 with open(cfg_dump_dir, "w", encoding="utf-8") as f:

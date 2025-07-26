@@ -17,9 +17,7 @@ class JanePassionStateTrigger(Buff.BuffLogic):
         self.xexit = self.special_exit_logic
 
     def get_prepared(self, **kwargs):
-        return check_preparation(
-            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
-        )
+        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
 
     def check_record_module(self):
         if self.buff_0 is None:
@@ -36,9 +34,7 @@ class JanePassionStateTrigger(Buff.BuffLogic):
         self.get_prepared(char_CID=1301)
         passion_state = self.record.char.get_special_stats().get("狂热状态")
         if passion_state is None:
-            raise ValueError(
-                f"{self.buff_instance.ft.index} 的xjudge模块并未获取到简的狂热状态！"
-            )
+            raise ValueError(f"{self.buff_instance.ft.index} 的xjudge模块并未获取到简的狂热状态！")
         if passion_state:
             return True
         else:

@@ -26,9 +26,7 @@ class SchedulePreload:
         if self.preload_data is None:
             from zsim.sim_progress.Buff import JudgeTools
 
-            self.preload_data = JudgeTools.find_preload_data(
-                sim_instance=self.sim_instance
-            )
+            self.preload_data = JudgeTools.find_preload_data(sim_instance=self.sim_instance)
         info_tuple = (self.skill_tag, self.active_generation, self.apl_priority)
         self.preload_data.external_add_skill(info_tuple)
 
@@ -51,10 +49,7 @@ def schedule_preload_event_factory(
         raise ValueError("preload_tick_list和skill_tag_list的长度不一致")
     if apl_priority_list is not None and len(apl_priority_list) != event_count:
         raise ValueError("apl_priority_list和skill_tag_list的长度不一致")
-    if (
-        active_generation_list is not None
-        and len(active_generation_list) != event_count
-    ):
+    if active_generation_list is not None and len(active_generation_list) != event_count:
         raise ValueError("active_generation_list和skill_tag_list的长度不一致")
     for i in range(event_count):
         preload_tick = preload_tick_list[i]

@@ -65,9 +65,7 @@ def _init_skill_tag_mapping() -> dict[str, str]:
             },
         )
         mapping = (
-            df.select("skill_tag", "skill_text", "INSTRUCTION")
-            .collect()
-            .to_dict(as_series=False)
+            df.select("skill_tag", "skill_text", "INSTRUCTION").collect().to_dict(as_series=False)
         )
         return {
             _tag: f"{_text if _text else ''}{f' - {_instruction}' if _instruction else ''}"
@@ -107,9 +105,7 @@ default_chars = [
 __lf_character = pl.scan_csv("./zsim/data/character.csv")
 char_options = __lf_character.select("name").unique().collect().to_series().to_list()
 # 角色名称->职业特性
-char_profession_map = {
-    row["name"]: row["角色特性"] for row in __lf_character.collect().iter_rows(named=True)
-}
+char_profession_map = {row["name"]: row["角色特性"] for row in __lf.collect().iter_rows(named=True)}
 
 # 职业特性->角色名称列表
 profession_chars_map = {}
@@ -124,9 +120,7 @@ profession_chars_map["不限特性"] = char_options
 __lf_weapon = pl.scan_csv("./zsim/data/weapon.csv")
 weapon_options = __lf_weapon.select("名称").unique().collect().to_series().to_list()
 # 音擎名称->职业
-weapon_profession_map = {
-    row["名称"]: row["职业"] for row in __lf_weapon.collect().iter_rows(named=True)
-}
+weapon_profession_map = {row["名称"]: row["职业"] for row in __lf.collect().iter_rows(named=True)}
 # 音擎名称->稀有度
 weapon_rarity_map = {
     row["名称"]: row["稀有度"] for row in __lf_weapon.collect().iter_rows(named=True)

@@ -29,9 +29,7 @@ class SeveredInnocenceCritDMGBonus(Buff.BuffLogic):
         self.xstart = self.special_start_logic
 
     def get_prepared(self, **kwargs):
-        return check_preparation(
-            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
-        )
+        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
 
     def check_record_module(self):
         if self.equipper is None:
@@ -57,13 +55,9 @@ class SeveredInnocenceCritDMGBonus(Buff.BuffLogic):
         _skill_node = kwargs.get("skill_node", None)
         _loading_mission = kwargs.get("loading_mission", None)
         if _skill_node is None:
-            raise ValueError(
-                f"{self.buff_instance.ft.index}的xjudge函数并未获取到skill_node"
-            )
+            raise ValueError(f"{self.buff_instance.ft.index}的xjudge函数并未获取到skill_node")
         if _loading_mission is None:
-            raise ValueError(
-                f"{self.buff_instance.ft.index}的xjudge函数并未获取到loading_mission"
-            )
+            raise ValueError(f"{self.buff_instance.ft.index}的xjudge函数并未获取到loading_mission")
         from zsim.sim_progress.Preload import SkillNode
 
         if not isinstance(_skill_node, SkillNode):
@@ -104,9 +98,7 @@ class SeveredInnocenceCritDMGBonus(Buff.BuffLogic):
             self.record.active_tick_box[update_signal]["end"] = (
                 tick + self.buff_instance.ft.maxduration
             )
-        self.buff_instance.simple_start(
-            tick, self.record.sub_exist_buff_dict, no_count=1
-        )
+        self.buff_instance.simple_start(tick, self.record.sub_exist_buff_dict, no_count=1)
         self.buff_instance.dy.built_in_buff_box = []
         for _mode_index, _sub_dict in self.record.active_tick_box.items():
             if self.record.active_tick_box[_mode_index]["end"] > tick:

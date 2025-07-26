@@ -5,14 +5,16 @@ from pydantic import BaseModel, Field, RootModel
 
 # --- Payloads for different result types ---
 
+
 # --- Normal Mode ---
 class DmgResult(RootModel[dict[str, Any] | None]):
     """
-    Represents the damage calculation results.  
+    Represents the damage calculation results.
     The root is a dictionary containing various dataframes (as list of dicts)
     for detailed damage analysis. The structure is preserved from the webui
     processing functions for compatibility.
     """
+
     pass
 
 
@@ -29,6 +31,7 @@ class BuffResult(RootModel[dict[str, list[BuffTimelineBarValue]] | None]):
     The root is a dictionary where keys are source identifiers (e.g., file keys)
     and values are lists of buff timeline points.
     """
+
     pass
 
 
@@ -48,6 +51,7 @@ class AttrCurvePayload(RootModel[dict[str, dict[str, dict[str, AttrCurvePoint]]]
     Represents the attribute curve results.
     Structure: {char_name: {sc_name: {sc_value: point_data}}}
     """
+
     pass
 
 
@@ -60,6 +64,7 @@ class WeaponPayload(RootModel[dict[str, dict[str, dict[str, WeaponResultPoint]]]
     Represents the weapon comparison results.
     Structure: {char_name: {weapon_name: {weapon_level: point_data}}}
     """
+
     pass
 
 
@@ -73,11 +78,16 @@ class ParallelWeaponResultPayload(BaseModel):
     result: WeaponPayload
 
 
-class ParallelResultPayload(RootModel[Union[ParallelAttrCurveResultPayload, ParallelWeaponResultPayload]]):
-    root: Union[ParallelAttrCurveResultPayload, ParallelWeaponResultPayload] = Field(..., discriminator="func")
+class ParallelResultPayload(
+    RootModel[Union[ParallelAttrCurveResultPayload, ParallelWeaponResultPayload]]
+):
+    root: Union[ParallelAttrCurveResultPayload, ParallelWeaponResultPayload] = Field(
+        ..., discriminator="func"
+    )
 
 
 # --- Discriminated Union Models ---
+
 
 class NormalModeResult(BaseModel):
     mode: Literal["normal"]
@@ -92,6 +102,7 @@ class ParallelModeResult(BaseModel):
 
 # --- Top-level SessionResult Factory Class ---
 
+
 class SessionResult:
     """
     This class acts as a factory for creating specific result models
@@ -100,6 +111,7 @@ class SessionResult:
     and the returned object will be a validated instance of the correct model.
     This is not a Pydantic model itself, but a dispatcher.
     """
+
     def __new__(cls, **kwargs: Any) -> Self | NormalModeResult | ParallelModeResult:
         # This is not a standard Pydantic model, but a factory that returns one.
         # It's designed to match the instantiation pattern in the controller.

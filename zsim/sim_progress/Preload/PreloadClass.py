@@ -17,9 +17,7 @@ class PreloadClass:
         sim_instance: "Simulator" = None,
         **kwargs,
     ):
-        self.preload_data = PreloadData(
-            skills, load_data=load_data, sim_instance=sim_instance
-        )
+        self.preload_data = PreloadData(skills, load_data=load_data, sim_instance=sim_instance)
         self.apl_path = apl_path
         self.strategy = SwapCancelStrategy(self.preload_data, apl_path)
 

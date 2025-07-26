@@ -124,9 +124,7 @@ class ChordCoattackManager:
             """单个触发器类"""
 
             def __init__(self, manager_instance, cd: int):
-                self.manager: ChordCoattackManager.QuickAssistTriggerManager = (
-                    manager_instance
-                )
+                self.manager: ChordCoattackManager.QuickAssistTriggerManager = manager_instance
                 self.cd = cd
                 self.last_update_tick = 0
 
@@ -145,13 +143,9 @@ class ChordCoattackManager:
                 2、下一个角色不是耀嘉音——正常触发下一位角色的快速支援。
                 """
                 _operating_node = self.manager.preload_data.get_on_field_node(tick)
-                all_name_order_box = (
-                    self.manager.preload_data.load_data.all_name_order_box
-                )
+                all_name_order_box = self.manager.preload_data.load_data.all_name_order_box
                 if _operating_node is None:
-                    raise ValueError(
-                        "想要触发耀嘉音的快速支援，则当前场上必须存在角色！"
-                    )
+                    raise ValueError("想要触发耀嘉音的快速支援，则当前场上必须存在角色！")
                 current_name_order = all_name_order_box[_operating_node.char_name]
 
                 if current_name_order[1] == "耀嘉音":
@@ -274,6 +268,4 @@ class ChordCoattackManager:
             )
             if ASTRAYAO_REPORT:
                 self.manager.char.sim_instance.schedule_data.change_process_state()
-                print(
-                    f"核心被动触发器激活！为{benifit_list}添加了{self.core_passive_buff_index}！"
-                )
+                print(f"核心被动触发器激活！为{benifit_list}添加了{self.core_passive_buff_index}！")

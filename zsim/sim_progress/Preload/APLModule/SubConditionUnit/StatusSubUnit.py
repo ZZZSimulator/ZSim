@@ -11,9 +11,7 @@ if TYPE_CHECKING:
 
 class StatusSubUnit(BaseSubConditionUnit):
     def __init__(self, priority: int, sub_condition_dict: dict = None, mode=0):
-        super().__init__(
-            priority=priority, sub_condition_dict=sub_condition_dict, mode=mode
-        )
+        super().__init__(priority=priority, sub_condition_dict=sub_condition_dict, mode=mode)
         self.enemy = None
 
     class CheckHandler:
@@ -104,9 +102,7 @@ class StatusSubUnit(BaseSubConditionUnit):
         @classmethod
         def handler(cls, char_cid, found_char_dict, game_state, sim_instance):
             char = find_char(found_char_dict, game_state, char_cid)
-            quick_assist_available = (
-                char.dynamic.quick_assist_manager.quick_assist_available
-            )
+            quick_assist_available = char.dynamic.quick_assist_manager.quick_assist_available
             return quick_assist_available
 
     class WaitingAssistHandler(CheckHandler):
@@ -214,7 +210,5 @@ class StatusSubUnit(BaseSubConditionUnit):
                     f"当前检查的check_stat为：{self.check_stat}，优先级为{self.priority}，暂无处理该属性的逻辑模块！"
                 )
             return self.spawn_result(
-                handler.handler(
-                    int(self.check_target), found_char_dict, game_state, sim_instance
-                )
+                handler.handler(int(self.check_target), found_char_dict, game_state, sim_instance)
             )

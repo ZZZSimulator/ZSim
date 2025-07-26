@@ -13,6 +13,7 @@ class YuzuhaSugarBurstAnomalyBuildupBonusRecord:
 
 class YuzuhaSugarBurstAnomalyBuildupBonus(Buff.BuffLogic):
     """柚叶自带Buff——彩糖花火积蓄值提升。由于数值和buff等级挂钩所以需要在这里控制层数；"""
+
     def __init__(self, buff_instance):
         super().__init__(buff_instance)
         self.buff_instance: Buff = buff_instance
@@ -22,9 +23,7 @@ class YuzuhaSugarBurstAnomalyBuildupBonus(Buff.BuffLogic):
         self.record: YuzuhaSugarBurstAnomalyBuildupBonusRecord | None = None
 
     def get_prepared(self, **kwargs):
-        return check_preparation(
-            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
-        )
+        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
 
     def check_record_module(self):
         if self.buff_0 is None:
@@ -53,9 +52,14 @@ class YuzuhaSugarBurstAnomalyBuildupBonus(Buff.BuffLogic):
         """根据技能等级生成对应层数"""
         self.check_record_module()
         self.get_prepared(char_CID=1411, na_skill_level=1, sub_exist_buff_dict=1)
-        self.buff_instance.simple_start(timenow=self.buff_instance.sim_instance.tick, sub_exist_buff_dict=self.record.sub_exist_buff_dict, no_count=1)
-        count = self.record.basic_count + self.record.na_skill_level * self.record.count_growth_per_level
+        self.buff_instance.simple_start(
+            timenow=self.buff_instance.sim_instance.tick,
+            sub_exist_buff_dict=self.record.sub_exist_buff_dict,
+            no_count=1,
+        )
+        count = (
+            self.record.basic_count
+            + self.record.na_skill_level * self.record.count_growth_per_level
+        )
         self.buff_instance.dy.count = count
         self.buff_instance.update_to_buff_0(buff_0=self.buff_0)
-
-

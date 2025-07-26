@@ -30,14 +30,10 @@ class Ellen(Character):
             if self.flash_freeze < 3:
                 if node.skill_tag in ["1191_E_EX", "1191_E_EX_A", "1191_RA_NFC"]:
                     self.flash_freeze += 1
-                    report_to_log(
-                        f"[Character] {self.NAME}的急冻充能被更新为：{self.flash_freeze}"
-                    )
+                    report_to_log(f"[Character] {self.NAME}的急冻充能被更新为：{self.flash_freeze}")
                 if node.skill_tag == "1191_RA_FC":
                     self.flash_freeze += 3
-                    report_to_log(
-                        f"[Character] {self.NAME}的急冻充能被更新为：{self.flash_freeze}"
-                    )
+                    report_to_log(f"[Character] {self.NAME}的急冻充能被更新为：{self.flash_freeze}")
             self.flash_freeze = max(self.flash_freeze, 0)
             self.flash_freeze = min(self.flash_freeze, 3)
 

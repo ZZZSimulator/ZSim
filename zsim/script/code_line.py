@@ -19,11 +19,7 @@ def count_effective_lines(directory):
                             for line in lines
                             if line.strip() and not line.strip().startswith("#")
                         ]
-                    elif (
-                        file.endswith(".c")
-                        or file.endswith(".cpp")
-                        or file.endswith(".h")
-                    ):
+                    elif file.endswith(".c") or file.endswith(".cpp") or file.endswith(".h"):
                         effective_lines = [
                             line
                             for line in lines

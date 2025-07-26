@@ -29,9 +29,7 @@ class JaneCoreSkillStrikeCritRateBonus(Buff.BuffLogic):
         self.xexit = self.special_exit_logic
 
     def get_prepared(self, **kwargs):
-        return check_preparation(
-            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
-        )
+        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
 
     def check_record_module(self):
         if self.buff_0 is None:
@@ -63,15 +61,11 @@ class JaneCoreSkillStrikeCritRateBonus(Buff.BuffLogic):
             enemy=1,
             sub_exist_buff_dict=1,
         )
-        mul_data = Mul(
-            self.record.enemy, self.record.dynamic_buff_list, self.record.char
-        )
+        mul_data = Mul(self.record.enemy, self.record.dynamic_buff_list, self.record.char)
         ap = Cal.AnomalyMul.cal_ap(mul_data)
         count = min(40 + ap * 0.16, 100)
         tick = find_tick(sim_instance=self.buff_instance.sim_instance)
-        self.buff_instance.simple_start(
-            tick, self.record.sub_exist_buff_dict, no_count=1
-        )
+        self.buff_instance.simple_start(tick, self.record.sub_exist_buff_dict, no_count=1)
         self.buff_instance.dy.count = count
         self.buff_instance.update_to_buff_0(self.buff_0)
 

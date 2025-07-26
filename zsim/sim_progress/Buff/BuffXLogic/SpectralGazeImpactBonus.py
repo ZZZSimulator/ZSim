@@ -21,9 +21,7 @@ class SpectralGazeImpactBonus(Buff.BuffLogic):
         self.record = None
 
     def get_prepared(self, **kwargs):
-        return check_preparation(
-            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
-        )
+        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
 
     def check_record_module(self):
         if self.equipper is None:
@@ -44,9 +42,7 @@ class SpectralGazeImpactBonus(Buff.BuffLogic):
     def special_judge_logic(self, **kwargs):
         """检查触发器buff是否是3层"""
         self.check_record_module()
-        self.get_prepared(
-            equipper="索魂影眸", trigger_buff_0=("equipper", "索魂影眸-魂锁")
-        )
+        self.get_prepared(equipper="索魂影眸", trigger_buff_0=("equipper", "索魂影眸-魂锁"))
         if self.record.trigger_buff_0.dy.active:
             if self.record.trigger_buff_0.dy.count == 3:
                 return True

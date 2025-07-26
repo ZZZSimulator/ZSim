@@ -8,9 +8,7 @@ from zsim.define import CHARACTER_DATA_PATH
 char_data = pd.read_csv(CHARACTER_DATA_PATH)
 full_char_name_list = char_data["name"].tolist()
 full_char_cid_list = char_data["CID"].tolist()
-full_char_dict = {
-    name: cid for name, cid in zip(full_char_name_list, full_char_cid_list)
-}
+full_char_dict = {name: cid for name, cid in zip(full_char_name_list, full_char_cid_list)}
 
 
 class Spawner:
@@ -121,9 +119,7 @@ def update_dropdown(char_1, char_2, char_3):
         if cid not in selected:
             filtered_options.append({"label": name, "value": cid})
         else:
-            filtered_options.append(
-                {"label": f"{name} (已选)", "value": cid, "disabled": True}
-            )
+            filtered_options.append({"label": f"{name} (已选)", "value": cid, "disabled": True})
     # 仅更新触发源的下拉框
     if triggered_id == "char-select-box-1":
         return filtered_options, dash.no_update, dash.no_update

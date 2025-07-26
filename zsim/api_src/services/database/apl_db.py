@@ -1,0 +1,402 @@
+"""
+APL数据库服务
+负责APL相关数据的数据库操作
+"""
+
+import os
+import toml
+import uuid
+import aiosqlite
+import asyncio
+from typing import Dict, List, Any, Optional
+from zsim.define import DEFAULT_APL_DIR, COSTOM_APL_DIR, SQLITE_PATH
+
+
+class APLDatabase:
+    """APL数据库操作类"""
+
+    def __init__(self):
+        """初始化APL数据库"""
+        # 确保数据库目录存在
+        os.makedirs(os.path.dirname(SQLITE_PATH), exist_ok=True)
+        # 初始化数据库表
+        asyncio.get_event_loop().run_until_complete(self._init_database())
+
+    async def _init_database(self):
+        """初始化数据库表"""
+        async with aiosqlite.connect(SQLITE_PATH) as db:
+            await db.execute("""
+                CREATE TABLE IF NOT EXISTS apl_configs (
+                    id TEXT PRIMARY KEY,
+                    title TEXT NOT NULL,
+                    author TEXT,
+                    comment TEXT,
+                    create_time TEXT,
+                    latest_change_time TEXT,
+                    content TEXT NOT NULL
+                )
+            """)
+            await db.commit()
+
+    def get_apl_templates(self) -> List[Dict[str, Any]]:
+        """获取所有APL模板"""
+        templates = []
+
+        # 获取默认APL模板
+        default_templates = self._get_apl_from_dir(DEFAULT_APL_DIR, "default")
+        templates.extend(default_templates)
+
+        # 获取自定义APL模板
+        custom_templates = self._get_apl_from_dir(COSTOM_APL_DIR, "custom")
+        templates.extend(custom_templates)
+
+        return templates
+
+    def get_apl_config(self, config_id: str) -> Optional[Dict[str, Any]]:
+        """获取特定APL配置"""
+        try:
+            return asyncio.get_event_loop().run_until_complete(
+                self._get_apl_config_async(config_id)
+            )
+        except Exception as e:
+            print(f"Error loading APL config {config_id}: {e}")
+            return None
+
+    async def _get_apl_config_async(self, config_id: str) -> Optional[Dict[str, Any]]:
+        """异步获取特定APL配置"""
+        async with aiosqlite.connect(SQLITE_PATH) as db:
+            async with db.execute(
+                "SELECT title, author, comment, create_time, latest_change_time, content FROM apl_configs WHERE id = ?",
+                (config_id,),
+            ) as cursor:
+                row = await cursor.fetchone()
+                if row:
+                    # 解析TOML内容
+                    content = toml.loads(row[5])
+                    return {
+                        "title": row[0],
+                        "author": row[1],
+                        "comment": row[2],
+                        "create_time": row[3],
+                        "latest_change_time": row[4],
+                        **content,
+                    }
+                return None
+
+    def create_apl_config(self, config_data: Dict[str, Any]) -> str:
+        """创建新的APL配置"""
+        # 生成唯一ID
+        config_id = str(uuid.uuid4())
+
+        try:
+            asyncio.get_event_loop().run_until_complete(
+                self._create_apl_config_async(config_id, config_data)
+            )
+            return config_id
+        except Exception as e:
+            raise Exception(f"Failed to create APL config: {e}")
+
+    async def _create_apl_config_async(self, config_id: str, config_data: Dict[str, Any]) -> None:
+        """异步创建新的APL配置"""
+        # 提取通用信息
+        title = config_data.get("title", "")
+        author = config_data.get("author", "")
+        comment = config_data.get("comment", "")
+        create_time = config_data.get("create_time", "")
+        latest_change_time = config_data.get("latest_change_time", "")
+
+        # 创建要存储的配置数据副本（不包含通用信息）
+        content_data = config_data.copy()
+        content_data.pop("title", None)
+        content_data.pop("author", None)
+        content_data.pop("comment", None)
+        content_data.pop("create_time", None)
+        content_data.pop("latest_change_time", None)
+
+        # 将配置数据转换为TOML格式
+        content = toml.dumps(content_data)
+
+        async with aiosqlite.connect(SQLITE_PATH) as db:
+            await db.execute(
+                """
+                INSERT INTO apl_configs 
+                (id, title, author, comment, create_time, latest_change_time, content)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                """,
+                (config_id, title, author, comment, create_time, latest_change_time, content),
+            )
+            await db.commit()
+
+    def update_apl_config(self, config_id: str, config_data: Dict[str, Any]) -> bool:
+        """更新APL配置"""
+        try:
+            return asyncio.get_event_loop().run_until_complete(
+                self._update_apl_config_async(config_id, config_data)
+            )
+        except Exception as e:
+            print(f"Error updating APL config {config_id}: {e}")
+            return False
+
+    async def _update_apl_config_async(self, config_id: str, config_data: Dict[str, Any]) -> bool:
+        """异步更新APL配置"""
+        # 提取通用信息
+        title = config_data.get("title", "")
+        author = config_data.get("author", "")
+        comment = config_data.get("comment", "")
+        create_time = config_data.get("create_time", "")
+        latest_change_time = config_data.get("latest_change_time", "")
+
+        # 创建要存储的配置数据副本（不包含通用信息）
+        content_data = config_data.copy()
+        content_data.pop("title", None)
+        content_data.pop("author", None)
+        content_data.pop("comment", None)
+        content_data.pop("create_time", None)
+        content_data.pop("latest_change_time", None)
+
+        # 将配置数据转换为TOML格式
+        content = toml.dumps(content_data)
+
+        async with aiosqlite.connect(SQLITE_PATH) as db:
+            cursor = await db.execute(
+                """
+                UPDATE apl_configs 
+                SET title = ?, author = ?, comment = ?, create_time = ?, latest_change_time = ?, content = ?
+                WHERE id = ?
+                """,
+                (title, author, comment, create_time, latest_change_time, content, config_id),
+            )
+            await db.commit()
+            return cursor.rowcount > 0
+
+    def delete_apl_config(self, config_id: str) -> bool:
+        """删除APL配置"""
+        try:
+            return asyncio.get_event_loop().run_until_complete(
+                self._delete_apl_config_async(config_id)
+            )
+        except Exception as e:
+            print(f"Error deleting APL config {config_id}: {e}")
+            return False
+
+    async def _delete_apl_config_async(self, config_id: str) -> bool:
+        """异步删除APL配置"""
+        async with aiosqlite.connect(SQLITE_PATH) as db:
+            cursor = await db.execute("DELETE FROM apl_configs WHERE id = ?", (config_id,))
+            await db.commit()
+            return cursor.rowcount > 0
+
+    def export_apl_config(self, config_id: str, file_path: str) -> bool:
+        """导出APL配置到TOML文件"""
+        try:
+            config = self.get_apl_config(config_id)
+            if config:
+                # 将配置数据转换为TOML格式并保存到文件
+                with open(file_path, "w", encoding="utf-8") as f:
+                    toml.dump(config, f)
+                return True
+            else:
+                return False
+        except Exception as e:
+            print(f"Error exporting APL config {config_id}: {e}")
+            return False
+
+    def import_apl_config(self, file_path: str) -> Optional[str]:
+        """从TOML文件导入APL配置"""
+        try:
+            # 读取TOML文件
+            with open(file_path, "r", encoding="utf-8") as f:
+                config_data = toml.load(f)
+
+            # 生成唯一ID
+            config_id = str(uuid.uuid4())
+
+            # 保存到数据库
+            asyncio.get_event_loop().run_until_complete(
+                self._create_apl_config_async(config_id, config_data)
+            )
+            return config_id
+        except Exception as e:
+            print(f"Error importing APL config from {file_path}: {e}")
+            return None
+
+    def get_apl_files(self) -> List[Dict[str, Any]]:
+        """获取所有APL文件列表"""
+        files = []
+
+        # 获取默认APL文件
+        default_files = self._get_apl_files_from_dir(DEFAULT_APL_DIR, "default")
+        files.extend(default_files)
+
+        # 获取自定义APL文件
+        custom_files = self._get_apl_files_from_dir(COSTOM_APL_DIR, "custom")
+        files.extend(custom_files)
+
+        return files
+
+    def get_apl_file_content(self, file_id: str) -> Optional[Dict[str, Any]]:
+        """获取APL文件内容"""
+        # 根据file_id获取对应的APL文件内容
+        # 解析file_id获取source和相对路径
+        try:
+            if file_id.startswith("default_"):
+                source = "default"
+                rel_path = file_id[len("default_") :]
+                base_dir = DEFAULT_APL_DIR
+            elif file_id.startswith("custom_"):
+                source = "custom"
+                rel_path = file_id[len("custom_") :]
+                base_dir = COSTOM_APL_DIR
+            else:
+                return None
+
+            file_path = os.path.join(base_dir, rel_path)
+
+            if os.path.exists(file_path):
+                with open(file_path, "r", encoding="utf-8") as f:
+                    content = f.read()
+
+                return {"file_id": file_id, "content": content, "file_path": file_path}
+            else:
+                return None
+        except Exception as e:
+            print(f"Error reading APL file {file_id}: {e}")
+            return None
+
+    def create_apl_file(self, file_data: Dict[str, Any]) -> str:
+        """创建新的APL文件"""
+        # 实现创建APL文件的逻辑
+        try:
+            name = file_data.get("name", "new_apl.toml")
+            content = file_data.get("content", "")
+
+            # 确保文件名以.toml结尾
+            if not name.endswith(".toml"):
+                name += ".toml"
+
+            # 保存到自定义目录
+            file_path = os.path.join(COSTOM_APL_DIR, name)
+
+            # 确保目录存在
+            os.makedirs(COSTOM_APL_DIR, exist_ok=True)
+
+            # 写入文件
+            with open(file_path, "w", encoding="utf-8") as f:
+                f.write(content)
+
+            # 生成文件ID
+            file_id = f"custom_{name}"
+            return file_id
+        except Exception as e:
+            raise Exception(f"Failed to create APL file: {e}")
+
+    def update_apl_file(self, file_id: str, content: str) -> bool:
+        """更新APL文件内容"""
+        # 实现更新APL文件内容的逻辑
+        try:
+            # 解析file_id获取source和相对路径
+            if file_id.startswith("default_"):
+                # 不允许更新默认文件
+                return False
+            elif file_id.startswith("custom_"):
+                source = "custom"
+                rel_path = file_id[len("custom_") :]
+                base_dir = COSTOM_APL_DIR
+            else:
+                return False
+
+            file_path = os.path.join(base_dir, rel_path)
+
+            if os.path.exists(file_path):
+                with open(file_path, "w", encoding="utf-8") as f:
+                    f.write(content)
+                return True
+            else:
+                return False
+        except Exception as e:
+            print(f"Error updating APL file {file_id}: {e}")
+            return False
+
+    def delete_apl_file(self, file_id: str) -> bool:
+        """删除APL文件"""
+        # 实现删除APL文件的逻辑
+        try:
+            # 解析file_id获取source和相对路径
+            if file_id.startswith("default_"):
+                # 不允许删除默认文件
+                return False
+            elif file_id.startswith("custom_"):
+                source = "custom"
+                rel_path = file_id[len("custom_") :]
+                base_dir = COSTOM_APL_DIR
+            else:
+                return False
+
+            file_path = os.path.join(base_dir, rel_path)
+
+            if os.path.exists(file_path):
+                os.remove(file_path)
+                return True
+            else:
+                return False
+        except Exception as e:
+            print(f"Error deleting APL file {file_id}: {e}")
+            return False
+
+    def _get_apl_from_dir(self, apl_dir: str, source_type: str) -> List[Dict[str, Any]]:
+        """从指定目录获取APL模板"""
+        apl_list = []
+
+        if not os.path.exists(apl_dir):
+            return apl_list
+
+        for root, _, files in os.walk(apl_dir):
+            for file in files:
+                if file.endswith(".toml"):
+                    file_path = os.path.join(root, file)
+                    try:
+                        with open(file_path, "r", encoding="utf-8") as f:
+                            apl_data = toml.load(f)
+
+                        # 提取基本信息
+                        general_info = apl_data.get("general", {})
+                        apl_info = {
+                            "id": f"{source_type}_{os.path.relpath(file_path, apl_dir).replace(os.sep, '_')}",
+                            "title": general_info.get("title", ""),
+                            "author": general_info.get("author", ""),
+                            "comment": general_info.get("comment", ""),
+                            "create_time": general_info.get("create_time", ""),
+                            "latest_change_time": general_info.get("latest_change_time", ""),
+                            "source": source_type,
+                            "file_path": file_path,
+                        }
+                        apl_list.append(apl_info)
+                    except Exception as e:
+                        # 记录错误但继续处理其他文件
+                        print(f"Error loading APL file {file_path}: {e}")
+
+        return apl_list
+
+    def _get_apl_files_from_dir(self, apl_dir: str, source_type: str) -> List[Dict[str, Any]]:
+        """从指定目录获取APL文件列表"""
+        file_list = []
+
+        if not os.path.exists(apl_dir):
+            return file_list
+
+        for root, _, files in os.walk(apl_dir):
+            for file in files:
+                if file.endswith(".toml"):
+                    file_path = os.path.join(root, file)
+                    rel_path = os.path.relpath(file_path, apl_dir)
+
+                    file_info = {
+                        "id": f"{source_type}_{rel_path.replace(os.sep, '_')}",
+                        "name": file,
+                        "path": rel_path,
+                        "source": source_type,
+                        "full_path": file_path,
+                    }
+                    file_list.append(file_info)
+
+        return file_list

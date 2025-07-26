@@ -28,9 +28,7 @@ class HailstormShrineIceBonus(Buff.BuffLogic):
         self.record = None
 
     def get_prepared(self, **kwargs):
-        return check_preparation(
-            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
-        )
+        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
 
     def check_record_module(self):
         if self.equipper is None:
@@ -53,15 +51,11 @@ class HailstormShrineIceBonus(Buff.BuffLogic):
             name: getattr(self.record.enemy.dynamic, name) for name in anomaly_name_list
         }
         # 判断总异常数量是否 >= 2
-        if (
-            sum(current_anomalies.values()) >= 2
-            or sum(self.record.anomaly_state.values()) >= 2
-        ):
+        if sum(current_anomalies.values()) >= 2 or sum(self.record.anomaly_state.values()) >= 2:
             raise ValueError("当前ticks总异常数量为2！")
         # 检查是否有状态变化或满足特殊技触发条件
         has_change = any(
-            current_anomalies[name] != self.record.anomaly_state[name]
-            for name in anomaly_name_list
+            current_anomalies[name] != self.record.anomaly_state[name] for name in anomaly_name_list
         )
         if has_change or (
             action_now.mission_node.skill.trigger_buff_level == 2

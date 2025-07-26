@@ -4,9 +4,7 @@ from zsim.sim_progress.Enemy import Enemy
 from zsim.sim_progress.Report import report_buff_to_queue, report_to_log
 
 
-def update_dynamic_bufflist(
-    DYNAMIC_BUFF_DICT: dict, timetick, exist_buff_dict: dict, enemy: Enemy
-):
+def update_dynamic_bufflist(DYNAMIC_BUFF_DICT: dict, timetick, exist_buff_dict: dict, enemy: Enemy):
     """
     该函数用于更新当前正处于活跃状态的Buff，
     并且根据时间或是其他规则判断这些Buff是否应该结束。
@@ -25,17 +23,13 @@ def update_dynamic_bufflist(
                 shoud_exit = _.logic.xexit()
                 if not shoud_exit:
                     # 如果buff存在，再记录一次层数。
-                    report_buff_to_queue(
-                        charname, timetick, _.ft.index, _.dy.count, True, level=4
-                    )
+                    report_buff_to_queue(charname, timetick, _.ft.index, _.dy.count, True, level=4)
                 else:
                     remove_buff_list.append(_)
             else:
                 if _.ft.alltime:
                     # 对于alltime的buff，自然是每个tick都存在，所以每个tick都记录。
-                    report_buff_to_queue(
-                        charname, timetick, _.ft.index, _.dy.count, True, level=4
-                    )
+                    report_buff_to_queue(charname, timetick, _.ft.index, _.dy.count, True, level=4)
                     continue
                 if _.ft.individual_settled:
                     if len(_.dy.built_in_buff_box) <= 0 or timetick >= _.dy.endticks:
@@ -94,9 +88,7 @@ def KickOutBuff(
 ):
     buff.end(timetick, sub_exist_buff_dict)
     DYNAMIC_BUFF_DICT[charname].remove(buff)
-    report_to_log(
-        f"[Buff END]:{timetick}:{buff.ft.index}结束，已从动态列表移除", level=4
-    )
+    report_to_log(f"[Buff END]:{timetick}:{buff.ft.index}结束，已从动态列表移除", level=4)
     if buff.ft.is_debuff:
         enemy.dynamic.dynamic_debuff_list.remove(buff)
 
@@ -121,17 +113,13 @@ def update_dot(enemy: Enemy, timetick):
             if timetick >= _.dy.end_ticks:
                 _.end(timetick)
                 enemy.dynamic.dynamic_dot_list.remove(_)
-                report_to_log(
-                    f"[Dot END]:{timetick}:{_.ft.index}结束，已从动态列表移除", level=4
-                )
+                report_to_log(f"[Dot END]:{timetick}:{_.ft.index}结束，已从动态列表移除", level=4)
         else:
             resulrt = _.exit_judge(enemy=enemy)
             if resulrt:
                 _.end(timetick)
                 enemy.dynamic.dynamic_dot_list.remove(_)
-                report_to_log(
-                    f"[Dot END]:{timetick}:{_.ft.index}结束，已从动态列表移除", level=4
-                )
+                report_to_log(f"[Dot END]:{timetick}:{_.ft.index}结束，已从动态列表移除", level=4)
 
 
 def update_anomaly_bar(time_now: int, enemy: Enemy):

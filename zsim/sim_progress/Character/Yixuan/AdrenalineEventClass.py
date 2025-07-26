@@ -56,7 +56,9 @@ class AuricArray(BaseAdrenalineEvent):
     def __init__(self, char_instance: "Yixuan", comment: str = None):
         super().__init__(char_instance, comment)
         self.index = "玄墨极阵回能效果"
-        self.comment = "来自玄墨极阵的回能Buff，【普通攻击：玄墨极阵】期间会持续回复闪能，每秒7点，持续3秒"
+        self.comment = (
+            "来自玄墨极阵的回能Buff，【普通攻击：玄墨极阵】期间会持续回复闪能，每秒7点，持续3秒"
+        )
         self.active = False
         self.max_duration: int = 180
         self.last_active_tick: int = 0
@@ -80,9 +82,7 @@ class AuricArray(BaseAdrenalineEvent):
                 self.last_active_tick = simulator.tick
                 """激活的当前tick也需要恢复闪能，但是并不是在本方法内部执行的，而是通过Buff触发器统一在Load阶段执行。"""
                 if YIXUAN_REPORT:
-                    print(
-                        f"检测到技能{skill_node.skill_tag}（玄墨极阵）！【{self.index}】激活"
-                    )
+                    print(f"检测到技能{skill_node.skill_tag}（玄墨极阵）！【{self.index}】激活")
                     self.char.sim_instance.schedule_data.change_process_state()
 
     def apply_effect(self):
@@ -117,9 +117,7 @@ class AuricInkUndercurrent(BaseAdrenalineEvent):
                 self.active_times += 1
                 self.last_active_tick = simulator.tick
                 if YIXUAN_REPORT:
-                    print(
-                        f"检测到队友释放大招：{skill_node.skill_tag}！【{self.index}】激活"
-                    )
+                    print(f"检测到队友释放大招：{skill_node.skill_tag}！【{self.index}】激活")
                     self.char.sim_instance.schedule_data.change_process_state()
 
     def apply_effect(self):

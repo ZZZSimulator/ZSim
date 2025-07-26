@@ -16,4 +16,3 @@ class Summons(ABC):
     @abstractmethod
     def active(self):
         pass
-

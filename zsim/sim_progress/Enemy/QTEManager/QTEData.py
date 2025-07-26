@@ -44,14 +44,12 @@ class QTEData:
         )  # 最多可以触发几次QTE
         self.qte_activation_available = False  # 彩色失衡阶段——在StunJudge中被打开，在SingeQTE的merge方法中被关闭，当然，失衡阶段的结束也会关闭该参数（依旧是StunJudge）。
         self.single_qte = None  # 单次QTE的实例
-        self.__single_hit_check = (
-            lambda hit: all(
-                [
-                    hit.hitted_count == 1
-                    or hit.heavy_hit  # 第一跳、重击（通常为重攻击标签的最后一跳）均能通过判定，
-                    # hit.proactive or (not hit.proactive and 'QTE' in hit.skill_tag),  # 筛选出主动技能，所有的被动释放的技能都不能和QTE的激活行为进行互动。
-                ]
-            )
+        self.__single_hit_check = lambda hit: all(
+            [
+                hit.hitted_count == 1
+                or hit.heavy_hit  # 第一跳、重击（通常为重攻击标签的最后一跳）均能通过判定，
+                # hit.proactive or (not hit.proactive and 'QTE' in hit.skill_tag),  # 筛选出主动技能，所有的被动释放的技能都不能和QTE的激活行为进行互动。
+            ]
         )
         self.strategies_map = {
             "qte_received_box": ListMergeStrategy,
@@ -191,12 +189,12 @@ class SingleQTE:
     def __init__(self, qte_data: QTEData, single_hit: SingleHit):
         self.qte_data = qte_data
         self.qte_received_box: list[str] = []  # 用于接受QTE阶段输入的QTE skill_tag
-        self.qte_triggerable_times: int = (
-            self.qte_data.qte_triggerable_times
-        )  # 最多可以触发几次QTE
+        self.qte_triggerable_times: int = self.qte_data.qte_triggerable_times  # 最多可以触发几次QTE
         self.qte_triggered_times: int = 0  # 已经响应了几次QTE
         self.qte_activation_available = False  # 彩色失衡阶段
-        self.__is_hitted = False  # 每个SingleHit都只会被响应一次，所以这里用一个bool变量来标记是否已经被响应过。
+        self.__is_hitted = (
+            False  # 每个SingleHit都只会被响应一次，所以这里用一个bool变量来标记是否已经被响应过。
+        )
         self.active_by: SingleHit = single_hit
 
     def receive_hit(self, _single_hit: SingleHit):
@@ -233,9 +231,7 @@ class SingleQTE:
         else:
             """角色响应了QTE，释放连携技"""
             if _single_hit.skill_node.char_name == self.active_by.skill_node.char_name:
-                raise ValueError(
-                    f"{_single_hit.skill_node.char_name}  企图响应自己激发的QTE！"
-                )
+                raise ValueError(f"{_single_hit.skill_node.char_name}  企图响应自己激发的QTE！")
             self.qte_received_box.append(_single_hit.skill_tag)
 
             """QTE成功响应之后，返还1秒QTE时间"""

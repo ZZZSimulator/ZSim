@@ -36,6 +36,4 @@ class HugoCorePassiveBuffListener(BaseListener):
         """触发核心被动Buff，通过BuffAddStrategy来暴力添加Buff"""
         from zsim.sim_progress.Buff.BuffAddStrategy import buff_add_strategy
 
-        buff_add_strategy(
-            self.buff_index, benifit_list=["雨果"], sim_instance=self.sim_instance
-        )
+        buff_add_strategy(self.buff_index, benifit_list=["雨果"], sim_instance=self.sim_instance)

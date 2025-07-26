@@ -24,9 +24,7 @@ class ActionStack:
         self.length = length
         if SWAP_CANCEL:
             self.personal_stack = defaultdict(list)
-            self._swap_cancel_warning_printed = (
-                False  # 标志变量，用于控制警告信息只打印一次
-            )
+            self._swap_cancel_warning_printed = False  # 标志变量，用于控制警告信息只打印一次
 
         self.stack = []
 
@@ -46,9 +44,7 @@ class ActionStack:
         """从栈顶弹出一个元素"""
         if key:
             if not SWAP_CANCEL:
-                raise ValueError(
-                    "往ActionStack的pop方法中传入key参数时，合轴模式必须开启！"
-                )
+                raise ValueError("往ActionStack的pop方法中传入key参数时，合轴模式必须开启！")
             if key not in self.personal_stack or len(self.personal_stack[key]) == 0:
                 return None
             pop_item = self.personal_stack[key].pop()
@@ -63,9 +59,7 @@ class ActionStack:
         """查看栈顶元素"""
         if key:
             if not SWAP_CANCEL:
-                raise ValueError(
-                    "往ActionStack的peek方法中传入key参数时，合轴模式必须开启！"
-                )
+                raise ValueError("往ActionStack的peek方法中传入key参数时，合轴模式必须开启！")
             if key not in self.personal_stack or len(self.personal_stack[key]) == 0:
                 return None
             return self.personal_stack[key][-1]
@@ -121,9 +115,7 @@ class ActionStack:
     def reset_myself(self):
         if SWAP_CANCEL:
             self.personal_stack = defaultdict(list)
-            self._swap_cancel_warning_printed = (
-                False  # 标志变量，用于控制警告信息只打印一次
-            )
+            self._swap_cancel_warning_printed = False  # 标志变量，用于控制警告信息只打印一次
         self.stack = []
 
 

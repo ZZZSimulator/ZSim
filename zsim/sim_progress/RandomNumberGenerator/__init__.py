@@ -35,7 +35,6 @@ class RNG:
             self.NORMAL_TABLE_SIZE = 10000
             self.normal_table = None
 
-
     def get_seed(self) -> int:
         assert self.seed is not None
         return self.seed
@@ -80,9 +79,7 @@ class RNG:
         """生成正态分布的随机数，使用预先生成的正态分布表"""
 
         if not hasattr(self, "normal_table") or self.normal_table is None:
-            self.normal_table = np.random.normal(
-                loc=0, scale=1, size=self.NORMAL_TABLE_SIZE
-            )
+            self.normal_table = np.random.normal(loc=0, scale=1, size=self.NORMAL_TABLE_SIZE)
         rng_float = self.random_float()
         idx = int(rng_float * self.NORMAL_TABLE_SIZE)
         idx = min(idx, self.NORMAL_TABLE_SIZE - 1)

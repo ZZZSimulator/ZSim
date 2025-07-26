@@ -21,9 +21,7 @@ class SpectralGazeSpiritLock(Buff.BuffLogic):
         self.record = None
 
     def get_prepared(self, **kwargs):
-        return check_preparation(
-            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
-        )
+        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
 
     def check_record_module(self):
         if self.equipper is None:
@@ -54,9 +52,7 @@ class SpectralGazeSpiritLock(Buff.BuffLogic):
         loading_mission = kwargs.get("loading_mission")
         """逻辑外壳和专武的第一特效没有区别"""
         if skill_node is None:
-            raise ValueError(
-                f"{self.buff_instance.ft.index}的xjudge中缺少skill_node参数"
-            )
+            raise ValueError(f"{self.buff_instance.ft.index}的xjudge中缺少skill_node参数")
         from zsim.sim_progress.Preload import SkillNode
 
         if not isinstance(skill_node, SkillNode):
@@ -67,10 +63,7 @@ class SpectralGazeSpiritLock(Buff.BuffLogic):
             return False
         if not skill_node.skill.labels:
             return False
-        if (
-            skill_node.element_type == 3
-            and "aftershock_attack" in skill_node.skill.labels
-        ):
+        if skill_node.element_type == 3 and "aftershock_attack" in skill_node.skill.labels:
             if self.record.preload_data.operating_now != self.record.char.CID:
                 node_id = skill_node.get_total_instances()
                 if node_id != self.record.last_update_node_id:

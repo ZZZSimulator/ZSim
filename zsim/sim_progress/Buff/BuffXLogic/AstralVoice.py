@@ -28,9 +28,7 @@ class AstralVoice(Buff.BuffLogic):
         self.record = None
 
     def get_prepared(self, **kwargs):
-        return check_preparation(
-            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
-        )
+        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
 
     def check_record_module(self):
         if self.equipper is None:
@@ -76,10 +74,7 @@ class AstralVoice(Buff.BuffLogic):
             pass
         elif isinstance(skill_node, LoadingMission):
             skill_node = skill_node.mission_node
-        if (
-            self.record.trigger_buff_0.dy.active
-            and skill_node.skill.trigger_buff_level == 7
-        ):
+        if self.record.trigger_buff_0.dy.active and skill_node.skill.trigger_buff_level == 7:
             if skill_node.loading_mission.mission_dict.get(tick_now, None) == "start":
                 return True
             else:

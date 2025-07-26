@@ -24,9 +24,7 @@ def dump_buff_csv(result_id: str):
             raise ValueError("你tmd函数写错了！")
         buff_report_file_path = f"{result_id}/buff_log/{char_name}.csv"
         os.makedirs(os.path.dirname(buff_report_file_path), exist_ok=True)
-        df = pd.DataFrame.from_dict(
-            buffered_data[char_name], orient="index"
-        ).reset_index()
+        df = pd.DataFrame.from_dict(buffered_data[char_name], orient="index").reset_index()
         df.rename(columns={"index": "time_tick"}, inplace=True)
         df = df.sort_values(by="time_tick")
         df.to_csv(buff_report_file_path, index=False, encoding="utf-8-sig")

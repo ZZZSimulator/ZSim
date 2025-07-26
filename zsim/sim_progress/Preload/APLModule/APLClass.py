@@ -94,9 +94,7 @@ class APLClass:
 
         if self.action_replace_manager is None:
             self.action_replace_manager = ActionReplaceManager(self.preload_data)
-        result_tupe = self.action_replace_manager.action_replace_factory(
-            CID, action, tick
-        )
+        result_tupe = self.action_replace_manager.action_replace_factory(CID, action, tick)
         if result_tupe[0]:
             output = result_tupe[1]
         else:
