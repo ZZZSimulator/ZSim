@@ -18,6 +18,7 @@ result*
 .idea
 .vscode
 .venv
+.env
 .ipynb_checkpoints
 .run
 .mypy_cache
@@ -28,6 +29,8 @@ result*
 venv/
 node_modules/
 .claude/
+QWEN.md
+
 
 # 运行时生成的文件
 build*
