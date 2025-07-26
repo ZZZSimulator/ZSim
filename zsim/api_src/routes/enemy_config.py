@@ -1,10 +1,12 @@
 import logging
-from fastapi import APIRouter, Depends, HTTPException
-from typing import List
 from datetime import datetime
+from typing import Any, List
 
+import polars as pl
+from fastapi import APIRouter, Depends, HTTPException
+
+from zsim.api_src.services.database.enemy_db import EnemyDB, get_enemy_db
 from zsim.models.enemy.enemy_config import EnemyConfig
-from zsim.api_src.services.database.enemy_db import get_enemy_db, EnemyDB
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -23,20 +25,20 @@ async def get_enemies(db: EnemyDB = Depends(get_enemy_db)):
         return ["敌人A", "敌人B", "敌人C", "敌人D"]
 
 
-@router.get("/enemies/{enemy_id}/info", response_model=dict)
-async def get_enemy_info(enemy_id: str, db: EnemyDB = Depends(get_enemy_db)):
+@router.get("/enemies/{enemy_index_id}/info", response_model=dict)
+async def get_enemy_info(enemy_index_id: str, db: EnemyDB = Depends(get_enemy_db)):
     """获取敌人详细信息"""
     try:
         df = pl.scan_csv("./zsim/data/enemy.csv")
-        enemy_data = df.filter(pl.col("CN_enemy_ID") == enemy_id).collect()
-        
+        enemy_data = df.filter(pl.col("IndexID") == int(enemy_index_id)).collect()
+
         if enemy_data.height == 0:
-            raise HTTPException(status_code=404, detail=f"Enemy {enemy_id} not found")
-        
-        row = enemy_data.row(0, named=True)
-        
-        enemy_info = {
-            "id": row["CN_enemy_ID"],
+            raise HTTPException(status_code=404, detail=f"Enemy {enemy_index_id} not found")
+
+        row: dict[str, Any] = enemy_data.row(0, named=True)
+
+        enemy_info: dict[str, Any] = {
+            "name": row["CN_enemy_ID"],
             "sub_id": row["SubID"],
             "index_id": row["IndexID"],
             "hp": row["生命值"],
@@ -62,14 +64,13 @@ async def get_enemy_info(enemy_id: str, db: EnemyDB = Depends(get_enemy_db)):
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Failed to load enemy info for {enemy_id}: {e}")
+        logger.error(f"Failed to load enemy info for {enemy_index_id}: {e}")
         # Fallback to existing example information
         return {
-            "id": enemy_id,
-            "name": f"敌人{enemy_id}",
+            "name": enemy_index_id,
             "level": 80,  # 示例等级
             "element": "物理",  # 示例元素类型
-            "description": f"敌人{enemy_id}的详细信息"
+            "description": f"敌人{enemy_index_id}的详细信息",
         }
 
 
@@ -80,11 +81,11 @@ async def create_enemy_config(config: EnemyConfig, db: EnemyDB = Depends(get_ene
     existing_config = await db.get_enemy_config(config.config_id)
     if existing_config:
         raise HTTPException(status_code=400, detail="敌人配置已存在")
-    
+
     # 设置创建和更新时间
     config.create_time = datetime.now()
     config.update_time = datetime.now()
-    
+
     # 添加到数据库
     await db.add_enemy_config(config)
     return config
@@ -106,17 +107,19 @@ async def get_enemy_config(config_id: str, db: EnemyDB = Depends(get_enemy_db)):
 
 
 @router.put("/enemy-configs/{config_id}", response_model=EnemyConfig)
-async def update_enemy_config(config_id: str, config: EnemyConfig, db: EnemyDB = Depends(get_enemy_db)):
+async def update_enemy_config(
+    config_id: str, config: EnemyConfig, db: EnemyDB = Depends(get_enemy_db)
+):
     """更新敌人配置"""
     # 检查敌人配置是否存在
     existing_config = await db.get_enemy_config(config_id)
     if not existing_config:
         raise HTTPException(status_code=404, detail="敌人配置未找到")
-    
+
     # 确保配置ID匹配
     if config_id != config.config_id:
         raise HTTPException(status_code=400, detail="配置ID不匹配")
-    
+
     # 更新数据库
     await db.update_enemy_config(config)
     return config
@@ -129,6 +132,6 @@ async def delete_enemy_config(config_id: str, db: EnemyDB = Depends(get_enemy_db
     existing_config = await db.get_enemy_config(config_id)
     if not existing_config:
         raise HTTPException(status_code=404, detail="敌人配置未找到")
-    
+
     # 从数据库删除
     await db.delete_enemy_config(config_id)

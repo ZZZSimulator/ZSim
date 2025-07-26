@@ -110,11 +110,9 @@ async def test_get_enemies():
 
 @pytest.mark.asyncio
 async def test_get_enemy_info():
-    response = client.get("/api/enemies/enemy1/info")
+    response = client.get("/api/enemies/11412/info")
     assert response.status_code == 200
     data = response.json()
-    assert "id" in data
     assert "name" in data
-    assert "level" in data
-    assert "element" in data
-    assert "description" in data
+    assert "sub_id" in data
+    assert "index_id" in data
