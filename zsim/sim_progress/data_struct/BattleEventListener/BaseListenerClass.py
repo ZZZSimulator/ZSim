@@ -8,7 +8,8 @@ if TYPE_CHECKING:
 
 class BaseListener(ABC):
     @abstractmethod
-    def __init__(self, listener_id: str = None, sim_instance: "Simulator" = None):
+    def __init__(self, listener_id: str | None = None, sim_instance: "Simulator | None" = None):
+        assert sim_instance is not None
         self.sim_instance: "Simulator" = sim_instance
         self.listener_id: str | None = listener_id
         self.schedule = None

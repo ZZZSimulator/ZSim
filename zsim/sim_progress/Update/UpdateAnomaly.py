@@ -1,7 +1,9 @@
 import importlib
 from copy import deepcopy
+from typing import TYPE_CHECKING
 
 from zsim.define import ELEMENT_TYPE_MAPPING
+from zsim.models.event_enums import ListenerBroadcastSignal as LBS
 from zsim.sim_progress.anomaly_bar import AnomalyBar
 from zsim.sim_progress.anomaly_bar.CopyAnomalyForOutput import (
     Disorder,
@@ -10,9 +12,10 @@ from zsim.sim_progress.anomaly_bar.CopyAnomalyForOutput import (
 )
 from zsim.sim_progress.Buff.BuffAddStrategy import buff_add_strategy
 from zsim.sim_progress.Dot.BaseDot import Dot
-from typing import TYPE_CHECKING
-from zsim.models.event_enums import ListenerBroadcastSignal as LBS
+
 if TYPE_CHECKING:
+    from zsim.sim_progress.Buff import Buff
+    from zsim.sim_progress.Preload import SkillNode
     from zsim.simulator.simulator_class import Simulator
 
 anomlay_dot_dict = {
@@ -41,6 +44,7 @@ def spawn_output(anomaly_bar, mode_number, sim_instance: "Simulator", **kwargs):
     #     anomaly_bar.current_ndarray / anomaly_bar.current_anomaly
     # )
     # output = anomaly_bar.element_type, anomaly_bar.current_ndarray
+    output: "AnomalyBar | None" = None
     if mode_number == 0:
         output = NewAnomaly(anomaly_bar, active_by=skill_node, sim_instance=sim_instance)
     elif mode_number == 1:
@@ -54,6 +58,8 @@ def spawn_output(anomaly_bar, mode_number, sim_instance: "Simulator", **kwargs):
         output = PolarityDisorder(
             anomaly_bar, polarity_ratio, active_by=skill_node, sim_instance=sim_instance
         )
+    if output is None:
+        raise ValueError("在调用spawn_output函数时，未正确生成一个AnomalyBar实例！")
     return output
 
 
@@ -95,6 +101,8 @@ def update_anomaly(
     event_list: list,
     char_obj_list: list,
     sim_instance: "Simulator",
+    skill_node: "SkillNode",
+    dynamic_buff_dict: dict[str, list["Buff"]],
     **kwargs,
 ):
     """
@@ -103,8 +111,6 @@ def update_anomaly(
     第一个参数是属性种类，第二个参数是Enemy类的实例，第三个参数是当前时间
     如果判断通过触发，则会立刻实例化一个对应的属性异常实例（自带复制父类的状态与属性），
     """
-    skill_node = kwargs.get("skill_node")
-    dynamic_buff_dict = kwargs.get("dynamic_buff_dict", None)
     bar: AnomalyBar = enemy.anomaly_bars_dict[skill_node.element_type]
     if not isinstance(bar, AnomalyBar):
         raise TypeError(f"{type(bar)}不是Anomaly类！")
@@ -132,7 +138,6 @@ def update_anomaly(
             enemy.dynamic.active_anomaly_bar_dict[element_type] = active_bar
 
             # 异常事件监听器广播
-
 
             sim_instance.listener_manager.broadcast_event(event=active_bar, signal=LBS.ANOMALY)
             """
@@ -229,9 +234,10 @@ def update_anomaly(
                 event_list.append(disorder)
                 sim_instance.decibel_manager.update(skill_node=skill_node, key="disorder")
                 enemy.sim_instance.schedule_data.change_process_state()
-                print(
-                    f"由【{disorder.activated_by.char_name}】的【{disorder.activated_by.skill_tag}】技能触发了紊乱！【{ELEMENT_TYPE_MAPPING[last_anomaly_bar.element_type]}】属性的异常状态提前结束！"
-                )
+                if disorder.activated_by:
+                    print(
+                        f"由【{disorder.activated_by.char_name}】的【{disorder.activated_by.skill_tag}】技能触发了紊乱！【{ELEMENT_TYPE_MAPPING[last_anomaly_bar.element_type]}】属性的异常状态提前结束！"
+                    )
             # 在异常与紊乱两个分支的最后，清空bar的异常积蓄和快照。
             else:
                 raise ValueError("无法解析的异常/紊乱分支")
@@ -251,6 +257,7 @@ def remove_dots_cause_disorder(disorder, enemy, event_list, time_now):
                 raise ValueError("该Dot任务已经完成，应当被删除！")
             remove_dots_list.append(dots)
     else:
+        sim_instance = enemy.sim_instance
         for _dot in remove_dots_list:
             if _dot.ft.index in ["Freez", "Freezdot"]:
                 event_list.append(_dot.anomaly_data)
@@ -264,9 +271,8 @@ def remove_dots_cause_disorder(disorder, enemy, event_list, time_now):
             else:
                 _dot.end(time_now)
                 enemy.dynamic.dynamic_dot_list.remove(_dot)
-            sim_instance = enemy.sim_instance
             sim_instance.schedule_data.change_process_state()
-            print(f'因紊乱而强行移除Dot {_dot.ft.index}')
+            print(f"因紊乱而强行移除Dot {_dot.ft.index}")
 
 
 def check_anomaly_bar(enemy):
@@ -289,6 +295,7 @@ def check_anomaly_bar(enemy):
             active_anomaly_list.append(element_number)
         if active_anomaly_check >= 2:
             raise ValueError("当前同时存在两种以上的异常状态！！！")
+    last_anomaly_element_type: int | None = None
     if len(active_anomaly_list) == 1:
         last_anomaly_element_type = active_anomaly_list[0]
     elif len(active_anomaly_list) == 2:
@@ -305,7 +312,7 @@ def check_anomaly_bar(enemy):
 
 
 def spawn_anomaly_dot(
-    element_type, timenow, bar=None, skill_tag=None, sim_instance: "Simulator" = None
+    element_type, timenow, bar=None, skill_tag=None, sim_instance: "Simulator | None" = None
 ):
     if element_type in anomlay_dot_dict:
         class_name = anomlay_dot_dict[element_type]
@@ -324,7 +331,7 @@ def spawn_normal_dot(dot_index, sim_instance: "Simulator"):
     return new_dot
 
 
-def create_dot_instance(class_name, bar=None, sim_instance: "Simulator" = None):
+def create_dot_instance(class_name, bar=None, sim_instance: "Simulator | None" = None):
     # 动态导入相应模块
     module_name = f"zsim.sim_progress.Dot.Dots.{class_name}"  # 假设你的类都在dot.DOTS模块中
     try:

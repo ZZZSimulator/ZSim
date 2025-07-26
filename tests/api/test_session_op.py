@@ -3,7 +3,6 @@ from fastapi.testclient import TestClient
 from zsim.api import app
 from zsim.api_src.services.database.session_db import get_session_db
 from zsim.models.session.session_create import Session
-from zsim.models.session.session_run import SessionRun
 
 client = TestClient(app)
 

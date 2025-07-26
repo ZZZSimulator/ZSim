@@ -1,15 +1,16 @@
 import uuid
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
 import numpy as np
 
-from ...define import ELEMENT_TYPE_MAPPING
+from zsim.define import ELEMENT_TYPE_MAPPING, ElementType
 
 if TYPE_CHECKING:
+    from zsim.sim_progress.Buff import Buff
+    from zsim.sim_progress.data_struct.single_hit import SingleHit
     from zsim.sim_progress.Preload import SkillNode
     from zsim.simulator.simulator_class import Simulator
-    from zsim.sim_progress.data_struct.single_hit import SingleHit
 
 
 @dataclass
@@ -19,11 +20,11 @@ class AnomalyBar:
     """
 
     sim_instance: "Simulator"
-    element_type: int = 0  # 属性种类编号(1~5)
+    element_type: ElementType = 0  # 属性种类编号(1~5)
     is_disorder: bool = False  # 是否是紊乱实例
-    current_ndarray: np.ndarray | None = None  # 当前快照总和
-    current_anomaly: np.float64 | None = None  # 当前已经累计的积蓄值
-    current_effective_anomaly: np.float64 | None = None  # 有效积蓄值（参与快照的）
+    current_ndarray: np.ndarray = field(default_factory=lambda: np.zeros((1, 1), dtype=np.float64))  # 当前快照总和
+    current_anomaly: np.float64 = field(default_factory=lambda: np.float64(0))  # 当前已经累计的积蓄值
+    current_effective_anomaly: np.float64 = field(default_factory=lambda: np.float64(0))  # 有效积蓄值（参与快照的）
     anomaly_times: int = 0  # 迄今为止触发过的异常次数
     cd: int = 180  # 属性异常的内置CD，
     last_active: int = 0  # 上一次属性异常的时间
@@ -37,20 +38,20 @@ class AnomalyBar:
     duration_buff_key_list: list | None = None  # 影响当前异常状态最大时长的buff效果关键字
     basic_max_duration: int = 0  # 基础最大时间
     UUID: uuid.UUID | None = None
-    activated_by = None
+    activated_by: "SkillNode | None" = None
     ndarray_box: list[tuple] | None = None
 
     def __post_init__(self):
-        self.current_ndarray: np.ndarray = np.zeros((1, 1), dtype=np.float64)
-        self.current_anomaly: np.float64 = np.float64(0)
         self.UUID = uuid.uuid4()
 
     @property
     def is_full(self):
+        assert self.max_anomaly is not None
         return self.current_anomaly >= self.max_anomaly
 
     def remaining_tick(self):
         timetick = self.sim_instance.tick
+        assert self.max_duration is not None
         remaining_tick = max(self.max_duration - self.duration(timetick), 0)
         return remaining_tick
 
@@ -113,18 +114,21 @@ class AnomalyBar:
             return True
         return False
 
-    def change_info_cause_active(self, timenow: int, **kwargs):
+    def change_info_cause_active(
+        self,
+        timenow: int,
+        skill_node: "SkillNode",
+        dynamic_buff_dict: dict[str, list["Buff"]],
+    ):
         """
         属性异常激活时，必要的信息更新
         """
-        dynamic_buff_dict = kwargs.get("dynamic_buff_dict")
-        skill_node = kwargs.get("skill_node")
         char_cid = int(skill_node.skill_tag.strip().split("_")[0])
         self.ready = False
         self.anomaly_times += 1
         self.last_active = timenow
         self.active = True
-        self.activated_by: "SkillNode" = skill_node
+        self.activated_by = skill_node
         self.__get_max_duration(dynamic_buff_dict, char_cid)
         self.sim_instance.schedule_data.change_process_state()
         print(
@@ -150,14 +154,14 @@ class AnomalyBar:
         return pct
 
     def reset_myself(self):
-        self.current_ndarray = None
-        self.current_anomaly = None
+        self.current_ndarray = np.zeros((1, 1), dtype=np.float64)
+        self.current_anomaly = np.float64(0)
         self.anomaly_times = 0
         self.last_active = 0
         self.ready = True
         self.active = False
         self.max_anomaly = None
-        self.ndarray_box = None
+        self.ndarray_box = []
 
     def __get_max_duration(self, dynamic_buff_list, anomaly_from: int | str) -> None:
         """通过Buff计算当前异常的最大持续时间"""
@@ -171,7 +175,7 @@ class AnomalyBar:
             enemy_buff_list = dynamic_buff_list.get("enemy")
             for buffs in enemy_buff_list:
                 if _buff_index == buffs.ft.index and buffs.dy.active:
-                    for keys in self.duration_buff_key_list:
+                    for keys in self.duration_buff_key_list:  # type: ignore
                         if keys in buffs.effect_dct.keys():
                             if "百分比" in keys:
                                 max_duration_delta_pct += buffs.dy.count * buffs.effect_dct.get(
@@ -235,7 +239,7 @@ class AnomalyBar:
     def anomaly_settled(self):
         """结算快照！"""
         total_array = np.zeros((1, 1), dtype=np.float64)
-        effective_buildup = 0
+        effective_buildup: np.float64 = np.float64(0)
         while self.ndarray_box:
             _tuples = self.ndarray_box.pop()
             _element_type = _tuples[0]

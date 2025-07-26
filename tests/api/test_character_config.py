@@ -1,9 +1,9 @@
 import pytest
 from fastapi.testclient import TestClient
+
 from zsim.api import app
-from zsim.api_src.services.database.character_db import get_character_db, CharacterDB
+from zsim.api_src.services.database.character_db import get_character_db
 from zsim.models.character.character_config import CharacterConfig
-import asyncio
 
 client = TestClient(app)
 
