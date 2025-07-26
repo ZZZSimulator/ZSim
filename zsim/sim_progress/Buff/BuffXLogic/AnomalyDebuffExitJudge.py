@@ -31,9 +31,7 @@ class AnomalyDebuffExitJudge(Buff.BuffLogic):
         即：属性异常结束（检测到下降沿）就结束
         """
         if self.enemy is None:
-            self.enemy = JudgeTools.find_enemy(
-                sim_instance=self.buff_instance.sim_instance
-            )
+            self.enemy = JudgeTools.find_enemy(sim_instance=self.buff_instance.sim_instance)
         anomaly_name = anomaly_statement_dict[self.buff_instance.ft.index]
         anomaly_now = getattr(self.enemy.dynamic, anomaly_name)
         anomaly_statement = [

@@ -18,9 +18,7 @@ class CinderCobaltAtkBonus(Buff.BuffLogic):
         self.record = None
 
     def get_prepared(self, **kwargs):
-        return check_preparation(
-            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
-        )
+        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
 
     def check_record_module(self):
         if self.equipper is None:
@@ -39,11 +37,9 @@ class CinderCobaltAtkBonus(Buff.BuffLogic):
         self.check_record_module()
         self.get_prepared(equipper="「灰烬」-钴蓝")
         if self.record.listener is None:
-            self.record.listener = (
-                self.buff_instance.sim_instance.listener_manager.get_listener(
-                    listener_owner=self.record.char,
-                    listener_id=self.buff_instance.ft.listener_id,
-                )
+            self.record.listener = self.buff_instance.sim_instance.listener_manager.get_listener(
+                listener_owner=self.record.char,
+                listener_id=self.buff_instance.ft.listener_id,
             )
         active_signal = self.record.listener.active_signal
         if active_signal is None:
@@ -52,9 +48,7 @@ class CinderCobaltAtkBonus(Buff.BuffLogic):
             return False
         else:
             self.record.listener.active_signal = None
-            if self.buff_0.is_ready(
-                find_tick(sim_instance=self.buff_instance.sim_instance)
-            ):
+            if self.buff_0.is_ready(find_tick(sim_instance=self.buff_instance.sim_instance)):
                 # print(
                 #     f"{self.buff_instance.ft.index}接收到了匹配的更新信号（佩戴者为{active_signal[0].NAME}）"
                 # )

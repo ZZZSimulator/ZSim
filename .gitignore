@@ -20,6 +20,7 @@ result*
 .venv
 .ipynb_checkpoints
 .run
+.env
 .mypy_cache
 .pytest_cache
 .hypothesis/
@@ -29,6 +30,7 @@ venv/
 node_modules/
 .claude/
 CLAUDE.md
+.mcp.json
 
 # 运行时生成的文件
 build*
@@ -57,4 +59,3 @@ htmlcov/
 # 生成文件
 zsim/data/APLData/custom/*
 *out*
-

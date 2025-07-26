@@ -1,5 +1,6 @@
 from .. import Buff, JudgeTools, check_preparation
 
+
 class TheVaultRecord:
     def __init__(self):
         self.equipper = None
@@ -22,9 +23,7 @@ class TheVault(Buff.BuffLogic):
         self.record = None
 
     def get_prepared(self, **kwargs):
-        return check_preparation(
-            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
-        )
+        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
 
     def check_record_module(self):
         if self.equipper is None:
@@ -49,6 +48,7 @@ class TheVault(Buff.BuffLogic):
         self.check_record_module()
         self.get_prepared(equipper="聚宝箱", action_stack=1)
         from zsim.sim_progress.Preload import SkillNode
+
         skill_node: SkillNode | None = kwargs.get("skill_node", None)
         if skill_node is None:
             return False
@@ -60,4 +60,3 @@ class TheVault(Buff.BuffLogic):
         if skill_node.is_hit_now(tick):
             return True
         return False
-

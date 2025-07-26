@@ -181,7 +181,7 @@ ELEMENT_TYPE_MAPPING: dict[ElementType, str] = {
     3: "电",
     4: "以太",
     5: "烈霜",
-    6: "玄墨"
+    6: "玄墨",
 }
 # 属性类型等价映射字典
 ELEMENT_EQUIVALENCE_MAP: dict[ElementType, list[ElementType]] = {

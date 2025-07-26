@@ -25,9 +25,7 @@ class RiotSuppressorMarkVI(Buff.BuffLogic):
         self.record = None
 
     def get_prepared(self, **kwargs):
-        return check_preparation(
-            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
-        )
+        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
 
     def check_record_module(self):
         if self.equipper is None:
@@ -47,9 +45,7 @@ class RiotSuppressorMarkVI(Buff.BuffLogic):
         self.check_record_module()
         self.get_prepared(equipper="防暴者Ⅵ型")
         if self.buff_0.dy.active and self.record.available_effect_times < 1:
-            raise ValueError(
-                f"{self.buff_instance.ft.index}在可用层数耗尽的情况下仍保持激活状态！"
-            )
+            raise ValueError(f"{self.buff_instance.ft.index}在可用层数耗尽的情况下仍保持激活状态！")
         skill_node = kwargs.get("skill_node", None)
         if skill_node is None:
             return False
@@ -65,9 +61,7 @@ class RiotSuppressorMarkVI(Buff.BuffLogic):
             return False
 
         """Buff的触发，还有生效次数的消耗，都只有在技能释放时才会执行。"""
-        if skill_node.preload_tick == find_tick(
-            sim_instance=self.buff_instance.sim_instance
-        ):
+        if skill_node.preload_tick == find_tick(sim_instance=self.buff_instance.sim_instance):
             signal = skill_node.skill.trigger_buff_level
             if skill_node.skill.trigger_buff_level == 0:
                 if not self.buff_0.dy.active:
@@ -103,9 +97,7 @@ class RiotSuppressorMarkVI(Buff.BuffLogic):
         elif self.record.active_signal == 0:
             """更新信号为0时，消耗层数。"""
             if self.record.available_effect_times < 1:
-                raise ValueError(
-                    f"{self.buff_instance.ft.index}的剩余层数不足，无法消耗层数！"
-                )
+                raise ValueError(f"{self.buff_instance.ft.index}的剩余层数不足，无法消耗层数！")
             self.record.available_effect_times -= 1
             # print(
             #     f"检测到普攻发动！消耗1层！当前层数为：{self.record.available_effect_times}！"

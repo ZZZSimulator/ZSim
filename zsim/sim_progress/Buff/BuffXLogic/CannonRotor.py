@@ -23,9 +23,7 @@ class CannonRotor(Buff.BuffLogic):
         self.record = None
 
     def get_prepared(self, **kwargs):
-        return check_preparation(
-            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
-        )
+        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
 
     def check_record_module(self):
         if self.equipper is None:
@@ -42,9 +40,7 @@ class CannonRotor(Buff.BuffLogic):
 
     def special_judge_logic(self, **kwargs):
         self.check_record_module()
-        self.get_prepared(
-            equipper="加农转子", enemy=1, dynamic_buff_list=1, sub_exist_buff_dict=1
-        )
+        self.get_prepared(equipper="加农转子", enemy=1, dynamic_buff_list=1, sub_exist_buff_dict=1)
         skill_node = kwargs.get("skill_node", None)
         if skill_node is None:
             return False
@@ -56,9 +52,7 @@ class CannonRotor(Buff.BuffLogic):
             )
         if skill_node.char_name != self.record.char.NAME:
             return False
-        if not skill_node.is_hit_now(
-            find_tick(sim_instance=self.buff_instance.sim_instance)
-        ):
+        if not skill_node.is_hit_now(find_tick(sim_instance=self.buff_instance.sim_instance)):
             return False
 
         from zsim.sim_progress.RandomNumberGenerator import RNG
@@ -77,12 +71,8 @@ class CannonRotor(Buff.BuffLogic):
 
     def special_hit_logic(self, **kwargs):
         self.check_record_module()
-        self.get_prepared(
-            equipper="加农转子", enemy=1, dynamic_buff_list=1, preload_data=1
-        )
-        event_list = JudgeTools.find_event_list(
-            sim_instance=self.buff_instance.sim_instance
-        )
+        self.get_prepared(equipper="加农转子", enemy=1, dynamic_buff_list=1, preload_data=1)
+        event_list = JudgeTools.find_event_list(sim_instance=self.buff_instance.sim_instance)
         from zsim.sim_progress.Preload.SkillsQueue import spawn_node
 
         whole_skill_tag = str(self.record.char.CID) + "_" + self.record.skill_tag

@@ -20,9 +20,7 @@ class ElegantVanityDmgBonus(Buff.BuffLogic):
         self.record = None
 
     def get_prepared(self, **kwargs):
-        return check_preparation(
-            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
-        )
+        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
 
     def check_record_module(self):
         if self.equipper is None:
@@ -45,9 +43,7 @@ class ElegantVanityDmgBonus(Buff.BuffLogic):
         self.get_prepared(equipper="玲珑妆匣")
         skill_node = kwargs.get("skill_node", None)
         if skill_node is None:
-            raise ValueError(
-                f"{self.buff_instance.ft.index}的Xjudge函数获取到的skill_node为None！"
-            )
+            raise ValueError(f"{self.buff_instance.ft.index}的Xjudge函数获取到的skill_node为None！")
         from zsim.sim_progress.Preload import SkillNode
 
         if not isinstance(skill_node, SkillNode):

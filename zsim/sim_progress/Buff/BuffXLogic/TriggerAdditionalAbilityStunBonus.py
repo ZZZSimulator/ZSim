@@ -23,9 +23,7 @@ class TriggerAdditionalAbilityStunBonus(Buff.BuffLogic):
         self.xhit = self.special_hit_logic
 
     def get_prepared(self, **kwargs):
-        return check_preparation(
-            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
-        )
+        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
 
     def check_record_module(self):
         if self.buff_0 is None:
@@ -45,9 +43,7 @@ class TriggerAdditionalAbilityStunBonus(Buff.BuffLogic):
         skill_node: SkillNode | None
         skill_node = kwargs.get("skill_node", None)
         if skill_node is None:
-            raise ValueError(
-                f"{self.buff_instance.ft.index}的xjudge中缺少skill_node参数"
-            )
+            raise ValueError(f"{self.buff_instance.ft.index}的xjudge中缺少skill_node参数")
         if "1361" not in skill_node.skill_tag or not skill_node.skill.labels:
             return False
         if "aftershock_attack" in skill_node.skill.labels.keys():
@@ -57,9 +53,7 @@ class TriggerAdditionalAbilityStunBonus(Buff.BuffLogic):
     def special_hit_logic(self, **kwargs):
         """判定通过后，执行Buff激活，计算实时暴击率，替换当前层数。"""
         self.check_record_module()
-        self.get_prepared(
-            char_CID=1361, sub_exist_buff_dict=1, enemy=1, dynamic_buff_list=1
-        )
+        self.get_prepared(char_CID=1361, sub_exist_buff_dict=1, enemy=1, dynamic_buff_list=1)
         tick = find_tick(sim_instance=self.buff_instance.sim_instance)
         mul_data = MultiplierData(
             self.record.enemy, self.record.dynamic_buff_list, self.record.char
@@ -70,8 +64,6 @@ class TriggerAdditionalAbilityStunBonus(Buff.BuffLogic):
         count = min(max(crit_rate - 0.4, 0) / 0.01 * 1.5, 75)
         # print(f'当前暴击率：{crit_rate}, 层数：{count}')
 
-        self.buff_instance.simple_start(
-            tick, self.record.sub_exist_buff_dict, no_count=1
-        )
+        self.buff_instance.simple_start(tick, self.record.sub_exist_buff_dict, no_count=1)
         self.buff_instance.dy.count = count
         self.buff_instance.update_to_buff_0(self.buff_0)

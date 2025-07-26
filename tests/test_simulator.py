@@ -546,10 +546,10 @@ class TestSimulator:
                 # 将队伍配置放入队列
                 await controller.put_into_queue(session.session_id, common_cfg, None)
 
-                print(f"✅ 队伍 '{team_name}' 已添加到队列")
+                print(f"队伍 '{team_name}' 已添加到队列")
 
             # 执行所有队伍的模拟
-            print(f"🚀 开始执行 {len(team_configs)} 个队伍的模拟...")
+            print(f"开始执行 {len(team_configs)} 个队伍的模拟...")
             executed_sessions = await controller.execute_simulation_test(
                 max_tasks=len(team_configs)
             )
@@ -568,7 +568,7 @@ class TestSimulator:
                     f"会话 {session_id} 状态不是 completed"
                 )
 
-            print(f"✅ 所有 {len(team_configs)} 个队伍模拟均已完成")
+            print(f"所有 {len(team_configs)} 个队伍模拟均已完成")
 
         finally:
             # 清理数据库

@@ -99,9 +99,7 @@ class SwapCancelValidateEngine(BasePreloadEngine):
         if not self._validate_swap_strategy_check(tick=tick, skill_tag=skill_tag):
             return False
 
-        self.data.preload_action_list_before_confirm.append(
-            (skill_tag, True, apl_priority)
-        )
+        self.data.preload_action_list_before_confirm.append((skill_tag, True, apl_priority))
         self.active_signal = True
         return True
 
@@ -133,17 +131,11 @@ class SwapCancelValidateEngine(BasePreloadEngine):
                 #     f"{apl_skill_node.char_name}的技能{apl_skill_node.skill_tag}企图取消自己的闪避技能！"
                 # ) if SWAP_CANCEL_MODE_DEBUG else None
                 return True
-            elif (
-                "parry" in char_latest_node.skill_tag
-                and "knock_back_cause_parry" in skill_tag
-            ):
+            elif "parry" in char_latest_node.skill_tag and "knock_back_cause_parry" in skill_tag:
                 """对于衔接于招架之后的击退，要立即放行"""
                 return True
             """正在进行的技能并非立即执行类型，而新的技能是立即执行类型，则放行"""
-            if (
-                apl_skill_node.skill.do_immediately
-                and not char_latest_node.skill.do_immediately
-            ):
+            if apl_skill_node.skill.do_immediately and not char_latest_node.skill.do_immediately:
                 return True
             else:
                 return False
@@ -252,9 +244,7 @@ class SwapCancelValidateEngine(BasePreloadEngine):
                         return False
                     else:
                         """附加伤害additional_damage（类似于“白雷”）由于不需要占用角色，所以可以免于被挤掉的命运"""
-                        skill_info = obj.get_skill_info(
-                            skill_tag=_tag, attr_info="labels"
-                        )
+                        skill_info = obj.get_skill_info(skill_tag=_tag, attr_info="labels")
                         if skill_info is None:
                             skill_info = {}
                         if "additional_damage" not in skill_info.keys():
@@ -272,20 +262,14 @@ class SwapCancelValidateEngine(BasePreloadEngine):
         else:
             return True
 
-    def _validate_swap_state_check(
-        self, tick: int, skill_tag: str, apl_skill_node: SkillNode
-    ):
+    def _validate_swap_state_check(self, tick: int, skill_tag: str, apl_skill_node: SkillNode):
         """检查角色当前的状态是否允许当前技能进行合轴"""
         cid = int(skill_tag.split("_")[0])
         node_on_field: SkillNode | None = self.data.get_on_field_node(tick)
         char_node_stack = self.data.personal_node_stack.get(cid, None)
-        char_latest_node: SkillNode | None = (
-            char_node_stack.peek() if char_node_stack else None
-        )
+        char_latest_node: SkillNode | None = char_node_stack.peek() if char_node_stack else None
         char_change_cd: bool
-        last_actively_generated_node: SkillNode | None = (
-            self.data.latest_active_generation_node
-        )
+        last_actively_generated_node: SkillNode | None = self.data.latest_active_generation_node
         if node_on_field and not node_on_field.active_generation:
             """
             由于get_on_field_node函数只会尽量返回台前的主动技能，
@@ -320,12 +304,7 @@ class SwapCancelValidateEngine(BasePreloadEngine):
                 return True
             else:
                 if (
-                    any(
-                        [
-                            _sub_tag in skill_tag
-                            for _sub_tag in ["QTE", "Aid", "knock_back"]
-                        ]
-                    )
+                    any([_sub_tag in skill_tag for _sub_tag in ["QTE", "Aid", "knock_back"]])
                     or apl_skill_node.skill.do_immediately
                 ):
                     """如果是支援类和连携技这种无视切人CD的技能，那么此时角色可以切出"""
@@ -339,13 +318,8 @@ class SwapCancelValidateEngine(BasePreloadEngine):
     def _validate_swap_strategy_check(self, tick: int, skill_tag: str):
         """该函数用于检测当前技能的合轴策略是否允许合轴——在场的主动动作是否允许合轴。"""
         cid = skill_tag.split("_")[0]
-        last_actively_generated_node: SkillNode | None = (
-            self.data.latest_active_generation_node
-        )
-        if (
-            last_actively_generated_node is None
-            or last_actively_generated_node.end_tick < tick
-        ):
+        last_actively_generated_node: SkillNode | None = self.data.latest_active_generation_node
+        if last_actively_generated_node is None or last_actively_generated_node.end_tick < tick:
             return True
 
         if cid in last_actively_generated_node.skill_tag:
@@ -355,10 +329,7 @@ class SwapCancelValidateEngine(BasePreloadEngine):
                 raise ValueError(
                     f"{last_actively_generated_node.skill_tag}作为主动动作但是却没有APLUnit！"
                 )
-            if (
-                last_actively_generated_node.apl_unit.apl_unit_type
-                == "action.no_swap_cancel+="
-            ):
+            if last_actively_generated_node.apl_unit.apl_unit_type == "action.no_swap_cancel+=":
                 """
                 当前台技能的apl_unit非空（意味着前台技能来自于APL模块），
                 并且apl_unit的种类为“action.no_swap_cancel+=”，即合轴禁止类型，则不可切人。
@@ -401,9 +372,7 @@ class SwapCancelValidateEngine(BasePreloadEngine):
             print(
                 f"{skill_tag}所涉及角色当前tick存在任务冲突，合轴失败！"
             ) if not skill_compare else (
-                print(
-                    f"{skill_tag}所涉所涉及角色当前tick存在任务冲突，合轴失败！及角色当前没空！"
-                )
+                print(f"{skill_tag}所涉所涉及角色当前tick存在任务冲突，合轴失败！及角色当前没空！")
                 if skill_tag == SWAP_CANCEL_DEBUG_TARGET_SKILL
                 else None
             )
@@ -414,9 +383,7 @@ class SwapCancelValidateEngine(BasePreloadEngine):
                 f"{skill_tag}所涉及角色切人CD未就绪  或是 技能优先级低于前台技能，合轴失败！"
             ) if skill_tag == SWAP_CANCEL_DEBUG_TARGET_SKILL else None
         elif mode == 4:
-            print(
-                f"当前tick不满足{skill_tag}合轴所需的时间！"
-            ) if not skill_compare else print(
+            print(f"当前tick不满足{skill_tag}合轴所需的时间！") if not skill_compare else print(
                 f"当前tick不满足{skill_tag}合轴所需的时间！"
             ) if skill_tag == SWAP_CANCEL_DEBUG_TARGET_SKILL else None
         elif mode == 5:

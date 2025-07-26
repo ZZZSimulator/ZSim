@@ -31,8 +31,8 @@ class YixuanAnomalyListener(BaseListener):
     def listening_event(self, event_obj, **kwargs):
         """监听到新的anomlay创建后，检查属性类型，通过判定则恢复闪能。"""
         if self.char is None:
-            char_obj: "Yixuan | Character | None" = (
-                self.sim_instance.char_data.find_char_obj(CID=1371)
+            char_obj: "Yixuan | Character | None" = self.sim_instance.char_data.find_char_obj(
+                CID=1371
             )
             self.char = char_obj
         if "anomaly_event" not in kwargs:
@@ -45,6 +45,7 @@ class YixuanAnomalyListener(BaseListener):
             )
         if event_obj:
             from zsim.define import ANOMALY_MAPPING
+
             if YIXUAN_REPORT:
                 print(
                     f"监听到新的属性异常：{ANOMALY_MAPPING[event_obj.element_type]}！尝试激活监听事件——仪玄闪能恢复！"
@@ -68,8 +69,6 @@ class YixuanAnomalyListener(BaseListener):
                 raise TypeError
             self.char.update_adrenaline(self.recover_value)
             if YIXUAN_REPORT:
-                print(
-                    f"玄墨监听器事件激活！成功为仪玄恢复{self.recover_value}点闪能！"
-                )
+                print(f"玄墨监听器事件激活！成功为仪玄恢复{self.recover_value}点闪能！")
                 self.sim_instance.schedule_data.change_process_state()
             self.last_active_tick = self.sim_instance.tick

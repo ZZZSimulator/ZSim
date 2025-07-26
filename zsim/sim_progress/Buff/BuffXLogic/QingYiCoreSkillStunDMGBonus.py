@@ -32,9 +32,7 @@ class QingYiCoreSkillStunDMGBonus(Buff.BuffLogic):
         self.record = None
 
     def get_prepared(self, **kwargs):
-        return check_preparation(
-            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
-        )
+        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
 
     def check_record_module(self):
         if self.buff_0 is None:
@@ -53,9 +51,7 @@ class QingYiCoreSkillStunDMGBonus(Buff.BuffLogic):
         """
         self.check_record_module()
         self.get_prepared(char_CID=1300, sub_exist_buff_dict=1, enemy=1)
-        action_stack = JudgeTools.find_stack(
-            sim_instance=self.buff_instance.sim_instance
-        )
+        action_stack = JudgeTools.find_stack(sim_instance=self.buff_instance.sim_instance)
         action_now = action_stack.peek()
         last_action = action_stack.peek_bottom()
         tick_now = JudgeTools.find_tick(sim_instance=self.buff_instance.sim_instance)

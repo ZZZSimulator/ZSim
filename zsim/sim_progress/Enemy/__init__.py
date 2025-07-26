@@ -84,9 +84,7 @@ class Enemy:
         # 初始化敌人基础属性
         self.base_max_HP: float = float(self.data_dict["70级最大生命值"])
         self.max_HP: float = (
-            float(self.data_dict["70级最大生命值"])
-            * (1 + self.enemy_adjust["生命值"])
-            * difficulty
+            float(self.data_dict["70级最大生命值"]) * (1 + self.enemy_adjust["生命值"]) * difficulty
         )
         self.max_ATK: float = float(self.data_dict["70级最大攻击力"]) * (
             1 + self.enemy_adjust["攻击力"]
@@ -228,17 +226,13 @@ class Enemy:
             attack_method_code = 0
         else:
             attack_method_code = int(self.data_dict["进攻策略"])
-        self.attack_method = EnemyAttackMethod(
-            ID=attack_method_code, enemy_instance=self
-        )
+        self.attack_method = EnemyAttackMethod(ID=attack_method_code, enemy_instance=self)
         self.restore_stun()
 
         self.unique_machanic_manager = unique_mechanic_factory(self)  # 特殊机制管理器
         self.special_state_manager = SpecialStateManager(enemy_instance=self)
 
-        report_to_log(
-            f"[ENEMY]: 怪物对象 {self.name} 已创建，怪物ID {self.index_ID}", level=4
-        )
+        report_to_log(f"[ENEMY]: 怪物对象 {self.name} 已创建，怪物ID {self.index_ID}", level=4)
 
     def __restore_stun_recovery_time(self):
         self.stun_recovery_time = float(self.data_dict["失衡恢复时间"]) * 60
@@ -272,9 +266,7 @@ class Enemy:
             if anomaly_bar.active:
                 output_list.append(self.dynamic.active_anomaly_bar_dict[element_type])
         if len(output_list) == 0 or len(output_list) > 1:
-            raise ValueError(
-                f"状态错误！找到了{len(output_list)}种正在激活的属性异常条！"
-            )
+            raise ValueError(f"状态错误！找到了{len(output_list)}种正在激活的属性异常条！")
         return output_list[0]
 
     @staticmethod
@@ -338,9 +330,7 @@ class Enemy:
     @staticmethod
     def __lookup_enemy_adjustment(
         adjust_df: pd.DataFrame, adjust_ID: int
-    ) -> dict[
-        Literal["生命值", "攻击力", "失衡值上限", "防御力", "异常积蓄值上限"], float
-    ]:
+    ) -> dict[Literal["生命值", "攻击力", "失衡值上限", "防御力", "异常积蓄值上限"], float]:
         """根据调整ID查找敌人调整数据，并返回调整数据字典。"""
         try:
             row = adjust_df[adjust_df["ID"] == adjust_ID].to_dict("records")
@@ -408,9 +398,7 @@ class Enemy:
 
         # 参数类型检查
         if not isinstance(element, (str, int)):
-            raise TypeError(
-                f"element参数类型错误，必须是整数或字符串，实际类型为{type(element)}"
-            )
+            raise TypeError(f"element参数类型错误，必须是整数或字符串，实际类型为{type(element)}")
         if not isinstance(times, int):
             raise TypeError(f"times参数必须是整数，实际类型为{type(times)}")
         if times <= 0:
@@ -504,7 +492,9 @@ class Enemy:
             single_hit=single_hit, tick=tick
         )
         # 在接收hit的时，向所有特殊状态进行广播，执行更新自检！
-        self.special_state_manager.broadcast_and_update(signal=SSUS.RECEIVE_HIT, single_hit=single_hit)
+        self.special_state_manager.broadcast_and_update(
+            signal=SSUS.RECEIVE_HIT, single_hit=single_hit
+        )
 
     # 遥远的需求：
     #  TODO：实时DPS的计算，以及预估战斗结束时间，用于进一步优化APL。（例：若目标预计死亡时间<5秒，则不补buff）
@@ -550,9 +540,7 @@ class Enemy:
                 self.restore_stun()
             else:
                 if _tick - self.dynamic.stun_update_tick > 1:
-                    raise ValueError(
-                        "状态更新间隔大于1！存在多个tick都未更新stun的情况！"
-                    )
+                    raise ValueError("状态更新间隔大于1！存在多个tick都未更新stun的情况！")
                 self.dynamic.stun_bar = 0  # 避免 log 差错
                 self.dynamic.stun_update_tick = _tick
 
@@ -569,12 +557,8 @@ class Enemy:
             self.dynamic.stun_bar = 0  # 避免 log 差错
             self.dynamic.stun_update_tick = _tick
             if single_hit:
-                self.sim_instance.decibel_manager.update(
-                    single_hit=single_hit, key="stun"
-                )
-                self.sim_instance.listener_manager.broadcast_event(
-                    single_hit, stun_event=1
-                )
+                self.sim_instance.decibel_manager.update(single_hit=single_hit, key="stun")
+                self.sim_instance.listener_manager.broadcast_event(single_hit, stun_event=1)
             if self.sim_instance.preload.preload_data.atk_manager.attacking:
                 self.sim_instance.preload.preload_data.atk_manager.interrupted(
                     tick=_tick, reason="被打进失衡"
@@ -589,7 +573,9 @@ class Enemy:
             self.dynamic.lost_hp = -1 * minus
             report_to_log(f"怪物{self.name}死亡！")
 
-    def __anomaly_prod(self, snapshot: tuple[int, np.float64, np.ndarray], single_hit: SingleHit) -> None:
+    def __anomaly_prod(
+        self, snapshot: tuple[int, np.float64, np.ndarray], single_hit: SingleHit
+    ) -> None:
         """用于更新异常条的角色面板快照"""
         if snapshot[1] >= 1e-6:  # 确保非零异常值才更新
             element_type_code = snapshot[0]

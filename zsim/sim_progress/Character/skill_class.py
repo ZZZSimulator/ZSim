@@ -122,8 +122,8 @@ class Skill:
             "dodge": dodge_level,
             "chain": chain_level,
             "assist": assist_level,
-            "core": core_level
-        }       # 技能等级字典
+            "core": core_level,
+        }  # 技能等级字典
         # 最晚在这里创建DataFrame，优化不一点点，这玩意可大了
         schema_dict = {
             "CID": int,

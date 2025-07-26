@@ -13,24 +13,64 @@ router = APIRouter()
 @router.get("/enemies/", response_model=List[str])
 async def get_enemies(db: EnemyDB = Depends(get_enemy_db)):
     """获取所有可用敌人列表"""
-    # TODO: 从数据库或配置文件中获取敌人列表
-    # 这里暂时返回一个示例列表
-    return ["敌人A", "敌人B", "敌人C", "敌人D"]
+    try:
+        df = pl.scan_csv("./zsim/data/enemy.csv")
+        enemies = df.select("CN_enemy_ID").unique().collect().to_series().to_list()
+        return enemies
+    except Exception as e:
+        logger.error(f"Failed to load enemy list: {e}")
+        # Fallback to existing example list
+        return ["敌人A", "敌人B", "敌人C", "敌人D"]
 
 
 @router.get("/enemies/{enemy_id}/info", response_model=dict)
 async def get_enemy_info(enemy_id: str, db: EnemyDB = Depends(get_enemy_db)):
     """获取敌人详细信息"""
-    # TODO: 从数据库或配置文件中获取敌人详细信息
-    # 这里暂时返回一个示例信息
-    enemy_info = {
-        "id": enemy_id,
-        "name": f"敌人{enemy_id}",
-        "level": 80,  # 示例等级
-        "element": "物理",  # 示例元素类型
-        "description": f"敌人{enemy_id}的详细信息"
-    }
-    return enemy_info
+    try:
+        df = pl.scan_csv("./zsim/data/enemy.csv")
+        enemy_data = df.filter(pl.col("CN_enemy_ID") == enemy_id).collect()
+        
+        if enemy_data.height == 0:
+            raise HTTPException(status_code=404, detail=f"Enemy {enemy_id} not found")
+        
+        row = enemy_data.row(0, named=True)
+        
+        enemy_info = {
+            "id": row["CN_enemy_ID"],
+            "sub_id": row["SubID"],
+            "index_id": row["IndexID"],
+            "hp": row["生命值"],
+            "atk": row["攻击力"],
+            "def": row["防御力"],
+            "crit_dmg": row["暴击伤害"],
+            "max_stun": row["失衡值上限"],
+            "can_stun": row["能否失衡"],
+            "stun_regen": row["失衡值自动回复"],
+            "stun_regen_time": row["失衡值自动回复时限"],
+            "stun_recovery_speed": row["失衡恢复速度"],
+            "stun_recovery_time": row["失衡恢复时间"],
+            "stun_vulnerability": row["失衡易伤值"],
+            "max_combo": row["可连携次数"],
+            "stun_resistance": row["抗打断等级"],
+            "ice_resistance": row["冰伤害抗性"],
+            "fire_resistance": row["火伤害抗性"],
+            "electric_resistance": row["电伤害抗性"],
+            "physical_resistance": row["物理伤害抗性"],
+            "ether_resistance": row["以太伤害抗性"],
+        }
+        return enemy_info
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to load enemy info for {enemy_id}: {e}")
+        # Fallback to existing example information
+        return {
+            "id": enemy_id,
+            "name": f"敌人{enemy_id}",
+            "level": 80,  # 示例等级
+            "element": "物理",  # 示例元素类型
+            "description": f"敌人{enemy_id}的详细信息"
+        }
 
 
 @router.post("/enemy-configs/", response_model=EnemyConfig)

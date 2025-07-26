@@ -93,26 +93,25 @@
 ### 3. APL相关API
 
 #### APL模板API
-- [ ] `GET /api/apl/templates` - 获取APL模板列表
-- [ ] `GET /api/apl/templates/{template_id}` - 获取APL模板详情
+- [x] `GET /api/apl/templates` - 获取APL模板
 
 #### APL配置API
-- [ ] `POST /api/apl/configs/` - 创建APL配置
-- [ ] `GET /api/apl/configs/` - 获取所有APL配置
-- [ ] `GET /api/apl/configs/{config_id}` - 获取特定APL配置
-- [ ] `PUT /api/apl/configs/{config_id}` - 更新APL配置
-- [ ] `DELETE /api/apl/configs/{config_id}` - 删除APL配置
+- [x] `POST /api/apl/configs/` - 创建APL配置
+- [x] `GET /api/apl/configs/` - 获取所有APL配置
+- [x] `GET /api/apl/configs/{config_id}` - 获取特定APL配置
+- [x] `PUT /api/apl/configs/{config_id}` - 更新APL配置
+- [x] `DELETE /api/apl/configs/{config_id}` - 删除APL配置
 
 #### APL文件管理API
-- [ ] `GET /api/apl/files` - 获取所有APL文件列表
-- [ ] `POST /api/apl/files` - 创建新APL文件
-- [ ] `GET /api/apl/files/{file_id}` - 获取APL文件内容
-- [ ] `PUT /api/apl/files/{file_id}` - 更新APL文件内容
-- [ ] `DELETE /api/apl/files/{file_id}` - 删除APL文件
+- [x] `GET /api/apl/files` - 获取所有APL文件列表
+- [x] `POST /api/apl/files` - 创建新APL文件
+- [x] `GET /api/apl/files/{file_id}` - 获取APL文件内容
+- [x] `PUT /api/apl/files/{file_id}` - 更新APL文件内容
+- [x] `DELETE /api/apl/files/{file_id}` - 删除APL文件
 
 #### APL语法检查API
-- [ ] `POST /api/apl/validate` - 验证APL语法 - 需要实现业务逻辑
-- [ ] `POST /api/apl/parse` - 解析APL代码 - 需要实现业务逻辑
+- [x] `POST /api/apl/validate` - 验证APL语法
+- [x] `POST /api/apl/parse` - 解析APL代码
 
 ### 4. 模拟配置相关API
 

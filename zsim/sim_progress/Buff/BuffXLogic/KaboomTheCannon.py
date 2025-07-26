@@ -24,9 +24,7 @@ class KaboomTheCannon(Buff.BuffLogic):
         self.record = None
 
     def get_prepared(self, **kwargs):
-        return check_preparation(
-            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
-        )
+        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
 
     def check_record_module(self):
         if self.equipper is None:
@@ -58,9 +56,7 @@ class KaboomTheCannon(Buff.BuffLogic):
         for names, tick_list in self.record.active_char_dict.copy().items():
             if tick_list[1] <= tick_now:
                 del self.record.active_char_dict[names]
-        self.buff_instance.simple_start(
-            tick_now, self.record.sub_exist_buff_dict, not_count=True
-        )
+        self.buff_instance.simple_start(tick_now, self.record.sub_exist_buff_dict, not_count=True)
         input_list = list(self.record.active_char_dict.values())
         self.buff_instance.dy.built_in_buff_box = input_list
         self.buff_instance.update_to_buff_0(self.buff_0)

@@ -31,9 +31,7 @@ def _prepare_buff_timeline_data(df: pl.DataFrame) -> list[dict[str, Any]]:
 
     for buff_name in buff_columns:
         # 将空值填充为0.0并筛选出来
-        buff_df = df.select(["time_tick", buff_name]).with_columns(
-            pl.col(buff_name).fill_null(0.0)
-        )
+        buff_df = df.select(["time_tick", buff_name]).with_columns(pl.col(buff_name).fill_null(0.0))
 
         if buff_df.height == 0:
             continue
@@ -47,9 +45,7 @@ def _prepare_buff_timeline_data(df: pl.DataFrame) -> list[dict[str, Any]]:
         # 标记每个连续段的开始
         # 条件：第一行，或者值发生变化
         buff_df = buff_df.with_columns(
-            ((pl.arange(0, pl.count()) == 0) | (pl.col("value_diff") != 0)).alias(
-                "is_start"
-            )
+            ((pl.arange(0, pl.count()) == 0) | (pl.col("value_diff") != 0)).alias("is_start")
         )
 
         # 为每个连续段分配一个ID
@@ -103,9 +99,7 @@ def _draw_buff_timeline_charts(all_buff_data: dict[str, list[dict[str, Any]]]) -
         with st.expander(f"{file_key}"):
             # Plotly 加载时直接获取 buff 效果映射关系
             df_timeline = pl.DataFrame(buff_data).with_columns(
-                pl.col("Task")
-                .replace(BUFF_EFFECT_MAPPING, default=None)
-                .alias("Effect")
+                pl.col("Task").replace(BUFF_EFFECT_MAPPING, default=None).alias("Effect")
             )
 
             # 准备悬停文本 - 包含Value、Start、Finish 以及 Effect 信息
@@ -245,9 +239,7 @@ async def prepare_buff_data_and_cache(
 
     # 异步删除原始CSV文件
     if processed_csv_files:
-        delete_tasks = [
-            aiofiles.os.remove(csv_path) for csv_path in processed_csv_files
-        ]
+        delete_tasks = [aiofiles.os.remove(csv_path) for csv_path in processed_csv_files]
         delete_results = await asyncio.gather(*delete_tasks, return_exceptions=True)
         for i, res in enumerate(delete_results):
             if isinstance(res, Exception):

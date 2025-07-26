@@ -65,15 +65,11 @@ class Yixuan(Character):
                     )
                 if self.regulated_breathing:
                     if self.cinema < 6:
-                        raise ValueError(
-                            "仪玄在非6画状态下开启了调息状态，请检查代码！"
-                        )
+                        raise ValueError("仪玄在非6画状态下开启了调息状态，请检查代码！")
                     self.regulated_breathing = False
                     self.regulated_breathing_last_update_tick = tick
                     if YIXUAN_REPORT:
-                        print(
-                            f"6画：仪玄释放【{__nodes.skill.skill_text}】，消耗一层调息！"
-                        )
+                        print(f"6画：仪玄释放【{__nodes.skill.skill_text}】，消耗一层调息！")
                         self.sim_instance.schedule_data.change_process_state()
                 else:
                     if self.technique_points < 120:
@@ -90,8 +86,7 @@ class Yixuan(Character):
                         self.sim_instance.schedule_data.change_process_state()
                 if self.cinema == 6:
                     if (
-                        tick - self.regulated_breathing_last_update_tick
-                        >= self.cinema_6_cd
+                        tick - self.regulated_breathing_last_update_tick >= self.cinema_6_cd
                     ) or self.regulated_breathing_last_update_tick == 0:
                         self.regulated_breathing = True
                         if YIXUAN_REPORT:
@@ -116,9 +111,7 @@ class Yixuan(Character):
                     raise ValueError("仪玄当前的聚墨点数不足！请检查APL")
                 self.condensed_ink -= 1
                 if YIXUAN_REPORT:
-                    print(
-                        f"2画：仪玄追加释放【{__nodes.skill.skill_text}】，消耗1点聚墨值"
-                    )
+                    print(f"2画：仪玄追加释放【{__nodes.skill.skill_text}】，消耗1点聚墨值")
                     self.sim_instance.schedule_data.change_process_state()
 
             # 更新术法值和闪能值

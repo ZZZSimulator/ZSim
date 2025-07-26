@@ -65,9 +65,7 @@ def _init_skill_tag_mapping() -> dict[str, str]:
             },
         )
         mapping = (
-            df.select("skill_tag", "skill_text", "INSTRUCTION")
-            .collect()
-            .to_dict(as_series=False)
+            df.select("skill_tag", "skill_text", "INSTRUCTION").collect().to_dict(as_series=False)
         )
         return {
             _tag: f"{_text if _text else ''}{f' - {_instruction}' if _instruction else ''}"
@@ -107,17 +105,13 @@ default_chars = [
 __lf = pl.scan_csv("./zsim/data/character.csv")
 char_options = __lf.select("name").unique().collect().to_series().to_list()
 # 角色名称->职业特性
-char_profession_map = {
-    row["name"]: row["角色特性"] for row in __lf.collect().iter_rows(named=True)
-}
+char_profession_map = {row["name"]: row["角色特性"] for row in __lf.collect().iter_rows(named=True)}
 
 # 武器选项
 __lf = pl.scan_csv("./zsim/data/weapon.csv")
 weapon_options = __lf.select("名称").unique().collect().to_series().to_list()
 # 音擎名称->职业
-weapon_profession_map = {
-    row["名称"]: row["职业"] for row in __lf.collect().iter_rows(named=True)
-}
+weapon_profession_map = {row["名称"]: row["职业"] for row in __lf.collect().iter_rows(named=True)}
 
 # 驱动盘套装选项
 __lf = pl.scan_csv("./zsim/data/equip_set_2pc.csv")

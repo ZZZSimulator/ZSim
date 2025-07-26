@@ -31,9 +31,7 @@ class MiyabiCoreSkill_IceFire(Buff.BuffLogic):
         self.record = None
 
     def get_prepared(self, **kwargs):
-        return check_preparation(
-            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
-        )
+        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
 
     def check_record_module(self):
         if self.buff_0 is None:
@@ -88,9 +86,7 @@ class MiyabiCoreSkill_IceFire(Buff.BuffLogic):
         self.record.last_frostbite = frostbite_now
         # print(f'当前tick，冰焰退出情况：{result}')
         if result:
-            event_list = JudgeTools.find_event_list(
-                sim_instance=self.buff_instance.sim_instance
-            )
+            event_list = JudgeTools.find_event_list(sim_instance=self.buff_instance.sim_instance)
             skill_obj = self.record.char.skills_dict["1091_Core_Passive"]
             skill_node = Preload.SkillNode(skill_obj, 0)
             event_list.append(skill_node)
@@ -104,9 +100,7 @@ class MiyabiCoreSkill_IceFire(Buff.BuffLogic):
         但是如果buff判定不通过，那么烈霜伤害，该buff层数的变动就没有实际意义，
         """
         self.check_record_module()
-        self.get_prepared(
-            char_CID=1091, enemy=1, dynamic_buff_list=1, sub_exist_buff_dict=1
-        )
+        self.get_prepared(char_CID=1091, enemy=1, dynamic_buff_list=1, sub_exist_buff_dict=1)
         enemy = self.record.enemy
         dynamic_buff = self.record.dynamic_buff_list
         tick_now = JudgeTools.find_tick(sim_instance=self.buff_instance.sim_instance)

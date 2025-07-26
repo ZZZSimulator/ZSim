@@ -122,11 +122,7 @@ class EnemyAttackEventManager:
         """判断当前tick是否处于首次响应窗口内"""
         if not self.attacking:
             return False
-        if (
-            self.interaction_window_open_tick
-            <= tick
-            <= self.interaction_window_close_tick
-        ):
+        if self.interaction_window_open_tick <= tick <= self.interaction_window_close_tick:
             return True
         return False
 
@@ -138,9 +134,7 @@ class EnemyAttackEventManager:
 
         Lp = ENEMY_ATK_PARAMETER_DICT.get("PlayerLevel", None)
         if Lp is None:
-            raise ValueError(
-                "ENEMY_ATK_PARAMETER_DICT中没有PlayerLevel参数，请检查配置！"
-            )
+            raise ValueError("ENEMY_ATK_PARAMETER_DICT中没有PlayerLevel参数，请检查配置！")
         c = ENEMY_ATK_PARAMETER_DICT.get("c", None)
         if c is None:
             raise ValueError("ENEMY_ATK_PARAMETER_DICT中没有c参数，请检查配置！")
@@ -176,9 +170,7 @@ class EnemyAttackEventManager:
 
     def get_uncommon_response_window(self, another_ta: int) -> tuple[int, int]:
         """获取红黄光亮起的时间点，适用于非标准的进攻动作"""
-        first_hit_tick = (
-            self.action.get_hit_tick(another_ta=another_ta) + self.last_start_tick
-        )
+        first_hit_tick = self.action.get_hit_tick(another_ta=another_ta) + self.last_start_tick
         Ta = another_ta
         left_bonud = max(self.last_start_tick, first_hit_tick - Ta)
         right_bound = first_hit_tick
@@ -244,12 +236,7 @@ class EnemyAttackEventManager:
 
     def hit_check(self, tick: int) -> bool:
         """检查输入的tick是否存在命中节点"""
-        if any(
-            [
-                _hit_tick + self.last_start_tick == tick
-                for _hit_tick in self.action.hit_list
-            ]
-        ):
+        if any([_hit_tick + self.last_start_tick == tick for _hit_tick in self.action.hit_list]):
             return True
         return False
 
@@ -257,9 +244,7 @@ class EnemyAttackEventManager:
         """单次命中结算函数，用于结算当前tick的命中结果。"""
         sim_instance = self.enemy.sim_instance
         char_on_field: int = sim_instance.preload.preload_data.operating_now
-        char_stack = sim_instance.preload.preload_data.personal_node_stack[
-            char_on_field
-        ]
+        char_stack = sim_instance.preload.preload_data.personal_node_stack[char_on_field]
         self.hitted_count += 1
         if char_stack is None:
             print(
@@ -307,12 +292,8 @@ class EnemyAttackEventManager:
                     self.event_end(tick=tick)
                 else:
                     if self.action.hit == self.hitted_count:
-                        action_replace_manager.parry_aid_strategy.knock_back_signal = (
-                            True
-                        )
-                        action_replace_manager.parry_aid_strategy.final_parry_node = (
-                            nodes
-                        )
+                        action_replace_manager.parry_aid_strategy.knock_back_signal = True
+                        action_replace_manager.parry_aid_strategy.final_parry_node = nodes
                         self.event_end(tick=tick)
                         print(
                             f"检测到来自角色{char_on_field}的招架技能{nodes.skill_tag}，进攻交互式时间提前结束，角色即将被击退！"

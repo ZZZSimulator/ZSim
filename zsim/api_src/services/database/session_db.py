@@ -23,7 +23,7 @@ class SessionDB:
             cursor = await db.execute("PRAGMA table_info(sessions)")
             columns = await cursor.fetchall()
             column_names = [column[1] for column in columns]
-            
+
             if not columns:
                 # Table doesn't exist, create it with all columns
                 await db.execute(
@@ -38,8 +38,10 @@ class SessionDB:
                 )
             elif "session_name" not in column_names:
                 # Table exists but doesn't have session_name column, add it
-                await db.execute("ALTER TABLE sessions ADD COLUMN session_name TEXT NOT NULL DEFAULT ''")
-            
+                await db.execute(
+                    "ALTER TABLE sessions ADD COLUMN session_name TEXT NOT NULL DEFAULT ''"
+                )
+
             await db.commit()
         self._db_init = True
 
@@ -55,7 +57,9 @@ class SessionDB:
                     session.create_time.isoformat(),
                     session.status,
                     session.session_run.model_dump_json(indent=4) if session.session_run else None,
-                    json.dumps([r.model_dump() for r in session.session_result]) if session.session_result else None,
+                    json.dumps([r.model_dump() for r in session.session_result])
+                    if session.session_result
+                    else None,
                 ),
             )
             await db.commit()
@@ -70,14 +74,18 @@ class SessionDB:
                 # Get column names to ensure correct indexing
                 column_names = [description[0] for description in cursor.description]
                 row_dict = dict(zip(column_names, row))
-                
+
                 return Session(
-                    session_id=row_dict['session_id'],
-                    session_name=row_dict['session_name'],
-                    create_time=row_dict['create_time'],
-                    status=row_dict['status'],
-                    session_run=json.loads(row_dict['session_run']) if row_dict['session_run'] else None,
-                    session_result=json.loads(row_dict['session_result']) if row_dict['session_result'] else None,
+                    session_id=row_dict["session_id"],
+                    session_name=row_dict["session_name"],
+                    create_time=row_dict["create_time"],
+                    status=row_dict["status"],
+                    session_run=json.loads(row_dict["session_run"])
+                    if row_dict["session_run"]
+                    else None,
+                    session_result=json.loads(row_dict["session_result"])
+                    if row_dict["session_result"]
+                    else None,
                 )
         return None
 
@@ -94,7 +102,9 @@ class SessionDB:
                     session.create_time.isoformat(),
                     session.status,
                     session.session_run.model_dump_json(indent=4) if session.session_run else None,
-                    json.dumps([r.model_dump() for r in session.session_result]) if session.session_result else None,
+                    json.dumps([r.model_dump() for r in session.session_result])
+                    if session.session_result
+                    else None,
                     session.session_id,
                 ),
             )
@@ -119,12 +129,16 @@ class SessionDB:
                 row_dict = dict(zip(column_names, row))
                 sessions.append(
                     Session(
-                        session_id=row_dict['session_id'],
-                        session_name=row_dict['session_name'],
-                        create_time=row_dict['create_time'],
-                        status=row_dict['status'],
-                        session_run=json.loads(row_dict['session_run']) if row_dict['session_run'] else None,
-                        session_result=json.loads(row_dict['session_result']) if row_dict['session_result'] else None,
+                        session_id=row_dict["session_id"],
+                        session_name=row_dict["session_name"],
+                        create_time=row_dict["create_time"],
+                        status=row_dict["status"],
+                        session_run=json.loads(row_dict["session_run"])
+                        if row_dict["session_run"]
+                        else None,
+                        session_result=json.loads(row_dict["session_result"])
+                        if row_dict["session_result"]
+                        else None,
                     )
                 )
         return sessions

@@ -35,7 +35,7 @@ def mock_character_config():
             "drive6": "攻击力%",
             "equip_style": "4+2",
             "equip_set4": "啄木鸟电音",
-            "equip_set2_a": "极地重金属"
+            "equip_set2_a": "极地重金属",
         },
         "苍角": {
             "name": "苍角",
@@ -58,8 +58,8 @@ def mock_character_config():
             "drive6": "攻击力%",
             "equip_style": "4+2",
             "equip_set4": "自由蓝调",
-            "equip_set2_a": "灵魂摇滚"
-        }
+            "equip_set2_a": "灵魂摇滚",
+        },
     }
 
 
@@ -67,24 +67,11 @@ def mock_character_config():
 def mock_simulation_config():
     """Create minimal mock simulation configuration for testing."""
     return {
-        "debug": {
-            "enabled": False,
-            "level": 4
-        },
+        "debug": {"enabled": False, "level": 4},
         "stop_tick": 1000,
-        "watchdog": {
-            "enabled": False,
-            "level": 4
-        },
-        "character": {
-            "crit_balancing": True,
-            "back_attack_rate": 1
-        },
-        "enemy": {
-            "index_ID": 11412,
-            "adjust_ID": 22412,
-            "difficulty": 8.74
-        },
+        "watchdog": {"enabled": False, "level": 4},
+        "character": {"crit_balancing": True, "back_attack_rate": 1},
+        "enemy": {"index_ID": 11412, "adjust_ID": 22412, "difficulty": 8.74},
         "apl_mode": {
             "enabled": True,
             "na_order": "./zsim/data/DefaultConfig/NAOrder.json",
@@ -96,13 +83,13 @@ def mock_simulation_config():
             "enemy_attack_report": False,
             "player_level": 5,
             "default_apl_dir": "./zsim/data/APLData",
-            "custom_apl_dir": "./zsim/data/APLData/custom"
+            "custom_apl_dir": "./zsim/data/APLData/custom",
         },
         "swap_cancel_mode": {
             "enabled": True,
             "completion_coefficient": 0.3,
             "lag_time": 20,
-            "debug": False
+            "debug": False,
         },
         "database": {
             "SQLITE_PATH": "./zsim/data/zsim.db",
@@ -116,24 +103,17 @@ def mock_simulation_config():
             "JUDGE_FILE_PATH": "./zsim/data/触发判断.csv",
             "EFFECT_FILE_PATH": "./zsim/data/buff_effect.csv",
             "EXIST_FILE_PATH": "./zsim/data/激活判断.csv",
-            "APL_FILE_PATH": "./zsim/data/APLData/薇薇安-柳-耀嘉音.toml"
+            "APL_FILE_PATH": "./zsim/data/APLData/薇薇安-柳-耀嘉音.toml",
         },
-        "buff_0_report": {
-            "enabled": False
-        },
+        "buff_0_report": {"enabled": False},
         "char_report": {
             "Vivian": False,
             "AstraYao": False,
             "Hugo": False,
             "Yixuan": False,
             "Trigger": False,
-            "Yuzuha": False
+            "Yuzuha": False,
         },
-        "parallel_mode": {
-            "enabled": False,
-            "adjust_char": 1
-        },
-        "dev": {
-            "new_sim_boot": True
-        }
+        "parallel_mode": {"enabled": False, "adjust_char": 1},
+        "dev": {"new_sim_boot": True},
     }

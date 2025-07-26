@@ -48,16 +48,14 @@ class Zhuyuan(Character):
                         elif popping_shotshells == "1241_Q":
                             self.shotshells += self.Q_STORED
 
-    def get_resources(
-        self, *args, **kwargs
-    ) -> tuple[str | None, int | float | bool | None]:
+    def get_resources(self, *args, **kwargs) -> tuple[str | None, int | float | bool | None]:
         return "强化霰弹", self.shotshells
 
     def get_special_stats(self, *args, **kwargs) -> dict[str | None, object | None]:
         if self.allow_restore:
-            stored_shotshells = (
-                6 if "1241_QTE" in self.shotshells_warehouse else 0
-            ) + (9 if "1241_Q" in self.shotshells_warehouse else 0)
+            stored_shotshells = (6 if "1241_QTE" in self.shotshells_warehouse else 0) + (
+                9 if "1241_Q" in self.shotshells_warehouse else 0
+            )
         else:
             stored_shotshells = 0
         return {

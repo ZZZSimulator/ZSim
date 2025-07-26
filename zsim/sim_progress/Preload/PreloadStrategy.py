@@ -8,6 +8,7 @@ from zsim.sim_progress.Preload.PreloadEngine import (
     SwapCancelValidateEngine,
 )
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from .PreloadDataClass import PreloadData
 
@@ -20,7 +21,7 @@ class BasePreloadStrategy(ABC):
         self.apl_engine = APLEngine(data, apl_path=apl_path, preload_data=self.data)
         self.force_add_engine = ForceAddEngine(data)
         self.confirm_engine = ConfirmEngine(data)
-        self.finish_post_init: bool = False         # 是否完成了后置初始化
+        self.finish_post_init: bool = False  # 是否完成了后置初始化
 
     @abstractmethod
     def generate_actions(self, *args, **kwargs):
@@ -48,7 +49,9 @@ class SwapCancelStrategy(BasePreloadStrategy):
         """合轴逻辑"""
         # 0、自检
         self.check_myself(enemy, tick)
-        self.data.sim_instance.schedule_data.enemy.special_state_manager.broadcast_and_update(signal=SSUS.BEFORE_PRELOAD)
+        self.data.sim_instance.schedule_data.enemy.special_state_manager.broadcast_and_update(
+            signal=SSUS.BEFORE_PRELOAD
+        )
 
         # 0.5、 EnemyAttack结构运行一次
         self.attack_response_engine.run_myself(tick=tick)
@@ -98,6 +101,7 @@ class SwapCancelStrategy(BasePreloadStrategy):
     def post_init_all_object(self):
         """后置初始化所有数据"""
         from ...simulator.simulator_class import Simulator
+
         sim_insatnce: Simulator = self.data.sim_instance
         for char_obj in sim_insatnce.char_data.char_obj_list:
             char_obj.POST_INIT_DATA(sim_insatnce=sim_insatnce)

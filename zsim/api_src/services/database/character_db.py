@@ -60,10 +60,10 @@ class CharacterDB:
         # 设置config_id
         if not config.config_id:
             config.config_id = f"{config.name}_{config.config_name}"
-            
+
         # 更新时间戳
         config.update_time = datetime.now()
-        
+
         async with aiosqlite.connect(SQLITE_PATH) as db:
             await db.execute(
                 """INSERT INTO character_configs (
@@ -73,13 +73,34 @@ class CharacterDB:
                     equip_set2_a, equip_set2_b, equip_set2_c, create_time, update_time
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                 (
-                    config.config_id, config.name, config.config_name, config.weapon, config.weapon_level, config.cinema,
-                    config.crit_balancing, config.crit_rate_limit, config.scATK_percent, config.scATK,
-                    config.scHP_percent, config.scHP, config.scDEF_percent, config.scDEF,
-                    config.scAnomalyProficiency, config.scPEN, config.scCRIT, config.scCRIT_DMG,
-                    config.drive4, config.drive5, config.drive6, config.equip_style, config.equip_set4,
-                    config.equip_set2_a, config.equip_set2_b, config.equip_set2_c,
-                    config.create_time.isoformat(), config.update_time.isoformat()
+                    config.config_id,
+                    config.name,
+                    config.config_name,
+                    config.weapon,
+                    config.weapon_level,
+                    config.cinema,
+                    config.crit_balancing,
+                    config.crit_rate_limit,
+                    config.scATK_percent,
+                    config.scATK,
+                    config.scHP_percent,
+                    config.scHP,
+                    config.scDEF_percent,
+                    config.scDEF,
+                    config.scAnomalyProficiency,
+                    config.scPEN,
+                    config.scCRIT,
+                    config.scCRIT_DMG,
+                    config.drive4,
+                    config.drive5,
+                    config.drive6,
+                    config.equip_style,
+                    config.equip_set4,
+                    config.equip_set2_a,
+                    config.equip_set2_b,
+                    config.equip_set2_c,
+                    config.create_time.isoformat(),
+                    config.update_time.isoformat(),
                 ),
             )
             await db.commit()
@@ -95,8 +116,8 @@ class CharacterDB:
                           scPEN, scCRIT, scCRIT_DMG, drive4, drive5, drive6, equip_style, equip_set4,
                           equip_set2_a, equip_set2_b, equip_set2_c, create_time, update_time
                    FROM character_configs 
-                   WHERE config_id = ?""", 
-                (config_id,)
+                   WHERE config_id = ?""",
+                (config_id,),
             )
             row = await cursor.fetchone()
             if row:
@@ -128,7 +149,7 @@ class CharacterDB:
                     equip_set2_b=row[24],
                     equip_set2_c=row[25],
                     create_time=datetime.fromisoformat(row[26]),
-                    update_time=datetime.fromisoformat(row[27])
+                    update_time=datetime.fromisoformat(row[27]),
                 )
         return None
 
@@ -137,7 +158,7 @@ class CharacterDB:
         await self._init_db()
         # 更新时间戳
         config.update_time = datetime.now()
-        
+
         async with aiosqlite.connect(SQLITE_PATH) as db:
             await db.execute(
                 """UPDATE character_configs SET
@@ -148,12 +169,33 @@ class CharacterDB:
                     equip_set2_c = ?, update_time = ?
                    WHERE config_id = ?""",
                 (
-                    config.name, config.config_name, config.weapon, config.weapon_level, config.cinema, config.crit_balancing,
-                    config.crit_rate_limit, config.scATK_percent, config.scATK, config.scHP_percent,
-                    config.scHP, config.scDEF_percent, config.scDEF, config.scAnomalyProficiency,
-                    config.scPEN, config.scCRIT, config.scCRIT_DMG, config.drive4, config.drive5,
-                    config.drive6, config.equip_style, config.equip_set4, config.equip_set2_a,
-                    config.equip_set2_b, config.equip_set2_c, config.update_time.isoformat(), config.config_id
+                    config.name,
+                    config.config_name,
+                    config.weapon,
+                    config.weapon_level,
+                    config.cinema,
+                    config.crit_balancing,
+                    config.crit_rate_limit,
+                    config.scATK_percent,
+                    config.scATK,
+                    config.scHP_percent,
+                    config.scHP,
+                    config.scDEF_percent,
+                    config.scDEF,
+                    config.scAnomalyProficiency,
+                    config.scPEN,
+                    config.scCRIT,
+                    config.scCRIT_DMG,
+                    config.drive4,
+                    config.drive5,
+                    config.drive6,
+                    config.equip_style,
+                    config.equip_set4,
+                    config.equip_set2_a,
+                    config.equip_set2_b,
+                    config.equip_set2_c,
+                    config.update_time.isoformat(),
+                    config.config_id,
                 ),
             )
             await db.commit()
@@ -163,10 +205,7 @@ class CharacterDB:
         await self._init_db()
         config_id = f"{name}_{config_name}"
         async with aiosqlite.connect(SQLITE_PATH) as db:
-            await db.execute(
-                "DELETE FROM character_configs WHERE config_id = ?", 
-                (config_id,)
-            )
+            await db.execute("DELETE FROM character_configs WHERE config_id = ?", (config_id,))
             await db.commit()
 
     async def list_character_configs(self, name: str) -> List[CharacterConfig]:
@@ -182,7 +221,7 @@ class CharacterDB:
                    FROM character_configs 
                    WHERE name = ? 
                    ORDER BY config_name""",
-                (name,)
+                (name,),
             )
             rows = await cursor.fetchall()
             for row in rows:
@@ -215,7 +254,7 @@ class CharacterDB:
                         equip_set2_b=row[24],
                         equip_set2_c=row[25],
                         create_time=datetime.fromisoformat(row[26]),
-                        update_time=datetime.fromisoformat(row[27])
+                        update_time=datetime.fromisoformat(row[27]),
                     )
                 )
         return configs

@@ -33,16 +33,12 @@ class ConfirmEngine(BasePreloadEngine):
         for i in range(len(self.data.preload_action_list_before_confirm)):
             tuples = self.data.preload_action_list_before_confirm.pop()
             #  1、创建node
-            node = self.spawn_node_from_tag(
-                tick, tuples, template_node_from_apl=apl_skill_node
-            )
+            node = self.spawn_node_from_tag(tick, tuples, template_node_from_apl=apl_skill_node)
             #  2、可行性验证
             if self.validate_node_execution(node, tick):
                 # 3、内部数据交互
                 self.data.push_node_in_swap_cancel(node, tick)
-                report_to_log(
-                    f"[PRELOAD]:In tick: {tick}, {node.skill_tag} has been preloaded"
-                )
+                report_to_log(f"[PRELOAD]:In tick: {tick}, {node.skill_tag} has been preloaded")
                 # 4、外部数据交互
                 self.update_external_data(node, tick)
                 # print(f'{node.skill_tag}通过了可行性验证，该主动动作来自于优先级为{node.apl_priority}的APL代码')

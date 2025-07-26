@@ -16,9 +16,7 @@ class ViviansProphecy(Dot):
         self.ft = self.DotFeature(sim_instance=sim_instance)
         self.preload_data = JudgeTools.find_preload_data(sim_instance=self.sim_instance)
         tick = JudgeTools.find_tick(sim_instance=self.sim_instance)
-        self.skill_node_data = spawn_node(
-            "1331_Core_Passive", tick, self.preload_data.skills
-        )
+        self.skill_node_data = spawn_node("1331_Core_Passive", tick, self.preload_data.skills)
 
     @dataclass
     class DotFeature(Dot.DotFeature):

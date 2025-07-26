@@ -20,18 +20,14 @@ class ActionReplaceManager:
         self.quick_assist_strategy = self.QuickAssistStrategy(self.preload_data)
         self.parry_aid_strategy = self.ParryAidStrategy(self.preload_data)
 
-    def action_replace_factory(
-        self, CID: int, action: str, tick: int
-    ) -> tuple[bool, str]:
+    def action_replace_factory(self, CID: int, action: str, tick: int) -> tuple[bool, str]:
         """该函数主要用于拦截APL的主动动作，使其被其他动作替代，用来模拟各种特殊情况"""
         """如果目前正处于黄光阶段（窗口期），那么此时的所有切人动作都会被无条件换成格挡，哪怕此时快支正处于激活状态"""
         if "耀嘉音" in self.preload_data.sim_instance.init_data.name_box:
             """有耀嘉音时，优先检测快支替换"""
-            if self.quick_assist_strategy.condition_judge(
-                CID=CID, action=action, tick=tick
-            ):
-                quick_assist_strategy_replace_result = (
-                    self.quick_assist_strategy.spawn_new_action(CID, action)
+            if self.quick_assist_strategy.condition_judge(CID=CID, action=action, tick=tick):
+                quick_assist_strategy_replace_result = self.quick_assist_strategy.spawn_new_action(
+                    CID, action
                 )
                 if quick_assist_strategy_replace_result not in ["parry", "wait"]:
                     return True, quick_assist_strategy_replace_result
@@ -51,11 +47,9 @@ class ActionReplaceManager:
             if parry_replace_result != action:
                 return True, parry_replace_result
 
-            if self.quick_assist_strategy.condition_judge(
-                CID=CID, action=action, tick=tick
-            ):
-                quick_assist_strategy_replace_result = (
-                    self.quick_assist_strategy.spawn_new_action(CID, action)
+            if self.quick_assist_strategy.condition_judge(CID=CID, action=action, tick=tick):
+                quick_assist_strategy_replace_result = self.quick_assist_strategy.spawn_new_action(
+                    CID, action
                 )
                 return True, quick_assist_strategy_replace_result
             return False, action
@@ -77,9 +71,7 @@ class ActionReplaceManager:
             super().__init__(preload_data)
             self.manager_box = {}
 
-        def condition_judge(
-            self, CID: int, tick: int, action: str, *args, **kwargs
-        ) -> bool:
+        def condition_judge(self, CID: int, tick: int, action: str, *args, **kwargs) -> bool:
             """
             该函数用于判定当前tick的动作是否需要被替换成快速支援：条件如下：
             1、当前角色快速支援亮起
@@ -92,7 +84,9 @@ class ActionReplaceManager:
                 根本不可能有导致快速支援替换APL动作的情况发生，直接返回False即可。"""
                 return False
             if CID not in self.manager_box:
-                for manager in self.preload_data.quick_assist_system.quick_assist_manager_group.values():
+                for (
+                    manager
+                ) in self.preload_data.quick_assist_system.quick_assist_manager_group.values():
                     if manager.char.CID == CID:
                         self.manager_box[CID] = manager
                         break
@@ -107,10 +101,7 @@ class ActionReplaceManager:
 
                 return False
             """当前角色的快速支援正处于激活状态，并且角色企图上场释放技能，则执行替换。"""
-            if (
-                current_manager.quick_assist_available
-                and str(CID) not in node_on_field.skill_tag
-            ):
+            if current_manager.quick_assist_available and str(CID) not in node_on_field.skill_tag:
                 return True
             else:
                 return False
@@ -137,9 +128,7 @@ class ActionReplaceManager:
                     # print(f'执行快速支援！技能{action}替换成了{manager.quick_assist_skill}！')
                     return manager.quick_assist_skill
             else:
-                raise ValueError(
-                    f"没有找到CID为{CID}的技能对象！无法执行快速支援替换！"
-                )
+                raise ValueError(f"没有找到CID为{CID}的技能对象！无法执行快速支援替换！")
 
     class ParryAidStrategy(__BaseStrategy):
         """负责将技能tag替换成各类招架支援的结构"""
@@ -171,9 +160,7 @@ class ActionReplaceManager:
             print(f"【ActionReplaceManager】knock_back_signal被重新赋值为{value}")
             self._knock_back_signal = value
 
-        def condition_judge(
-            self, CID: int, tick: int, action: str, *args, **kwargs
-        ) -> bool | str:
+        def condition_judge(self, CID: int, tick: int, action: str, *args, **kwargs) -> bool | str:
             """
             用来判断当前情景下，APL抛出的技能tag是否需要被强制替换为对应的招架类Tag。
             """
@@ -229,9 +216,7 @@ class ActionReplaceManager:
                     return False
 
             # 条件2检查——角色有招架能力
-            char_obj: "Character" = (
-                self.preload_data.sim_instance.char_data.find_char_obj(CID=CID)
-            )
+            char_obj: "Character" = self.preload_data.sim_instance.char_data.find_char_obj(CID=CID)
             if char_obj.aid_type != "招架":
                 if "parry" in action.lower():
                     raise ValueError(
@@ -248,9 +233,7 @@ class ActionReplaceManager:
         def spawn_new_action(self, CID: int, action: str, tick: int, *args, **kwargs):
             """根据当前的状态，执行招架支援tag的替换。"""
             atk_manager = self.preload_data.atk_manager
-            replace_signal: bool | str = self.condition_judge(
-                CID=CID, action=action, tick=tick
-            )
+            replace_signal: bool | str = self.condition_judge(CID=CID, action=action, tick=tick)
             # 若条件判断返回的是False，则说明不执行替换，返回原始tag。
             if not replace_signal:
                 return action
@@ -265,9 +248,7 @@ class ActionReplaceManager:
             elif replace_signal == "knock_back":
                 return self.__knock_back_replace_handler(CID=CID)
             elif replace_signal == "final_parry":
-                return self.__final_parry_replace_handler(
-                    atk_manager=atk_manager, CID=CID
-                )
+                return self.__final_parry_replace_handler(atk_manager=atk_manager, CID=CID)
             else:
                 raise ValueError(f"无法识别的替换信号：{replace_signal}！")
 
@@ -275,9 +256,13 @@ class ActionReplaceManager:
             if mode == 0:
                 return f"{CID}_Light_parry_Aid"
             elif mode == 1:
-                return f"{self.consecutive_parry_node.skill_tag.strip().split('_')[0]}_Chain_parry_Aid"
+                return (
+                    f"{self.consecutive_parry_node.skill_tag.strip().split('_')[0]}_Chain_parry_Aid"
+                )
             elif mode == 2:
-                return f"{self.consecutive_parry_node.skill_tag.strip().split('_')[0]}_Heavy_parry_Aid"
+                return (
+                    f"{self.consecutive_parry_node.skill_tag.strip().split('_')[0]}_Heavy_parry_Aid"
+                )
             elif mode == 3:
                 """这是衔接在招架支援后的后退动作，无法取消。"""
                 return f"{self.final_parry_node.skill_tag.strip().split('_')[0]}_knock_back_cause_parry"
@@ -294,17 +279,13 @@ class ActionReplaceManager:
             """负责处理“首次招架”分支的tag替换业务"""
             # 注意，执行本函数的情况，正常情况下总是符合时间窗口的(APL和前方的信号函数都已经处理过这个逻辑了
             if not atk_manager.is_in_response_window(tick=tick):
-                raise ValueError(
-                    "首次招架的技能标签替换失败，因为当前时间窗口已经过期！"
-                )
+                raise ValueError("首次招架的技能标签替换失败，因为当前时间窗口已经过期！")
             if atk_manager.action.hit_type in ["Light", "Chain"]:
                 return self.spawn_parry_aid_tag(CID=CID, mode=0)
             elif atk_manager.action.hit_type == "Heavy":
                 return self.spawn_parry_aid_tag(CID=CID, mode=2)
             else:
-                raise ValueError(
-                    f"不支持的招架技能类型：{atk_manager.action.hit_type}！"
-                )
+                raise ValueError(f"不支持的招架技能类型：{atk_manager.action.hit_type}！")
 
         def __consecutive_parry_replace_handler(
             self,
@@ -337,9 +318,7 @@ class ActionReplaceManager:
             else:
                 raise ValueError("并未检测到击退信号！请检查函数逻辑！")
 
-        def __final_parry_replace_handler(
-            self, CID: int, atk_manager: "EnemyAttackEventManager"
-        ):
+        def __final_parry_replace_handler(self, CID: int, atk_manager: "EnemyAttackEventManager"):
             """
             负责处理“final_parry”分支的tag替换业务
             该分支的职能是：复核验证最后一击的判定结果，
@@ -384,10 +363,7 @@ class ActionReplaceManager:
                 self.assault_aid_disable_tick = tick
                 print(f"角色{skill_node.char_name}在招架完成后释放支援突击！")
             elif any(
-                [
-                    _sub_tag in skill_node.skill_tag
-                    for _sub_tag in ["Chain_parry", "Heavy_parry"]
-                ]
+                [_sub_tag in skill_node.skill_tag for _sub_tag in ["Chain_parry", "Heavy_parry"]]
             ):
                 # 在检测连续招架或是重招架时，必须检测当前的命中次数，确保正确关闭连续招架状态。
                 if (

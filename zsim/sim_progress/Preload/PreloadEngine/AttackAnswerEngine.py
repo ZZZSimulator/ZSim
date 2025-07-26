@@ -52,20 +52,14 @@ class AttackResponseEngine(BasePreloadEngine):
             return None
         if self.enemy.dynamic.stun:
             return None
-        if self.data.atk_manager.interruption_recovery_check(
-            tick=self.sim_instance.tick
-        ):
+        if self.data.atk_manager.interruption_recovery_check(tick=self.sim_instance.tick):
             return None
         if self.enemy.attack_method.random_attack:
-            enemy_attack_action = (
-                self.enemy.attack_method.probablity_driven_action_selection(
-                    current_tick=self.sim_instance.tick
-                )
+            enemy_attack_action = self.enemy.attack_method.probablity_driven_action_selection(
+                current_tick=self.sim_instance.tick
             )
         else:
-            enemy_attack_action = (
-                self.enemy.attack_method.time_anchored_action_selection(
-                    current_tick=self.sim_instance.tick
-                )
+            enemy_attack_action = self.enemy.attack_method.time_anchored_action_selection(
+                current_tick=self.sim_instance.tick
             )
         return enemy_attack_action

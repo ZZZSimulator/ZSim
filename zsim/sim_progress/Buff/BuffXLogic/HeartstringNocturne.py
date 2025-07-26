@@ -21,9 +21,7 @@ class HeartstringNocturne(Buff.BuffLogic):
         self.record = None
 
     def get_prepared(self, **kwargs):
-        return check_preparation(
-            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
-        )
+        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
 
     def check_record_module(self):
         if self.equipper is None:
@@ -42,11 +40,9 @@ class HeartstringNocturne(Buff.BuffLogic):
         self.check_record_module()
         self.get_prepared(equipper="心弦夜响")
         if not self.record.listener_exist:
-            self.record.listener = (
-                self.buff_instance.sim_instance.listener_manager.get_listener(
-                    listener_owner=self.record.char,
-                    listener_id="Heartstring_Nocturne_1",
-                )
+            self.record.listener = self.buff_instance.sim_instance.listener_manager.get_listener(
+                listener_owner=self.record.char,
+                listener_id="Heartstring_Nocturne_1",
             )
             # self.record.listener = self.buff_instance.sim_instance.listener_manager.listener_factory(
             #     initiate_signal="Heartstring_Nocturne_1", sim_instance=self.buff_instance.sim_instance

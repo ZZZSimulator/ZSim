@@ -23,9 +23,7 @@ class ShadowHarmony4(Buff.BuffLogic):
         self.record = None
 
     def get_prepared(self, **kwargs):
-        return check_preparation(
-            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
-        )
+        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
 
     def check_record_module(self):
         if self.equipper is None:
@@ -45,9 +43,7 @@ class ShadowHarmony4(Buff.BuffLogic):
         self.get_prepared(equipper="如影相随")
         loading_mission = kwargs.get("loading_mission", None)
         if loading_mission is None:
-            raise ValueError(
-                f"{self.buff_instance.ft.index}的xjuge函数中，获取loading_mission失败"
-            )
+            raise ValueError(f"{self.buff_instance.ft.index}的xjuge函数中，获取loading_mission失败")
         from zsim.sim_progress.Load import LoadingMission
 
         if not isinstance(loading_mission, LoadingMission):

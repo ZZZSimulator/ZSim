@@ -41,9 +41,7 @@ class MiyabiAdditionalAbility_IgnoreIceRes(Buff.BuffLogic):
         self.record = None
 
     def get_prepared(self, **kwargs):
-        return check_preparation(
-            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
-        )
+        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
 
     def check_record_module(self):
         if self.buff_0 is None:
@@ -61,9 +59,7 @@ class MiyabiAdditionalAbility_IgnoreIceRes(Buff.BuffLogic):
         action_now = self.record.action_stack.peek()
         enemy = self.record.enemy
 
-        current_anomalies = {
-            name: getattr(enemy.dynamic, name) for name in anomaly_name_list
-        }
+        current_anomalies = {name: getattr(enemy.dynamic, name) for name in anomaly_name_list}
         # 获取当前状态
         current_count = sum(current_anomalies.values())
         last_count = sum(self.record.anomaly_state.values())

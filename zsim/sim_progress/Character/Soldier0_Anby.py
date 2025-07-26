@@ -167,9 +167,7 @@ class Soldier0_Anby(Character):
         if self.silver_star < self.silver_star_basic_cost and self.c2_counter == 0:
             print("当前可用的银星层数不够，传入的操作企图触发白雷，请检查APL！")
         if self.white_thunder_answer:
-            print(
-                "白雷响应状态仍保持开启的情况下，再次企图触发了白雷！ 当前存在未结算的白雷！！"
-            )
+            print("白雷响应状态仍保持开启的情况下，再次企图触发了白雷！ 当前存在未结算的白雷！！")
 
     def __cinema_6_filter(self):
         if self.cinema != 6:

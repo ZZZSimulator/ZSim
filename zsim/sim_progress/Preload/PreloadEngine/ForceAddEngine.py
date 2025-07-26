@@ -40,9 +40,7 @@ class ForceAddEngine(BasePreloadEngine):
             if should_force_add:
                 # print(f'强制添加判定通过！该强制添加来自于{node.skill_tag}，将要添加：{follow_up[index]}')
                 self.check_char(follow_up, index, node)  # 检验数据的正确性
-                self.data.preload_action_list_before_confirm.append(
-                    (follow_up[index], False, 0)
-                )
+                self.data.preload_action_list_before_confirm.append((follow_up[index], False, 0))
                 self.active_signal = True
 
     def check_char(self, follow_up, index, node):
@@ -52,9 +50,7 @@ class ForceAddEngine(BasePreloadEngine):
         """
         follow_up_skill_CID = int(follow_up[index][:4])
         follow_up_skill_add_tick = node.end_tick
-        followed_char_stack = self.data.personal_node_stack.get(
-            follow_up_skill_CID, None
-        )
+        followed_char_stack = self.data.personal_node_stack.get(follow_up_skill_CID, None)
         if followed_char_stack is not None:
             if node.end_tick < followed_char_stack.peek().end_tick:
                 raise ValueError(

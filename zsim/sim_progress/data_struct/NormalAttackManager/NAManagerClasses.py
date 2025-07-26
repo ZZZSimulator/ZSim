@@ -24,9 +24,7 @@ class YanagiNAManager(BaseNAManager):
 
     @property
     def first_hit(self) -> str:
-        return (
-            "1221_NA_1" if self.char.get_special_stats()["当前架势"] else "1221_SNA_1"
-        )
+        return "1221_NA_1" if self.char.get_special_stats()["当前架势"] else "1221_SNA_1"
 
 
 class HugoNAManager(BaseNAManager):

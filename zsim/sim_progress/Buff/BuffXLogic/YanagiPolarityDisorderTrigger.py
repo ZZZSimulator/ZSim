@@ -7,7 +7,9 @@ class YanagiPolarityDisorderTriggerRecord:
     def __init__(self):
         self.char = None
         self.enemy = None
-        self.polarity_disorder_update_signal = False  # 极性紊乱更新信号：理论上生命周期只有0个tick，本tick放行，本tick处理后重置
+        self.polarity_disorder_update_signal = (
+            False  # 极性紊乱更新信号：理论上生命周期只有0个tick，本tick放行，本tick处理后重置
+        )
         self.e_counter = {"update_from": "", "count": 0}  # 突刺攻击的计数器
         self.e_max_count = None  # 突刺攻击的最大次数
         self.polarity_disorder_basic_dmg_ratio = None  # 极性紊乱的基础倍率
@@ -33,9 +35,7 @@ class YanagiPolarityDisorderTrigger(Buff.BuffLogic):
         self.record = None
 
     def get_prepared(self, **kwargs):
-        return check_preparation(
-            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
-        )
+        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
 
     def check_record_module(self):
         if self.buff_0 is None:
@@ -64,9 +64,7 @@ class YanagiPolarityDisorderTrigger(Buff.BuffLogic):
             raise TypeError(
                 f"{self.buff_instance.ft.index}的xjudge模块中获取到的{obj_input}不是SkillNode类也不是LoadingMission类！"
             )
-        skill_node = (
-            obj_input if isinstance(obj_input, SkillNode) else obj_input.mission_node
-        )
+        skill_node = obj_input if isinstance(obj_input, SkillNode) else obj_input.mission_node
         if skill_node.skill_tag not in ["1221_E_EX_1", "1221_E_EX_2", "1221_Q"]:
             return False
 
@@ -95,12 +93,8 @@ class YanagiPolarityDisorderTrigger(Buff.BuffLogic):
         # 若是另外两个攻击，则应该检查是否是最后一跳，放行前，打开更新信号。
         else:
             tick = find_tick(sim_instance=self.buff_instance.sim_instance)
-            if (
-                tick - 1 < skill_node.loading_mission.get_last_hit() <= tick
-            ):  # 此时就是最后一跳
-                if (
-                    self.record.enemy.dynamic.is_under_anomaly()
-                ):  # 并且存在激活的属性异常
+            if tick - 1 < skill_node.loading_mission.get_last_hit() <= tick:  # 此时就是最后一跳
+                if self.record.enemy.dynamic.is_under_anomaly():  # 并且存在激活的属性异常
                     self.record.polarity_disorder_update_signal = True
                     return True
                 self.record.e_counter = {"update_from": "", "count": 0}
@@ -120,8 +114,7 @@ class YanagiPolarityDisorderTrigger(Buff.BuffLogic):
 
         # 根据连击次数，计算最终缩放倍率
         final_ratio = (
-            self.record.polarity_disorder_basic_dmg_ratio
-            + 0.15 * self.record.e_counter["count"]
+            self.record.polarity_disorder_basic_dmg_ratio + 0.15 * self.record.e_counter["count"]
         )
 
         # 获取当前正在激活的属性异常条
@@ -141,9 +134,7 @@ class YanagiPolarityDisorderTrigger(Buff.BuffLogic):
         )
         # polarity_disorder_output = spawn_output(active_anomaly_bar, mode_number=1)
         # 置入event_list
-        event_list = JudgeTools.find_event_list(
-            sim_instance=self.buff_instance.sim_instance
-        )
+        event_list = JudgeTools.find_event_list(sim_instance=self.buff_instance.sim_instance)
         event_list.append(polarity_disorder_output)
 
         # 清空记录，回收更新信号

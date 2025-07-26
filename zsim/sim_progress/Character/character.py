@@ -18,7 +18,6 @@ from .skill_class import Skill, lookup_name_or_cid
 from .utils.filters import _skill_node_filter, _sp_update_data_filter
 
 if TYPE_CHECKING:
-    
     from zsim.sim_progress.Buff.buff_class import Buff
     from zsim.sim_progress.data_struct.sp_update_data import SPUpdateData
     from zsim.sim_progress.Preload.SkillsQueue import SkillNode

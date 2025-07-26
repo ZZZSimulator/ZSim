@@ -23,9 +23,7 @@ class SharpenedStingerPhyDmgBonus(Buff.BuffLogic):
         self.record = None
 
     def get_prepared(self, **kwargs):
-        return check_preparation(
-            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
-        )
+        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
 
     def check_record_module(self):
         if self.equipper is None:
@@ -61,10 +59,7 @@ class SharpenedStingerPhyDmgBonus(Buff.BuffLogic):
         if not self.buff_0.dy.ready:
             return False
 
-        if (
-            self.record.preload_data.personal_node_stack[self.record.char.CID].__len__()
-            <= 1
-        ):
+        if self.record.preload_data.personal_node_stack[self.record.char.CID].__len__() <= 1:
             self.record.update_signal = 1
             return True
 

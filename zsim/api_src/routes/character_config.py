@@ -2,6 +2,7 @@ import logging
 from fastapi import APIRouter, Depends, HTTPException
 from typing import List
 from datetime import datetime
+import polars as pl
 
 from zsim.models.character.character_config import CharacterConfig
 from zsim.api_src.services.database.character_db import get_character_db, CharacterDB
@@ -13,48 +14,110 @@ router = APIRouter()
 @router.get("/characters/", response_model=List[str])
 async def get_characters(db: CharacterDB = Depends(get_character_db)):
     """获取所有可用角色列表"""
-    # TODO: 从数据库或配置文件中获取角色列表
-    # 这里暂时返回一个示例列表
-    return ["Hugo", "Vivian", "AstraYao", "Yixuan", "Trigger", "Yuzuha"]
+    try:
+        df = pl.scan_csv("./zsim/data/character.csv")
+        characters = df.select("name").unique().collect().to_series().to_list()
+        return characters
+    except Exception as e:
+        logger.error(f"Failed to load character list: {e}")
+        # Fallback to existing example list
+        return ["Hugo", "Vivian", "AstraYao", "Yixuan", "Trigger", "Yuzuha"]
 
 
 @router.get("/characters/{name}/info", response_model=dict)
 async def get_character_info(name: str, db: CharacterDB = Depends(get_character_db)):
     """获取角色详细信息"""
-    # TODO: 从数据库或配置文件中获取角色详细信息
-    # 这里暂时返回一个示例信息
-    character_info = {
-        "name": name,
-        "element": "以太",  # 示例元素类型
-        "weapon_type": "音擎",  # 示例武器类型
-        "rarity": 5,  # 示例稀有度
-        "description": f"{name}的角色描述信息"
-    }
-    return character_info
+    try:
+        df = pl.scan_csv("./zsim/data/character.csv")
+        character_data = df.filter(pl.col("name") == name).collect()
+        
+        if character_data.height == 0:
+            raise HTTPException(status_code=404, detail=f"Character {name} not found")
+        
+        row = character_data.row(0, named=True)
+        
+        # Map element number to element name using the mapping from constants.py
+        element_mapping = {
+            0: "物理",
+            1: "火",
+            2: "冰",
+            3: "电",
+            4: "以太",
+            5: "烈霜",
+            6: "玄墨",
+        }
+        
+        character_info = {
+            "name": row["name"],
+            "cid": row["CID"],
+            "element": element_mapping.get(row["角色属性"], "未知"),
+            "element_id": row["角色属性"],
+            "weapon_type": row["角色特性"],
+            "rarity": 5,  # Placeholder, would need to determine from data
+            "base_hp": row["基础生命值"],
+            "base_atk": row["基础攻击力"],
+            "base_def": row["基础防御力"],
+            "base_crit_rate": row["基础暴击率"],
+            "base_crit_dmg": row["基础暴击伤害"],
+            "base_anomaly_mastery": row["基础异常掌控"],
+            "base_anomaly_proficiency": row["基础异常精通"],
+        }
+        return character_info
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to load character info for {name}: {e}")
+        # Fallback to existing example information
+        return {
+            "name": name,
+            "element": "以太",  # 示例元素类型
+            "weapon_type": "音擎",  # 示例武器类型
+            "rarity": 5,  # 示例稀有度
+            "description": f"{name}的角色描述信息"
+        }
 
 
 @router.get("/weapons/", response_model=List[str])
 async def get_weapons(db: CharacterDB = Depends(get_character_db)):
     """获取所有可用武器列表"""
-    # TODO: 从数据库或配置文件中获取武器列表
-    # 这里暂时返回一个示例列表
-    return ["音擎A", "音擎B", "音擎C", "音擎D"]
+    try:
+        df = pl.scan_csv("./zsim/data/weapon.csv")
+        weapons = df.select("名称").unique().collect().to_series().to_list()
+        return weapons
+    except Exception as e:
+        logger.error(f"Failed to load weapon list: {e}")
+        # Fallback to existing example list
+        return ["音擎A", "音擎B", "音擎C", "音擎D"]
 
 
 @router.get("/equipments/", response_model=List[str])
 async def get_equipments(db: CharacterDB = Depends(get_character_db)):
     """获取所有可用装备列表"""
-    # TODO: 从数据库或配置文件中获取装备列表
-    # 这里暂时返回一个示例列表
-    return ["装备A", "装备B", "装备C", "装备D"]
+    try:
+        df = pl.scan_csv("./zsim/data/equip_set_2pc.csv")
+        equipments = df.select("set_ID").filter(pl.col("set_ID").is_not_null()).unique().collect().to_series().to_list()
+        # Filter out the "0" set which appears to be a placeholder
+        equipments = [eq for eq in equipments if eq != "0"]
+        return equipments
+    except Exception as e:
+        logger.error(f"Failed to load equipment list: {e}")
+        # Fallback to existing example list
+        return ["装备A", "装备B", "装备C", "装备D"]
 
 
 @router.get("/equipments/sets", response_model=List[str])
 async def get_equipment_sets(db: CharacterDB = Depends(get_character_db)):
     """获取装备套装信息"""
-    # TODO: 从数据库或配置文件中获取装备套装信息
-    # 这里暂时返回一个示例列表
-    return ["套装A", "套装B", "套装C", "套装D"]
+    try:
+        df = pl.scan_csv("./zsim/data/equip_set_2pc.csv")
+        sets = df.select("set_ID").filter(pl.col("set_ID").is_not_null()).unique().collect().to_series().to_list()
+        # Filter out the "0" set which appears to be a placeholder
+        sets = [s for s in sets if s != "0"]
+        return sets
+    except Exception as e:
+        logger.error(f"Failed to load equipment sets: {e}")
+        # Fallback to existing example list
+        return ["套装A", "套装B", "套装C", "套装D"]
 
 
 @router.post("/characters/{name}/configs", response_model=CharacterConfig)

@@ -7,6 +7,7 @@ from zsim.models.session.session_run import SessionRun
 
 client = TestClient(app)
 
+
 @pytest.fixture
 def session_data():
     return {
@@ -18,6 +19,7 @@ def session_data():
         "enemy_config_path": "test/path",
         "simulation_config_path": "test/path",
     }
+
 
 @pytest.fixture
 def session_run_data():
@@ -46,6 +48,7 @@ async def test_create_session(session_data):
     data = response.json()
     assert data["session_id"] == "test_session"
 
+
 @pytest.mark.asyncio
 async def test_read_sessions(session_data):
     db = await get_session_db()
@@ -59,6 +62,7 @@ async def test_read_sessions(session_data):
     assert isinstance(data, list)
     assert len(data) > 0
 
+
 @pytest.mark.asyncio
 async def test_read_session(session_data):
     db = await get_session_db()
@@ -70,6 +74,7 @@ async def test_read_session(session_data):
     assert response.status_code == 200
     data = response.json()
     assert data["session_id"] == session_data["session_id"]
+
 
 @pytest.mark.asyncio
 async def test_get_session_status(session_data):
@@ -84,6 +89,7 @@ async def test_get_session_status(session_data):
     assert "status" in data
     assert "result" in data
 
+
 @pytest.mark.asyncio
 async def test_run_session(session_data, session_run_data):
     db = await get_session_db()
@@ -91,7 +97,9 @@ async def test_run_session(session_data, session_run_data):
     session = Session(**session_data)
     await db.add_session(session)
 
-    response = client.post(f"/api/sessions/{session_data['session_id']}/run?test_mode=true", json=session_run_data)
+    response = client.post(
+        f"/api/sessions/{session_data['session_id']}/run?test_mode=true", json=session_run_data
+    )
     assert response.status_code == 200
     data = response.json()
     assert data["message"] == "Session started successfully"
@@ -101,6 +109,7 @@ async def test_run_session(session_data, session_run_data):
     assert response.status_code == 200
     data = response.json()
     assert data["status"] == "completed"
+
 
 @pytest.mark.asyncio
 async def test_stop_session(session_data, session_run_data):
@@ -114,6 +123,7 @@ async def test_stop_session(session_data, session_run_data):
     assert response.status_code == 200
     data = response.json()
     assert data["status"] == "stopped"
+
 
 @pytest.mark.asyncio
 async def test_update_session(session_data):
@@ -129,6 +139,7 @@ async def test_update_session(session_data):
     assert response.status_code == 200
     data = response.json()
     assert data["session_name"] == "Updated Test Session"
+
 
 @pytest.mark.asyncio
 async def test_delete_session(session_data):

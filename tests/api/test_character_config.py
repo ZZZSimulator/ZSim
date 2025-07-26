@@ -7,6 +7,7 @@ import asyncio
 
 client = TestClient(app)
 
+
 @pytest.fixture
 def character_config_data():
     return {
@@ -32,15 +33,16 @@ def character_config_data():
         "drive5": "暴击率",
         "drive6": "暴击伤害",
         "equip_style": "4+2",
-        "equip_set4": "套装A"
+        "equip_set4": "套装A",
     }
+
 
 @pytest.mark.asyncio
 async def test_create_character_config(character_config_data):
     # 清理之前的测试数据
     db = await get_character_db()
     await db.delete_character_config("Hugo", "test_config")
-    
+
     # 创建角色配置
     response = client.post("/api/characters/Hugo/configs", json=character_config_data)
     assert response.status_code == 200
@@ -51,6 +53,7 @@ async def test_create_character_config(character_config_data):
     assert "create_time" in data
     assert "update_time" in data
 
+
 @pytest.mark.asyncio
 async def test_get_character_config(character_config_data):
     # 首先创建一个配置
@@ -58,13 +61,14 @@ async def test_get_character_config(character_config_data):
     await db.delete_character_config("Hugo", "test_config")
     config = CharacterConfig(**character_config_data)
     await db.add_character_config(config)
-    
+
     # 获取角色配置
     response = client.get("/api/characters/Hugo/configs/test_config")
     assert response.status_code == 200
     data = response.json()
     assert data["name"] == "Hugo"
     assert data["config_name"] == "test_config"
+
 
 @pytest.mark.asyncio
 async def test_list_character_configs(character_config_data):
@@ -73,13 +77,14 @@ async def test_list_character_configs(character_config_data):
     await db.delete_character_config("Hugo", "test_config")
     config = CharacterConfig(**character_config_data)
     await db.add_character_config(config)
-    
+
     # 获取角色的所有配置
     response = client.get("/api/characters/Hugo/configs")
     assert response.status_code == 200
     data = response.json()
     assert isinstance(data, list)
     assert len(data) > 0
+
 
 @pytest.mark.asyncio
 async def test_update_character_config(character_config_data):
@@ -88,7 +93,7 @@ async def test_update_character_config(character_config_data):
     await db.delete_character_config("Hugo", "test_config")
     config = CharacterConfig(**character_config_data)
     await db.add_character_config(config)
-    
+
     # 更新角色配置
     update_data = character_config_data.copy()
     update_data["weapon_level"] = 3
@@ -97,6 +102,7 @@ async def test_update_character_config(character_config_data):
     data = response.json()
     assert data["weapon_level"] == 3
 
+
 @pytest.mark.asyncio
 async def test_delete_character_config(character_config_data):
     # 首先创建一个配置
@@ -104,14 +110,15 @@ async def test_delete_character_config(character_config_data):
     await db.delete_character_config("Hugo", "test_config")
     config = CharacterConfig(**character_config_data)
     await db.add_character_config(config)
-    
+
     # 删除角色配置
     response = client.delete("/api/characters/Hugo/configs/test_config")
     assert response.status_code == 204
-    
+
     # 验证配置已被删除
     response = client.get("/api/characters/Hugo/configs/test_config")
     assert response.status_code == 404
+
 
 @pytest.mark.asyncio
 async def test_get_characters():
@@ -121,13 +128,14 @@ async def test_get_characters():
     assert isinstance(data, list)
     assert len(data) > 0
 
+
 @pytest.mark.asyncio
 async def test_get_character_info():
-    response = client.get("/api/characters/Hugo/info")
+    response = client.get("/api/characters/安比/info")
     assert response.status_code == 200
     data = response.json()
     assert "name" in data
     assert "element" in data
     assert "weapon_type" in data
     assert "rarity" in data
-    assert "description" in data
+    assert "base_hp" in data

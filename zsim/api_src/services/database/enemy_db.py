@@ -36,7 +36,7 @@ class EnemyDB:
         await self._init_db()
         # 更新时间戳
         config.update_time = datetime.now()
-        
+
         async with aiosqlite.connect(SQLITE_PATH) as db:
             await db.execute(
                 "INSERT INTO enemy_configs (config_id, enemy_index, enemy_adjust, create_time, update_time) VALUES (?, ?, ?, ?, ?)",
@@ -45,7 +45,7 @@ class EnemyDB:
                     config.enemy_index,
                     json.dumps(config.enemy_adjust),
                     config.create_time.isoformat(),
-                    config.update_time.isoformat()
+                    config.update_time.isoformat(),
                 ),
             )
             await db.commit()
@@ -55,8 +55,8 @@ class EnemyDB:
         await self._init_db()
         async with aiosqlite.connect(SQLITE_PATH) as db:
             cursor = await db.execute(
-                "SELECT config_id, enemy_index, enemy_adjust, create_time, update_time FROM enemy_configs WHERE config_id = ?", 
-                (config_id,)
+                "SELECT config_id, enemy_index, enemy_adjust, create_time, update_time FROM enemy_configs WHERE config_id = ?",
+                (config_id,),
             )
             row = await cursor.fetchone()
             if row:
@@ -65,7 +65,7 @@ class EnemyDB:
                     enemy_index=row[1],
                     enemy_adjust=json.loads(row[2]),
                     create_time=datetime.fromisoformat(row[3]),
-                    update_time=datetime.fromisoformat(row[4])
+                    update_time=datetime.fromisoformat(row[4]),
                 )
         return None
 
@@ -74,7 +74,7 @@ class EnemyDB:
         await self._init_db()
         # 更新时间戳
         config.update_time = datetime.now()
-        
+
         async with aiosqlite.connect(SQLITE_PATH) as db:
             await db.execute(
                 """UPDATE enemy_configs SET
@@ -84,7 +84,7 @@ class EnemyDB:
                     config.enemy_index,
                     json.dumps(config.enemy_adjust),
                     config.update_time.isoformat(),
-                    config.config_id
+                    config.config_id,
                 ),
             )
             await db.commit()
@@ -101,7 +101,9 @@ class EnemyDB:
         await self._init_db()
         configs = []
         async with aiosqlite.connect(SQLITE_PATH) as db:
-            cursor = await db.execute("SELECT config_id, enemy_index, enemy_adjust, create_time, update_time FROM enemy_configs ORDER BY config_id")
+            cursor = await db.execute(
+                "SELECT config_id, enemy_index, enemy_adjust, create_time, update_time FROM enemy_configs ORDER BY config_id"
+            )
             rows = await cursor.fetchall()
             for row in rows:
                 configs.append(
@@ -110,7 +112,7 @@ class EnemyDB:
                         enemy_index=row[1],
                         enemy_adjust=json.loads(row[2]),
                         create_time=datetime.fromisoformat(row[3]),
-                        update_time=datetime.fromisoformat(row[4])
+                        update_time=datetime.fromisoformat(row[4]),
                     )
                 )
         return configs

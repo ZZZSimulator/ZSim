@@ -21,9 +21,7 @@ class Session(BaseModel):
     session_id: str = Field(
         default_factory=generate_session_id, description="随机生成的会话ID，为本日日期+8位UUID前缀"
     )
-    session_name: str = Field(
-        default="", description="会话名称"
-    )
+    session_name: str = Field(default="", description="会话名称")
     create_time: datetime = Field(
         default_factory=datetime.now, description="会话创建时间，默认当前时间"
     )

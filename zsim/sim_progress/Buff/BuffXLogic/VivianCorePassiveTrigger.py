@@ -39,9 +39,7 @@ class VivianCorePassiveTrigger(Buff.BuffLogic):
         }
 
     def get_prepared(self, **kwargs):
-        return check_preparation(
-            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
-        )
+        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
 
     def check_record_module(self):
         if self.buff_0 is None:
@@ -102,12 +100,8 @@ class VivianCorePassiveTrigger(Buff.BuffLogic):
             )
         active_anomaly_bar = get_result[0]
         copyed_anomaly = AnomalyBar.create_new_from_existing(active_anomaly_bar)
-        event_list = JudgeTools.find_event_list(
-            sim_instance=self.buff_instance.sim_instance
-        )
-        mul_data = Mul(
-            self.record.enemy, self.record.dynamic_buff_list, self.record.char
-        )
+        event_list = JudgeTools.find_event_list(sim_instance=self.buff_instance.sim_instance)
+        mul_data = Mul(self.record.enemy, self.record.dynamic_buff_list, self.record.char)
         ap = Cal.AnomalyMul.cal_ap(mul_data)
         from zsim.sim_progress.anomaly_bar.CopyAnomalyForOutput import (
             DirgeOfDestinyAnomaly,
@@ -132,7 +126,4 @@ class VivianCorePassiveTrigger(Buff.BuffLogic):
         event_list.append(dirge_of_destiny_anomaly)
         if VIVIAN_REPORT:
             self.buff_instance.sim_instance.schedule_data.change_process_state()
-            print(
-                "核心被动：检测到【落羽生花】命中异常状态下的敌人，触发一次异放！！！"
-            )
-
+            print("核心被动：检测到【落羽生花】命中异常状态下的敌人，触发一次异放！！！")

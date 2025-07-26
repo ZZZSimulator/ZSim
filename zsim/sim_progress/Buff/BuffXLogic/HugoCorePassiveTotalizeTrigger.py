@@ -45,9 +45,7 @@ class HugoCorePassiveTotalizeTrigger(Buff.BuffLogic):
         self.xhit = self.special_hit_logic
 
     def get_prepared(self, **kwargs):
-        return check_preparation(
-            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
-        )
+        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
 
     def check_record_module(self):
         if self.buff_0 is None:
@@ -84,9 +82,7 @@ class HugoCorePassiveTotalizeTrigger(Buff.BuffLogic):
                 and skill_node.skill_tag in self.record.shot_attack_list
             ):
                 if skill_node.loading_mission is None:
-                    raise ValueError(
-                        f"{skill_node.skill_tag}本应该有loading_mission，但是没有"
-                    )
+                    raise ValueError(f"{skill_node.skill_tag}本应该有loading_mission，但是没有")
                 if not skill_node.loading_mission.is_last_hit(
                     find_tick(sim_instance=self.buff_instance.sim_instance)
                 ):
@@ -135,27 +131,17 @@ class HugoCorePassiveTotalizeTrigger(Buff.BuffLogic):
         self.check_record_module()
         self.get_prepared(char_CID=1291, enemy=1, preload_data=1)
         if self.record.active_signal is None:
-            raise ValueError(
-                "雨果的决算触发器的Xjudge函数放行了，但是Xhit函数却没有获取到触发信号"
-            )
+            raise ValueError("雨果的决算触发器的Xjudge函数放行了，但是Xhit函数却没有获取到触发信号")
         if self.record.active_signal not in [0, 2, 6]:
             raise ValueError(
                 f"雨果的决算触发器的Xjudge函数放行了，但是给出了非法信号！触发信号：{self.record.active_signal}"
             )
         elif self.record.active_signal == 0 and self.record.char.cinema != 6:
-            raise ValueError(
-                f"在非6画的情况下检测到了非法的触发信号：{self.record.active_signal}"
-            )
+            raise ValueError(f"在非6画的情况下检测到了非法的触发信号：{self.record.active_signal}")
         """准备数据"""
-        event_list = JudgeTools.find_event_list(
-            sim_instance=self.buff_instance.sim_instance
-        )
+        event_list = JudgeTools.find_event_list(sim_instance=self.buff_instance.sim_instance)
         rest_tick = self.record.enemy.get_stun_rest_tick()
-        ratio = (
-            1000
-            + min(300, rest_tick) / 60 * 280
-            + min(600, max(rest_tick - 300, 0)) / 60 * 100
-        )
+        ratio = 1000 + min(300, rest_tick) / 60 * 280 + min(600, max(rest_tick - 300, 0)) / 60 * 100
         if self.record.active_signal in [2, 6]:
             if HUGO_REPORT:
                 self.buff_instance.sim_instance.schedule_data.change_process_state()
@@ -165,9 +151,7 @@ class HugoCorePassiveTotalizeTrigger(Buff.BuffLogic):
         else:
             if HUGO_REPORT:
                 self.buff_instance.sim_instance.schedule_data.change_process_state()
-                print(
-                    "6画触发：检测到射击攻击命中！为雨果触发一次暗渊回响Buff！"
-                )
+                print("6画触发：检测到射击攻击命中！为雨果触发一次暗渊回响Buff！")
 
         """先处理Buff"""
         from zsim.sim_progress.Buff.BuffAddStrategy import buff_add_strategy
@@ -222,9 +206,7 @@ class HugoCorePassiveTotalizeTrigger(Buff.BuffLogic):
         elif self.record.active_signal == 6:
             node_tag = self.record.Q_totalize_tag
         else:
-            raise ValueError(
-                "雨果的决算触发器的Xjudge函数放行了，但是给出的信号不是强化E、大招"
-            )
+            raise ValueError("雨果的决算触发器的Xjudge函数放行了，但是给出的信号不是强化E、大招")
         totalize_node = spawn_node(
             node_tag,
             find_tick(sim_instance=self.buff_instance.sim_instance),
@@ -244,17 +226,13 @@ class HugoCorePassiveTotalizeTrigger(Buff.BuffLogic):
             if self.record.char.cinema >= 2 and self.record.active_signal == 6:
                 if HUGO_REPORT:
                     self.buff_instance.sim_instance.schedule_data.change_process_state()
-                    print(
-                        "2画触发：检测到雨果释放大招，根据2画效果，本次决算不终结失衡状态！"
-                    )
+                    print("2画触发：检测到雨果释放大招，根据2画效果，本次决算不终结失衡状态！")
                 stun_event = None
             else:
                 stun_event = StunForcedTerminationEvent(
                     self.record.enemy,
                     stun_value_feed_back_ratio,
-                    execute_tick=find_tick(
-                        sim_instance=self.buff_instance.sim_instance
-                    ),
+                    execute_tick=find_tick(sim_instance=self.buff_instance.sim_instance),
                     event_source="雨果",
                 )
         else:

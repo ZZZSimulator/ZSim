@@ -36,9 +36,7 @@ class Jane(Character):
         self, passion_get: float, passion_consume: float, passion_direct_add: float
     ) -> None:
         """狂热计算逻辑核心"""
-        self.passion_stream += (
-            passion_direct_add  # 直接添加的狂热值，闪反、QTE、大招、萨霍夫跳等
-        )
+        self.passion_stream += passion_direct_add  # 直接添加的狂热值，闪反、QTE、大招、萨霍夫跳等
         if not self.passion_state:
             # 非狂热心流状态下，结算狂热获得
             self.passion_stream += passion_get

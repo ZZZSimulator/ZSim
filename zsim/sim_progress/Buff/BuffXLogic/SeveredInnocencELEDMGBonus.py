@@ -23,9 +23,7 @@ class SeveredInnocencELEDMGBonus(Buff.BuffLogic):
         self.xexit = self.special_exit_logic
 
     def get_prepared(self, **kwargs):
-        return check_preparation(
-            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
-        )
+        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
 
     def check_record_module(self):
         if self.equipper is None:
@@ -50,9 +48,7 @@ class SeveredInnocencELEDMGBonus(Buff.BuffLogic):
         )
         if self.record.trigger_buff_0.dy.count == 3:
             if not self.record.trigger_buff_0.dy.active:
-                raise ValueError(
-                    f"{self.record.trigger_buff_0.ft.index}有层数但是未激活！"
-                )
+                raise ValueError(f"{self.record.trigger_buff_0.ft.index}有层数但是未激活！")
             return True
         return False
 

@@ -44,9 +44,7 @@ class SliceofTimeExtraResources(Buff.BuffLogic):
         self.record = None
 
     def get_prepared(self, **kwargs):
-        return check_preparation(
-            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
-        )
+        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
 
     def check_record_module(self):
         if self.equipper is None:
@@ -92,14 +90,12 @@ class SliceofTimeExtraResources(Buff.BuffLogic):
         self.buff_instance.simple_start(tick_now, self.record.sub_exist_buff_dict)
         action_now = self.record.action_stack.peek()
         trigger_buff_level = action_now.mission_node.skill.trigger_buff_level
-        decibel_value = self.record.decibel_value_dict[
-            self.buff_instance.ft.refinement
-        ][trigger_buff_level]
+        decibel_value = self.record.decibel_value_dict[self.buff_instance.ft.refinement][
+            trigger_buff_level
+        ]
         energy_value = self.record.energy_value_dict[self.buff_instance.ft.refinement]
         actor_name = action_now.mission_character
-        event_list = JudgeTools.find_event_list(
-            sim_instance=self.buff_instance.sim_instance
-        )
+        event_list = JudgeTools.find_event_list(sim_instance=self.buff_instance.sim_instance)
         from zsim.sim_progress.data_struct import ScheduleRefreshData
 
         refresh_data = ScheduleRefreshData(

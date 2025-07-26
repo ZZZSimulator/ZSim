@@ -46,9 +46,7 @@ class APLManager:
                 return path
         return None
 
-    def load_apl(
-        self, path: str, mode: int = 0, preload_data: "PreloadData" = None
-    ) -> APLClass:
+    def load_apl(self, path: str, mode: int = 0, preload_data: "PreloadData" = None) -> APLClass:
         """
         加载并解析APL文件
         :param path: APL文件路径

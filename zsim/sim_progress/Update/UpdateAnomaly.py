@@ -42,9 +42,7 @@ def spawn_output(anomaly_bar, mode_number, sim_instance: "Simulator", **kwargs):
     # )
     # output = anomaly_bar.element_type, anomaly_bar.current_ndarray
     if mode_number == 0:
-        output = NewAnomaly(
-            anomaly_bar, active_by=skill_node, sim_instance=sim_instance
-        )
+        output = NewAnomaly(anomaly_bar, active_by=skill_node, sim_instance=sim_instance)
     elif mode_number == 1:
         output = Disorder(anomaly_bar, active_by=skill_node, sim_instance=sim_instance)
     elif mode_number == 2:
@@ -110,9 +108,7 @@ def update_anomaly(
     bar: AnomalyBar = enemy.anomaly_bars_dict[skill_node.element_type]
     if not isinstance(bar, AnomalyBar):
         raise TypeError(f"{type(bar)}不是Anomaly类！")
-    active_anomaly_check, active_anomaly_list, last_anomaly_element_type = (
-        check_anomaly_bar(enemy)
-    )
+    active_anomaly_check, active_anomaly_list, last_anomaly_element_type = check_anomaly_bar(enemy)
     # 获取当前最大值。修改最大值的操作在确认内置CD转好后再执行。
     bar.max_anomaly = getattr(
         enemy, f"max_anomaly_{enemy.trans_element_number_to_str[element_type]}"
@@ -138,9 +134,7 @@ def update_anomaly(
 
             # 异常事件监听器广播
 
-            sim_instance.listener_manager.broadcast_event(
-                event=active_bar, anomaly_event=1
-            )
+            sim_instance.listener_manager.broadcast_event(event=active_bar, anomaly_event=1)
             """
             更新完毕，现在正式进入分支判断——触发同类异常 & 触发异类异常（紊乱）。
             无论是哪个分支，都需要涉及enemy下的两大容器：enemy_debuff_list以及enemy_dot_list的修改，
@@ -181,29 +175,21 @@ def update_anomaly(
                     只要不是冰和烈霜异常，就直接向eventlist里面添加即可。
                     """
                     event_list.append(new_anomaly)
-                setattr(
-                    enemy.dynamic, enemy.trans_anomaly_effect_to_str[element_type], True
-                )
+                setattr(enemy.dynamic, enemy.trans_anomaly_effect_to_str[element_type], True)
                 enemy.dynamic.active_anomaly_bar_dict[element_type] = active_bar
-            elif (
-                element_type not in active_anomaly_list and len(active_anomaly_list) > 0
-            ):
+            elif element_type not in active_anomaly_list and len(active_anomaly_list) > 0:
                 """
                 这个分支意味着：要结算紊乱。那么需要复制的就不应该是新的这个属性异常，而应该是老的属性异常的bar实例。
                 为了区分好用于计算的异常积蓄条，
                 """
                 mode_number = 1
-                last_anomaly_bar = enemy.dynamic.active_anomaly_bar_dict[
-                    last_anomaly_element_type
-                ]
+                last_anomaly_bar = enemy.dynamic.active_anomaly_bar_dict[last_anomaly_element_type]
                 setattr(
                     enemy.dynamic,
                     enemy.trans_anomaly_effect_to_str[last_anomaly_element_type],
                     False,
                 )
-                setattr(
-                    enemy.dynamic, enemy.trans_anomaly_effect_to_str[element_type], True
-                )
+                setattr(enemy.dynamic, enemy.trans_anomaly_effect_to_str[element_type], True)
 
                 if element_type in [2, 5]:
                     enemy.dynamic.frozen = True
@@ -240,11 +226,11 @@ def update_anomaly(
                 for obj in char_obj_list:
                     obj.special_resources(disorder)
                 event_list.append(disorder)
-                sim_instance.decibel_manager.update(
-                    skill_node=skill_node, key="disorder"
-                )
+                sim_instance.decibel_manager.update(skill_node=skill_node, key="disorder")
                 enemy.sim_instance.schedule_data.change_process_state()
-                print(f'由【{disorder.activated_by.char_name}】的【{disorder.activated_by.skill_tag}】技能触发了紊乱！【{ELEMENT_TYPE_MAPPING[last_anomaly_bar.element_type]}】属性的异常状态提前结束！')
+                print(
+                    f"由【{disorder.activated_by.char_name}】的【{disorder.activated_by.skill_tag}】技能触发了紊乱！【{ELEMENT_TYPE_MAPPING[last_anomaly_bar.element_type]}】属性的异常状态提前结束！"
+                )
             # 在异常与紊乱两个分支的最后，清空bar的异常积蓄和快照。
             else:
                 raise ValueError("无法解析的异常/紊乱分支")
@@ -271,7 +257,7 @@ def remove_dots_cause_disorder(disorder, enemy, event_list, time_now):
             enemy.dynamic.frostbite = False
             sim_instance = enemy.sim_instance
             sim_instance.schedule_data.change_process_state()
-            print('因紊乱而强行移除碎冰')
+            print("因紊乱而强行移除碎冰")
         else:
             if dots.ft.index == anomlay_dot_dict[disorder.element_type]:
                 dots.end(time_now)
@@ -307,9 +293,7 @@ def check_anomaly_bar(enemy):
                     last_anomaly_element_type = number
                     break
             else:
-                raise TypeError(
-                    f"当前激活的异常类型列表为{active_anomaly_list}，是预期之外的值。"
-                )
+                raise TypeError(f"当前激活的异常类型列表为{active_anomaly_list}，是预期之外的值。")
     else:
         last_anomaly_element_type = None
     return active_anomaly_check, active_anomaly_list, last_anomaly_element_type
@@ -337,9 +321,7 @@ def spawn_normal_dot(dot_index, sim_instance: "Simulator"):
 
 def create_dot_instance(class_name, bar=None, sim_instance: "Simulator" = None):
     # 动态导入相应模块
-    module_name = (
-        f"zsim.sim_progress.Dot.Dots.{class_name}"  # 假设你的类都在dot.DOTS模块中
-    )
+    module_name = f"zsim.sim_progress.Dot.Dots.{class_name}"  # 假设你的类都在dot.DOTS模块中
     try:
         module = importlib.import_module(module_name)  # 导入模块
         class_obj = getattr(module, class_name)  # 获取类对象

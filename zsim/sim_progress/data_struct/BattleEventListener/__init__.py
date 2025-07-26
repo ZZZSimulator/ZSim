@@ -15,9 +15,7 @@ class ListenerManger:
 
     def __init__(self, sim_instance: "Simulator"):
         self.sim_instance = sim_instance
-        self._listeners_group: defaultdict[str | int : dict[str, BaseListener]] = (
-            defaultdict(dict)
-        )
+        self._listeners_group: defaultdict[str | int : dict[str, BaseListener]] = defaultdict(dict)
         self.__listener_map: dict[str, str] = {
             "Hugo_1": "HugoCorePassiveBuffListener",
             "Hormone_Punk_1": "HormonePunkListener",
@@ -27,9 +25,7 @@ class ListenerManger:
             "CinderCobalt_1": "CinderCobaltListener",
         }
 
-    def add_listener(
-        self, listener_owner: "Character | Enemy | None", listener: BaseListener
-    ):
+    def add_listener(self, listener_owner: "Character | Enemy | None", listener: BaseListener):
         """添加一个监听器"""
         owner_type = type(listener_owner).__bases__[0].__name__
         if owner_type == "Character":
@@ -73,20 +69,14 @@ class ListenerManger:
             if initiate_signal in listener_id:
                 module_name = listener_class_name
                 try:
-                    module = importlib.import_module(
-                        f".{module_name}", package=__name__
-                    )
+                    module = importlib.import_module(f".{module_name}", package=__name__)
                     listener_obj = getattr(module, listener_class_name)(
                         listener_id, sim_instance=sim_instance
                     )
-                    self.add_listener(
-                        listener_owner=listener_owner, listener=listener_obj
-                    )
+                    self.add_listener(listener_owner=listener_owner, listener=listener_obj)
                     return listener_obj
                 except ModuleNotFoundError:
-                    raise ValueError(
-                        "在初始化阶段调用监听器工厂函数时，找不到对应的监听器模块！"
-                    )
+                    raise ValueError("在初始化阶段调用监听器工厂函数时，找不到对应的监听器模块！")
 
     def get_listener(
         self, listener_owner: "Character | Enemy | None", listener_id: str

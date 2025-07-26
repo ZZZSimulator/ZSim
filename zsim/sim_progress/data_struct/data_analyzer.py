@@ -21,7 +21,7 @@ def cal_buff_total_bonus(
     enabled_buff: Sequence["Buff"],
     judge_obj: "SkillNode | AnomalyBar | None" = None,
     sim_instance: "Simulator" = None,
-    char_name: str | None = None
+    char_name: str | None = None,
 ) -> dict[str, float]:
     """过滤并计算buff总加成。
 
@@ -43,6 +43,7 @@ def cal_buff_total_bonus(
     from zsim.sim_progress.anomaly_bar import AnomalyBar
     from zsim.sim_progress.Buff import Buff
     from zsim.sim_progress.Preload.SkillsQueue import SkillNode
+
     # FIXME:
     #  已知bug：武器【时流贤者】的“对佩戴者造成的紊乱伤害增幅”的效果在部分紊乱、极性紊乱上会失效，原因未知，等待继续排查。
     buff_obj: Buff
@@ -53,9 +54,7 @@ def cal_buff_total_bonus(
         else:
             # 检查buff是否激活
             if not buff_obj.dy.active:
-                report_to_log(
-                    f"[Warning] 动态buff列表中混入了未激活buff: {str(buff_obj)}，已跳过"
-                )
+                report_to_log(f"[Warning] 动态buff列表中混入了未激活buff: {str(buff_obj)}，已跳过")
                 continue
             # 检查buff的标签是否与技能节点匹配
             if judge_obj is not None:
@@ -66,11 +65,14 @@ def cal_buff_total_bonus(
                 这些buff只有在特定条件被满足的情况下才会对当前技能生效——__check_skill_node() 和 __check_special_anomlay()这几个函数就是用来检查这个的。
                 总之，被continue跳过的Buff一定自带label或是其他的特殊判定条件，并且和当前的检查对象——judge_obj不相符，导致它对当前检测对象无法生效。
                 """
-                if not __check_activation_origin(buff_obj=buff_obj, judge_obj=judge_obj, sim_instance=sim_instance, char_name=char_name):
-                    continue
-                if isinstance(judge_obj, SkillNode) and not __check_skill_node(
-                    buff_obj, judge_obj
+                if not __check_activation_origin(
+                    buff_obj=buff_obj,
+                    judge_obj=judge_obj,
+                    sim_instance=sim_instance,
+                    char_name=char_name,
                 ):
+                    continue
+                if isinstance(judge_obj, SkillNode) and not __check_skill_node(buff_obj, judge_obj):
                     continue
                 if isinstance(judge_obj, AnomalyBar) and not __check_special_anomly(
                     buff_obj, judge_obj
@@ -87,9 +89,7 @@ def cal_buff_total_bonus(
             for key, value in buff_obj.effect_dct.items():
                 # 如果键值对在动态语句字典中，则累加值，否则初始化并赋值
                 try:
-                    dynamic_statement[key] = (
-                        dynamic_statement.get(key, 0) + value * count
-                    )
+                    dynamic_statement[key] = dynamic_statement.get(key, 0) + value * count
                 except TypeError:
                     continue
         # effect_buff_list.append(buff_obj)
@@ -171,36 +171,25 @@ def __check_skill_node(buff: "Buff", skill_node: "SkillNode") -> bool:
                 #         return True
                 #     else:
                 #         print(skill_node.skill_tag, skill_labels, _sub_label, label_value)
-            elif __check_label_key(
-                label_key=label_key, target_label_key="only_trigger_buff_level"
-            ):
+            elif __check_label_key(label_key=label_key, target_label_key="only_trigger_buff_level"):
                 if skill_node.skill.trigger_buff_level in label_value:
                     # print(f"{buff.ft.index}对技能{skill_tag}成功生效！")
                     return True
-            elif __check_label_key(
-                label_key=label_key, target_label_key="only_back_attack"
-            ):
+            elif __check_label_key(label_key=label_key, target_label_key="only_back_attack"):
                 from zsim.sim_progress.RandomNumberGenerator import RNG
 
                 rng: RNG = buff.sim_instance.rng_instance
                 normalized_value = rng.random_float()
                 if normalized_value <= BACK_ATTACK_RATE:
                     return True
-            elif __check_label_key(
-                label_key=label_key, target_label_key="only_element"
-            ):
+            elif __check_label_key(label_key=label_key, target_label_key="only_element"):
                 from zsim.define import ELEMENT_EQUIVALENCE_MAP
 
                 for _ele_type in label_value:
-                    if (
-                        skill_node.element_type
-                        in ELEMENT_EQUIVALENCE_MAP[_ele_type]
-                    ):
+                    if skill_node.element_type in ELEMENT_EQUIVALENCE_MAP[_ele_type]:
                         # 只要找到一种符合要求的元素，就返回True
                         return True
-            elif __check_label_key(
-                label_key=label_key, target_label_key="only_skill_type"
-            ):
+            elif __check_label_key(label_key=label_key, target_label_key="only_skill_type"):
                 if skill_node.skill.skill_type in label_value:
                     return True
     else:
@@ -254,9 +243,9 @@ def __check_special_anomly(buff: "Buff", anomaly_node: "AnomalyBar") -> bool:
         FrostAnomaly,
         EtherAnomaly,
         ElectricAnomaly,
-        AuricInkAnomaly)
+        AuricInkAnomaly,
+    )
     from zsim.sim_progress.anomaly_bar.CopyAnomalyForOutput import NewAnomaly
-
 
     # 定义允许的标签类型
     ALLOW_LABELS = ["only_anomaly"]
@@ -273,7 +262,8 @@ def __check_special_anomly(buff: "Buff", anomaly_node: "AnomalyBar") -> bool:
             EtherAnomaly,
             ElectricAnomaly,
             AuricInkAnomaly,
-            NewAnomaly]
+            NewAnomaly,
+        ],
     }
     # 获取buff的标签列表
     buff_labels: dict[str, list[str] | str] = buff.ft.label
@@ -309,7 +299,9 @@ def __check_special_anomly(buff: "Buff", anomaly_node: "AnomalyBar") -> bool:
     return False
 
 
-def __check_activation_origin(buff_obj: "Buff", judge_obj: "SkillNode | AnomalyBar", sim_instance: "Simulator", char_name: str):
+def __check_activation_origin(
+    buff_obj: "Buff", judge_obj: "SkillNode | AnomalyBar", sim_instance: "Simulator", char_name: str
+):
     """检查buff的label是否存在“only_active_by”，然后再检查当前被检项目与源头是否匹配。
     - buff_obj: 被检查的buff
     - judge_obj: 被检查的对象，可能是SkillNode或者异常"""
@@ -319,6 +311,7 @@ def __check_activation_origin(buff_obj: "Buff", judge_obj: "SkillNode | AnomalyB
         return True
     from zsim.sim_progress.Preload import SkillNode
     from zsim.sim_progress.anomaly_bar import AnomalyBar
+
     CID_list = buff_obj.ft.label.get("only_active_by")
     # FIXME: 当队伍中同时存在两把“时流贤者”时，Buff源检验可能会出错，暂不确定。
     if CID_list[0] == "self":
@@ -329,7 +322,7 @@ def __check_activation_origin(buff_obj: "Buff", judge_obj: "SkillNode | AnomalyB
         举例：如果某把武器会给三名队友上一个“自己触发的属性异常的伤害提升”的Buff，那么这里对比的就是触发源的角色以及当前buff的受益者。
         所以这里的self指的是beneficiary
         """
-        beneficiary = buff_obj.ft.beneficiary        # Buff的实际受益者
+        beneficiary = buff_obj.ft.beneficiary  # Buff的实际受益者
         if isinstance(judge_obj, SkillNode):
             skill_result = beneficiary == judge_obj.char_name
             return skill_result

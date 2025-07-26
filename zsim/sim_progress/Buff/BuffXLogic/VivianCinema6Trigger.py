@@ -46,9 +46,7 @@ class VivianCinema6Trigger(Buff.BuffLogic):
         }
 
     def get_prepared(self, **kwargs):
-        return check_preparation(
-            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
-        )
+        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
 
     def check_record_module(self):
         if self.buff_0 is None:
@@ -81,9 +79,7 @@ class VivianCinema6Trigger(Buff.BuffLogic):
         if not self.record.enemy.dynamic.is_under_anomaly:
             if VIVIAN_REPORT:
                 self.buff_instance.sim_instance.schedule_data.change_process_state()
-                print(
-                    " APL警告：怪物没异常你打什么SNA_2！豆子全没了吧傻子！"
-                )
+                print(" APL警告：怪物没异常你打什么SNA_2！豆子全没了吧傻子！")
         if self.record.last_update_node is None:
             self.c6_pre_active(skill_node)
             return True
@@ -139,12 +135,8 @@ class VivianCinema6Trigger(Buff.BuffLogic):
             active_anomaly_bar = get_result[0]
             copyed_anomaly = AnomalyBar.create_new_from_existing(active_anomaly_bar)
             # copyed_anomaly = self.record.last_update_anomaly
-            event_list = JudgeTools.find_event_list(
-                sim_instance=self.buff_instance.sim_instance
-            )
-            mul_data = Mul(
-                self.record.enemy, self.record.dynamic_buff_list, self.record.char
-            )
+            event_list = JudgeTools.find_event_list(sim_instance=self.buff_instance.sim_instance)
+            mul_data = Mul(self.record.enemy, self.record.dynamic_buff_list, self.record.char)
             ap = Cal.AnomalyMul.cal_ap(mul_data)
             from zsim.sim_progress.anomaly_bar.CopyAnomalyForOutput import (
                 DirgeOfDestinyAnomaly,
@@ -159,10 +151,7 @@ class VivianCinema6Trigger(Buff.BuffLogic):
             if self.record.cinema_ratio is None:
                 self.record.cinema_ratio = 1 if self.record.char.cinema < 2 else 1.3
             final_ratio = (
-                math.floor(ap / 10)
-                * ratio
-                * self.record.cinema_ratio
-                * self.record.c6_ratio
+                math.floor(ap / 10) * ratio * self.record.cinema_ratio * self.record.c6_ratio
             )
             dirge_of_destiny_anomaly.anomaly_dmg_ratio = final_ratio
 

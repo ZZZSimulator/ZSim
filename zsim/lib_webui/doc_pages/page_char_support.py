@@ -52,11 +52,7 @@ def show_char_cid_mapping() -> None:
             return "⚠️ 不完全"
 
     lf_with_support_level = lf.with_columns(
-        pl.when(
-            (pl.col("动作建模") >= 1)
-            & (pl.col("Buff支持") >= 1)
-            & (pl.col("影画支持") >= 1)
-        )
+        pl.when((pl.col("动作建模") >= 1) & (pl.col("Buff支持") >= 1) & (pl.col("影画支持") >= 1))
         .then(pl.lit(1))
         .when((pl.col("动作建模") >= 0) & (pl.col("Buff支持") >= 0))
         .then(pl.lit(0))
