@@ -5,6 +5,9 @@
     "baseUrl": ".",
     "module": "esnext",
     "moduleResolution": "bundler",
+    "paths": {
+      "@locales/*": ["src/locales/*"]
+    },
     "types": ["electron-vite/node", "vite/client"],
     "strict": true,
     "esModuleInterop": true,

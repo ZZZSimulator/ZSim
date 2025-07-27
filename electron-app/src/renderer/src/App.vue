@@ -1,15 +1,27 @@
 <script setup lang="ts">
-const asideMenuList = [
-  '会话管理',
-  '角色配置',
-  '模拟器',
-  '数据分析',
-  'APL 编辑器',
-  '角色支持列表',
-  'APL 设计书',
-  '贡献指南',
-]
-const activedMenu = ref('会话管理')
+import { useLocales } from '@/hooks'
+
+const { t, locale } = useLocales()
+
+// DEMO
+const asideMenuList = computed(() => [
+  { label: t('aside.name.session-managerment'), key: 'session-managerment' },
+  { label: t('aside.name.character-configuration'), key: 'character-configuration' },
+  { label: t('aside.name.simulator'), key: 'simulator' },
+  { label: t('aside.name.data-analysis'), key: 'data-analysis' },
+  { label: t('aside.name.apl-editor'), key: 'apl-editor' },
+  { label: t('aside.name.character-support-list'), key: 'character-support-list' },
+  { label: t('aside.name.apl-specification'), key: 'apl-specification' },
+  { label: t('aside.name.contribution-guide'), key: 'contribution-guide' },
+])
+
+// DEMO
+const asideMenuMap = computed(() => asideMenuList.value.reduce((map, item) => {
+  return map.set(item.key, item.label)
+}, new Map<string, string>()))
+
+// DEMO
+const activedMenu = ref('session-managerment')
 </script>
 
 <template>
@@ -25,7 +37,7 @@ const activedMenu = ref('会话管理')
       <div class="flex-1 w-full overflow-auto flex flex-col">
         <div
           v-for="menu in asideMenuList"
-          :key="menu"
+          :key="menu.key"
           class="
             shrink-0 h-40px my-1px mx-8px px-10px overflow-hidden
             rounded-8px border border-solid
@@ -33,20 +45,33 @@ const activedMenu = ref('会话管理')
             select-none cursor-pointer
           "
           :class="[
-            menu === activedMenu
+            menu.key === activedMenu
               ? 'border-#0000001A bg-white'
               : 'border-transparent hover:bg-#38302E0D active:bg-#38302E17',
           ]"
-          @click="activedMenu = menu"
+          @click="activedMenu = menu.key"
         >
           <div class="w-16px h-16px rounded-sm bg-#6B6B6B40" />
-          <div>{{ menu }}</div>
+          <div>{{ menu.label }}</div>
         </div>
       </div>
 
       <!-- 侧边底部 -->
-      <div class="shrink-0 w-full h-64px p-16px pb-24px">
-        06 号
+      <div class="shrink-0 w-full h-64px p-16px pb-24px flex gap-4px">
+        <div
+          class="px-10px h-32px rounded-8px flex items-center text-14px text-white cursor-pointer select-none hover:brightness-90 active:brightness-80"
+          :class="locale === 'zh-CN' ? 'bg-#FA7319' : 'bg-#333'"
+          @click="locale = 'zh-CN'"
+        >
+          中文
+        </div>
+        <div
+          class="px-10px h-32px rounded-8px flex items-center text-14px text-white cursor-pointer select-none hover:brightness-90 active:brightness-80"
+          :class="locale === 'en-US' ? 'bg-#FA7319' : 'bg-#333'"
+          @click="locale = 'en-US'"
+        >
+          English
+        </div>
       </div>
     </div>
 
@@ -61,7 +86,7 @@ const activedMenu = ref('会话管理')
     >
       <!-- 模块.1 -->
       <div class="w-full shrink-0 p-24px pb-0 text-24px font-400">
-        {{ activedMenu }}
+        {{ asideMenuMap.get(activedMenu) }}
       </div>
 
       <!-- 模块.2 -->

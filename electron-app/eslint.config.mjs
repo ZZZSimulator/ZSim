@@ -18,6 +18,12 @@ export default defineConfig({
     // 文件末尾保留空行
     'style/eol-last': 'error',
   },
+  jsonc: {
+    overrides: {
+      // json key 排序
+      'jsonc/sort-keys': ['warn', 'asc'],
+    },
+  },
   typescript: {
     overrides: {
       // 记得清理 console
