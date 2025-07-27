@@ -26,22 +26,20 @@ class AtkResponseAPLUnit(APLUnit):
             raise ValueError("企图对非进攻响应APL构造AtkResponseAPLUnit类！")
         self.break_when_found_action = True
         self.result = apl_unit_dict["action"]
-        from zsim.sim_progress.Preload.apl_unit.APLUnit import spawn_sub_condition, logic_tree_to_expr_node
+        from zsim.sim_progress.Preload.apl_unit.APLUnit import (
+            spawn_sub_condition,
+            logic_tree_to_expr_node,
+        )
 
         for condition_str in apl_unit_dict["conditions"]:
-            self.sub_conditions_unit_list.append(
-                spawn_sub_condition(self.priority, condition_str)
-            )
+            self.sub_conditions_unit_list.append(spawn_sub_condition(self.priority, condition_str))
 
         self.sub_conditions_ast = logic_tree_to_expr_node(
-            self.priority,
-            apl_unit_dict.get("conditions_tree", None)
+            self.priority, apl_unit_dict.get("conditions_tree", None)
         )
         self.common_response_tag_list = ["parry", "dodge"]
 
-    def check_all_sub_units(
-        self, found_char_dict, game_state, sim_instance: "Simulator", **kwargs
-    ):
+    def check_all_sub_units(self, found_char_dict, game_state, sim_instance: "Simulator", **kwargs):
         """仅供模式下的单行APL的逻辑函数：检查所有子条件并且输出结果"""
         result_box = []
         tick = kwargs.get("tick", None)
@@ -73,9 +71,7 @@ class AtkResponseAPLUnit(APLUnit):
             return False
         rt_tick = atk_manager.get_rt()
 
-        can_be_answered_result_tuple: tuple = atk_manager.can_be_answered(
-            rt_tick=rt_tick
-        )
+        can_be_answered_result_tuple: tuple = atk_manager.can_be_answered(rt_tick=rt_tick)
         if not can_be_answered_result_tuple[0]:
             print(
                 f"当前进攻事件无法在第{tick}tick被响应，当前的响应窗口为{can_be_answered_result_tuple}"
@@ -89,9 +85,7 @@ class AtkResponseAPLUnit(APLUnit):
         atk_manager = self.sim_instance.preload.preload_data.atk_manager
         response_window: tuple[int, int]
         skill_tick: int = 0
-        if any(
-            [common_tag in self.result for common_tag in self.common_response_tag_list]
-        ):
+        if any([common_tag in self.result for common_tag in self.common_response_tag_list]):
             response_window = (
                 atk_manager.interaction_window_open_tick,
                 atk_manager.interaction_window_close_tick,
@@ -107,12 +101,8 @@ class AtkResponseAPLUnit(APLUnit):
             else:
                 raise ValueError(f"没有找到CID为{cid}的技能对象！")
 
-            skill_tick: int = skill_obj.get_skill_info(
-                skill_tag=self.result, attr_info="ticks"
-            )
-            response_window = atk_manager.get_uncommon_response_window(
-                another_ta=skill_tick
-            )
+            skill_tick: int = skill_obj.get_skill_info(skill_tag=self.result, attr_info="ticks")
+            response_window = atk_manager.get_uncommon_response_window(another_ta=skill_tick)
         if proactive_level == 0:
             """在平衡策略下，响应动作需要尽量晚一些执行，所以检测右边界
             但是又不能完全和右边界重合，因为那样太晚了，所以我们就让它提早一帧放行。"""

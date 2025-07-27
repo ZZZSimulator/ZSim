@@ -18,9 +18,7 @@ class HellfireGearsSpRBonus(Buff.BuffLogic):
             self.equipper = JudgeTools.find_equipper(
                 "燃狱齿轮", sim_instance=self.buff_instance.sim_instance
             )
-        name_box = JudgeTools.find_init_data(
-            sim_instance=self.buff_instance.sim_instance
-        ).name_box
+        name_box = JudgeTools.find_init_data(sim_instance=self.buff_instance.sim_instance).name_box
         if name_box[0] != self.equipper:
             return True
         else:
@@ -31,9 +29,7 @@ class HellfireGearsSpRBonus(Buff.BuffLogic):
             self.equipper = JudgeTools.find_equipper(
                 "燃狱齿轮", sim_instance=self.buff_instance.sim_instance
             )
-        name_box = JudgeTools.find_init_data(
-            sim_instance=self.buff_instance.sim_instance
-        ).name_box
+        name_box = JudgeTools.find_init_data(sim_instance=self.buff_instance.sim_instance).name_box
         if name_box[0] == self.equipper:
             return True
         else:

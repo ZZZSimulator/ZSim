@@ -26,9 +26,7 @@ class JaneCinema1APTransToDmgBonus(Buff.BuffLogic):
         self.xexit = self.special_exit_logic
 
     def get_prepared(self, **kwargs):
-        return check_preparation(
-            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
-        )
+        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
 
     def check_record_module(self):
         if self.buff_0 is None:
@@ -42,9 +40,7 @@ class JaneCinema1APTransToDmgBonus(Buff.BuffLogic):
     def special_judge_logic(self, **kwargs):
         """简的1画精通转增伤部分，触发逻辑和狂热触发器挂钩；"""
         self.check_record_module()
-        self.get_prepared(
-            char_CID=1261, trigger_buff_0=("简", "Buff-角色-简-狂热状态触发器")
-        )
+        self.get_prepared(char_CID=1261, trigger_buff_0=("简", "Buff-角色-简-狂热状态触发器"))
         if self.record.trigger_buff_0.dy.active:
             return True
         else:
@@ -60,15 +56,11 @@ class JaneCinema1APTransToDmgBonus(Buff.BuffLogic):
             enemy=1,
             sub_exist_buff_dict=1,
         )
-        mul_data = Mul(
-            self.record.enemy, self.record.dynamic_buff_list, self.record.char
-        )
+        mul_data = Mul(self.record.enemy, self.record.dynamic_buff_list, self.record.char)
         ap = Cal.AnomalyMul.cal_ap(mul_data)
         count = min(ap * 0.1, self.buff_instance.ft.maxcount)
         tick = find_tick(sim_instance=self.buff_instance.sim_instance)
-        self.buff_instance.simple_start(
-            tick, self.record.sub_exist_buff_dict, no_count=1
-        )
+        self.buff_instance.simple_start(tick, self.record.sub_exist_buff_dict, no_count=1)
         self.buff_instance.dy.count = count
         self.buff_instance.update_to_buff_0(self.buff_0)
 

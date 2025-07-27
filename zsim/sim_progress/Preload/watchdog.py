@@ -34,9 +34,7 @@ def watch_reverse_order(
         return None
     if last_node is None:
         return None
-    if not (
-        isinstance(current_node, SkillNode) or isinstance(current_node, Skill.InitSkill)
-    ):
+    if not (isinstance(current_node, SkillNode) or isinstance(current_node, Skill.InitSkill)):
         return None
     if not (isinstance(last_node, SkillNode) or isinstance(last_node, Skill.InitSkill)):
         return None

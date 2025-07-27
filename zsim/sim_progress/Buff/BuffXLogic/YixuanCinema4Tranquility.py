@@ -30,9 +30,7 @@ class YixuanCinema4Tranquility(Buff.BuffLogic):
         self.record: YixuanCinema4TranquilityRecord | None = None
 
     def get_prepared(self, **kwargs):
-        return check_preparation(
-            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
-        )
+        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
 
     def check_record_module(self):
         if self.buff_0 is None:
@@ -91,9 +89,7 @@ class YixuanCinema4Tranquility(Buff.BuffLogic):
             no_count=1,
         )
         if self.record.update_signal == 0:
-            self.record.c4_counter = min(
-                self.record.c4_counter + 1, self.record.max_c4_count
-            )
+            self.record.c4_counter = min(self.record.c4_counter + 1, self.record.max_c4_count)
             self.buff_instance.dy.count = self.record.c4_counter
             if YIXUAN_REPORT:
                 print(

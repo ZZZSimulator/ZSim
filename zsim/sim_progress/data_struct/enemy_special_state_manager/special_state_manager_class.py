@@ -2,6 +2,7 @@ import importlib
 from .special_state_class import EnemySpecialState
 from zsim.models.event_enums import SpecialStateUpdateSignal as SSUS, PostInitObjectType as PIOT
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from zsim.sim_progress.Enemy import Enemy
 
@@ -36,13 +37,10 @@ class SpecialStateManager:
         state_info = state_type.value
         class_name = state_info[0]
         signal_list = state_info[1]
-        module = importlib.import_module('.special_classes', package=__package__)
+        module = importlib.import_module(".special_classes", package=__package__)
         state_class = getattr(module, class_name)
-        state_instance: EnemySpecialState = state_class(enemy_instance=self.enemy, manager_instance=self, **kwargs)
+        state_instance: EnemySpecialState = state_class(
+            enemy_instance=self.enemy, manager_instance=self, **kwargs
+        )
         self.register(state=state_instance, signals=signal_list)
         return state_instance
-
-
-
-
-

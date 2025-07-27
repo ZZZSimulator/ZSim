@@ -99,9 +99,7 @@ class ScheduledEvent:
         # 更新角色面板
         for char in self.data.char_obj_list:
             char: Character
-            sp_update_data = SPUpdateData(
-                char_obj=char, dynamic_buff=self.data.dynamic_buff
-            )
+            sp_update_data = SPUpdateData(char_obj=char, dynamic_buff=self.data.dynamic_buff)
             char.update_sp_and_decibel(sp_update_data)
             if hasattr(char, "refresh_myself"):
                 char.refresh_myself()
@@ -118,9 +116,7 @@ class ScheduledEvent:
                 event = _processable_event_list.pop(0)
                 # 添加buff
                 if isinstance(event, Buff.Buff):
-                    raise NotImplementedError(
-                        f"{type(event)}，目前不应存在于 event_list"
-                    )
+                    raise NotImplementedError(f"{type(event)}，目前不应存在于 event_list")
                 elif isinstance(event, Preload.SkillNode | LoadingMission):
                     # print("instance 分类: Preload.SkillNode | LoadingMission")
                     if event.preload_tick <= self.tick:
@@ -182,9 +178,7 @@ class ScheduledEvent:
                 elif isinstance(event, StunForcedTerminationEvent):
                     self.stun_forced_termination_event(event)
                 else:
-                    raise NotImplementedError(
-                        f"{type(event)}，目前不应存在于 event_list"
-                    )
+                    raise NotImplementedError(f"{type(event)}，目前不应存在于 event_list")
                 # 代码运行到这一行意味着事件已经被处理完毕，所以要将其从event_list中删除
                 self.data.event_list.remove(event)
                 self.data.processed_times += 1
@@ -272,10 +266,7 @@ class ScheduledEvent:
             if _node.skill.anomaly_update_rule == -1:
                 should_update = True
             else:
-                if (
-                    _node.loading_mission.hitted_count
-                    in _node.skill.anomaly_update_rule
-                ):
+                if _node.loading_mission.hitted_count in _node.skill.anomaly_update_rule:
                     should_update = True
         if should_update:
             update_anomaly(
@@ -395,7 +386,7 @@ class ScheduledEvent:
             disorder_obj=event,
             enemy_obj=self.data.enemy,
             dynamic_buff=self.data.dynamic_buff,
-            sim_instance=self.sim_instance
+            sim_instance=self.sim_instance,
         )
         dmg_disorder = cal_obj.cal_anomaly_dmg()
         stun = cal_obj.cal_disorder_stun()
@@ -462,9 +453,7 @@ class ScheduledEvent:
 
     def refresh_event(self, event: ScheduleRefreshData):
         """强制更新角色数据"""
-        char_mapping = {
-            character.NAME: character for character in self.data.char_obj_list
-        }
+        char_mapping = {character.NAME: character for character in self.data.char_obj_list}
         target: str = ""
         try:
             for target in event.sp_target:
@@ -513,9 +502,7 @@ class ScheduledEvent:
                 # 使用bisect模块进行高效插入
                 import bisect
 
-                priorities = [
-                    getattr(e, "schedule_priority", 0) for e in _output_event_list
-                ]
+                priorities = [getattr(e, "schedule_priority", 0) for e in _output_event_list]
                 insert_pos = bisect.bisect_right(priorities, schedule_priority)
                 _output_event_list.insert(insert_pos, _event)
         return _output_event_list

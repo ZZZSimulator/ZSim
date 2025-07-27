@@ -27,9 +27,7 @@ class YixuanCinema2StunTimeLimitBonus(Buff.BuffLogic):
         self.record = None
 
     def get_prepared(self, **kwargs):
-        return check_preparation(
-            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
-        )
+        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
 
     def check_record_module(self):
         if self.buff_0 is None:
@@ -64,9 +62,7 @@ class YixuanCinema2StunTimeLimitBonus(Buff.BuffLogic):
         self.get_prepared(char_CID=1371, enemy=1)
         if not self.record.enemy.dynamic.stun:
             if YIXUAN_REPORT:
-                print(
-                    "2画：检测到敌人从失衡状态中恢复，仪玄2画的失衡时间延长效果结束！"
-                )
+                print("2画：检测到敌人从失衡状态中恢复，仪玄2画的失衡时间延长效果结束！")
                 self.buff_instance.sim_instance.schedule_data.change_process_state()
             return True
         return False

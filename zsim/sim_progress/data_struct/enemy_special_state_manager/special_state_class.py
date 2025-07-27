@@ -1,6 +1,7 @@
 from zsim.models.event_enums import SpecialStateUpdateSignal as SSUS
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from zsim.sim_progress.Enemy import Enemy
     from .special_state_manager_class import SpecialStateManager
@@ -8,13 +9,14 @@ if TYPE_CHECKING:
 
 class EnemySpecialState(ABC):
     """管理敌人特殊状态的数据结构基类"""
+
     @abstractmethod
     def __init__(self, enemy_instance: "Enemy", manager_instance: "SpecialStateManager", **kwargs):
         self.enemy = enemy_instance
         self.manager = manager_instance
-        self.active: bool = False   # 激活状态
-        self.last_update_tick: int = 0      # 最近更新时间
-        self.max_duration: int = 0       # 持续时间
+        self.active: bool = False  # 激活状态
+        self.last_update_tick: int = 0  # 最近更新时间
+        self.max_duration: int = 0  # 持续时间
         self.description: str | None = None  # 说明
 
     @abstractmethod

@@ -24,9 +24,7 @@ class StreetSuperstar(Buff.BuffLogic):
         self.record = None
 
     def get_prepared(self, **kwargs):
-        return check_preparation(
-            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
-        )
+        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
 
     def check_record_module(self):
         if self.equipper is None:
@@ -53,14 +51,10 @@ class StreetSuperstar(Buff.BuffLogic):
             raise TypeError(
                 f"{self.buff_instance.ft.index}的xjudge函数获取到的skill_node不是SkillNode类型"
             )
-        if not skill_node.preload_tick == find_tick(
-            sim_instance=self.buff_instance.sim_instance
-        ):
+        if not skill_node.preload_tick == find_tick(sim_instance=self.buff_instance.sim_instance):
             return False
         if skill_node.skill.trigger_buff_level == 5:
-            self.record.qte_counter = min(
-                self.record.qte_counter + 1, self.record.max_qte
-            )
+            self.record.qte_counter = min(self.record.qte_counter + 1, self.record.max_qte)
         elif skill_node.skill.trigger_buff_level == 6:
             if skill_node.char_name == self.record.char.NAME:
                 self.record.active_signal = skill_node

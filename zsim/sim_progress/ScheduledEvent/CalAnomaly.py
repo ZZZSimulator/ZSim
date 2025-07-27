@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 import numpy as np
 
@@ -6,10 +6,11 @@ from zsim.define import ElementType
 from zsim.sim_progress.anomaly_bar import AnomalyBar
 from zsim.sim_progress.anomaly_bar.CopyAnomalyForOutput import (
     DirgeOfDestinyAnomaly as Abloom,
+)
+from zsim.sim_progress.anomaly_bar.CopyAnomalyForOutput import (
     Disorder,
     PolarityDisorder,
 )
-from zsim.sim_progress.Character.character import Character
 from zsim.sim_progress.Character.Yanagi import Yanagi
 from zsim.sim_progress.Enemy import Enemy
 from zsim.sim_progress.Report import report_to_log
@@ -18,6 +19,8 @@ from .Calculator import Calculator as Cal
 from .Calculator import MultiplierData as MulData
 
 if TYPE_CHECKING:
+    from zsim.sim_progress.Buff import Buff
+    from zsim.sim_progress.Character import Character
     from zsim.simulator.simulator_class import Simulator
 
 
@@ -26,7 +29,7 @@ class CalAnomaly:
         self,
         anomaly_obj: AnomalyBar,
         enemy_obj: Enemy,
-        dynamic_buff: dict,
+        dynamic_buff: dict[str, list["Buff"]],
         sim_instance: "Simulator",
     ):
         """
@@ -39,30 +42,35 @@ class CalAnomaly:
         """
         self.sim_instance = sim_instance
         self.enemy_obj = enemy_obj
-        self.anomaly_obj = anomaly_obj
+        self.anomaly_obj: AnomalyBar = anomaly_obj
         self.dynamic_buff = dynamic_buff
         snapshot: tuple[ElementType, np.ndarray] = (
             self.anomaly_obj.element_type,
             self.anomaly_obj.current_ndarray,
         )
         self.element_type: ElementType = snapshot[0]
-        # self.dmg_sp 以 array 形式储存，顺序为：基础伤害区、增伤区、异常精通区、等级、异常增伤区、异常暴击区、穿透率、穿透值、抗性穿透
+        # self.dmg_sp 以 array 形式储存，顺序为：基础伤害区、增伤区、异常精通区、等级、异常增伤区、异常暴击区、穿透率、穿透值、抗性穿透、冲击力、失衡值增幅
         self.dmg_sp: np.ndarray = snapshot[1]
         if anomaly_obj.activated_by is None:
-            print(f"【CalAnomaly Warnning】:检测到异常实例(属性类型：{anomaly_obj.element_type}）的激活源为空，改异常实例将无法享受Buff加成。")
+            print(
+                f"【CalAnomaly Warnning】:检测到异常实例(属性类型：{anomaly_obj.element_type}）的激活源为空，改异常实例将无法享受Buff加成。"
+            )
+            raise NotImplementedError
         else:
-            char_obj = anomaly_obj.activated_by.skill.char_obj
+            char_obj: "Character | None" = anomaly_obj.activated_by.skill.char_obj
         # 根据动态buff读取怪物面板
+
         self.data: MulData = MulData(
             enemy_obj=self.enemy_obj,
             dynamic_buff=self.dynamic_buff,
-            judge_node=anomaly_obj,
-            character_obj=char_obj
+            judge_node=anomaly_obj,  # type: ignore
+            character_obj=char_obj,
         )
         # 虚拟角色等级
         v_char_level: int = int(
             np.floor(self.dmg_sp[0, 3] + 0.0000001)
         )  # 加一个极小的数避免精度向下丢失导致的误差
+        self.v_char_level = v_char_level
         # 等级系数
         k_level = self.cal_k_level(v_char_level)
 
@@ -85,6 +93,9 @@ class CalAnomaly:
         # 特殊乘区
         special_mul: float = Cal.RegularMul.cal_special_mul(self.data)
 
+        imp_mul = self.dmg_sp[0, 9]
+        stun_mul = self.dmg_sp[0, 10]
+
         self.final_multipliers: np.ndarray = self.set_final_multipliers(
             k_level,
             active_crit,
@@ -93,6 +104,8 @@ class CalAnomaly:
             vulnerability_mul,
             stun_vulnerability,
             special_mul,
+            imp_mul,
+            stun_mul,
         )
 
     @staticmethod
@@ -137,9 +150,7 @@ class CalAnomaly:
         # 计算属性/类型的穿透
         if self.element_type == 0:
             # 穿透率
-            addon_pen_ratio = (
-                float(self.dmg_sp[0, 6]) + self.data.dynamic.strike_ignore_defense
-            )
+            addon_pen_ratio = float(self.dmg_sp[0, 6]) + self.data.dynamic.strike_ignore_defense
             # 受击方有效防御
         else:
             addon_pen_ratio = float(self.dmg_sp[0, 6])
@@ -163,9 +174,11 @@ class CalAnomaly:
         vulnerability_mul,
         stun_vulnerability,
         special_mul,
+        imp_mul,
+        stun_mul,
     ) -> np.ndarray:
         """将计算结果写入 self.final_multipliers"""
-        # self.dmg_sp 以 array 形式储存，顺序为：基础伤害区、增伤区、异常精通区、等级、异常增伤区、异常暴击区、穿透率、穿透值、抗性穿透
+        # self.dmg_sp 以 array 形式储存，顺序为：基础伤害区、增伤区、异常精通区、等级、异常增伤区、异常暴击区、穿透率、穿透值、抗性穿透、冲击力、失衡值增幅
         base_dmg = self.dmg_sp[0, 0]
         dmg_bonus = self.dmg_sp[0, 1]
         am_mul = self.dmg_sp[0, 2]
@@ -183,6 +196,8 @@ class CalAnomaly:
                 def_mul,
                 res_mul,
                 vulnerability_mul,
+                imp_mul,
+                stun_mul,
                 stun_vulnerability,
                 special_mul,
             ],
@@ -192,7 +207,10 @@ class CalAnomaly:
 
     def cal_anomaly_dmg(self) -> np.float64:
         """计算异常伤害期望"""
-        return np.float64(np.prod(self.final_multipliers))
+
+        return np.float64(
+            np.prod(self.final_multipliers) / (self.dmg_sp[0, 9] * self.dmg_sp[0, 10])
+        )
 
 
 class CalDisorder(CalAnomaly):
@@ -200,16 +218,14 @@ class CalDisorder(CalAnomaly):
         self,
         disorder_obj: Disorder,
         enemy_obj: Enemy,
-        dynamic_buff: dict,
+        dynamic_buff: dict[str, list["Buff"]],
         sim_instance: "Simulator",
     ):
         """
         异常伤害快照以 array 形式储存，顺序为：
         [基础伤害区、增伤区、异常精通区、等级、异常增伤区、异常暴击区、穿透率、穿透值、抗性穿透]
         """
-        super().__init__(
-            disorder_obj, enemy_obj, dynamic_buff, sim_instance=sim_instance
-        )
+        super().__init__(disorder_obj, enemy_obj, dynamic_buff, sim_instance=sim_instance)
         self.final_multipliers[0] = self.cal_disorder_base_dmg(
             np.float64(self.final_multipliers[0])
         )
@@ -234,22 +250,21 @@ class CalDisorder(CalAnomaly):
             case 3:  # 感电紊乱
                 disorder_base_dmg = (base_mul / 1.25) * (np.floor(t_s) * 1.25 + 4.5)
             case 4:  # 侵蚀紊乱
-                disorder_base_dmg = (base_mul / 0.625) * (
-                    np.floor(t_s / 0.5) * 0.625 + 4.5
-                )
+                disorder_base_dmg = (base_mul / 0.625) * (np.floor(t_s / 0.5) * 0.625 + 4.5)
             case 5:  # 烈霜紊乱
                 disorder_base_dmg = (base_mul / 5) * (np.floor(t_s) * 0.75 + 6)
             case 6:  # 玄墨侵蚀紊乱
-                disorder_base_dmg = (base_mul / 0.625) * (
-                    np.floor(t_s / 0.5) * 0.625 + 4.5
-                )
+                disorder_base_dmg = (base_mul / 0.625) * (np.floor(t_s / 0.5) * 0.625 + 4.5)
             case _:
                 assert False, f"Invalid Element Type {self.element_type}"
         # 计算紊乱基础倍率增幅
-        disorder_basic_mul_map = self.data.dynamic.disorder_basic_mul_map
+        disorder_basic_mul_map: dict[ElementType | Literal["all"], float] = (
+            self.data.dynamic.disorder_basic_mul_map
+        )
         disorder_base_dmg *= 1 + (
             disorder_basic_mul_map[self.element_type] + disorder_basic_mul_map["all"]
         )
+        # print(f"111111，计算紊乱！{disorder_basic_mul_map}")
         return np.float64(disorder_base_dmg)
 
     def cal_disorder_extra_mul(self) -> np.float64:
@@ -257,17 +272,18 @@ class CalDisorder(CalAnomaly):
 
         异常额外增伤区 = 1 + 对应属性异常额外增伤
         """
-        map = self.data.dynamic.ano_extra_bonus
-        return 1 + map[-1]
+        map: dict[ElementType | Literal["all", -1], float] = self.data.dynamic.ano_extra_bonus
+        return np.float64(1 + map[-1])
 
     def cal_disorder_stun(self) -> np.float64:
         imp = self.final_multipliers[9]
-        stun_ratio = 3
+        stun_ratio = 2
         stun_res = Cal.StunMul.cal_stun_res(self.data, self.element_type)
         stun_bonus = self.final_multipliers[10]
         stun_received = Cal.StunMul.cal_stun_received(self.data)
+        k_level_for_stun = 1 + self.v_char_level * 0.0075
         return np.float64(
-            np.prod([imp, stun_ratio, stun_res, stun_bonus, stun_received])
+            np.prod([imp, stun_ratio, stun_res, stun_bonus, stun_received, k_level_for_stun])
         )
 
 
@@ -276,12 +292,10 @@ class CalPolarityDisorder(CalDisorder):
         self,
         disorder_obj: PolarityDisorder,
         enemy_obj: Enemy,
-        dynamic_buff: dict,
+        dynamic_buff: dict[str, list["Buff"]],
         sim_instance: "Simulator",
     ):
-        super().__init__(
-            disorder_obj, enemy_obj, dynamic_buff, sim_instance=sim_instance
-        )
+        super().__init__(disorder_obj, enemy_obj, dynamic_buff, sim_instance=sim_instance)
         yanagi_obj = self.__find_yanagi()
         yanagi_mul = MulData(
             enemy_obj=enemy_obj, dynamic_buff=dynamic_buff, character_obj=yanagi_obj
@@ -292,9 +306,7 @@ class CalPolarityDisorder(CalDisorder):
         ) + (ap * disorder_obj.additional_dmg_ap_ratio)
 
     def __find_yanagi(self) -> Yanagi | None:
-        yanagi_obj: Yanagi | None = self.sim_instance.char_data.char_obj_dict.get(
-            "柳", None
-        )
+        yanagi_obj: Yanagi | None = self.sim_instance.char_data.char_obj_dict.get("柳", None)  # type: ignore
         if yanagi_obj is None:
             assert False, "没柳你哪来的极性紊乱"
         return yanagi_obj
@@ -305,7 +317,7 @@ class CalAbloom(CalAnomaly):
         self,
         abloom_obj: Abloom,
         enemy_obj: Enemy,
-        dynamic_buff: dict,
+        dynamic_buff: dict[str, list["Buff"]],
         sim_instance: "Simulator",
     ):
         super().__init__(abloom_obj, enemy_obj, dynamic_buff, sim_instance=sim_instance)

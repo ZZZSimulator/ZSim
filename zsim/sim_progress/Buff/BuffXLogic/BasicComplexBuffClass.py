@@ -29,9 +29,7 @@ class BasicComplexBuffClass(Buff.BuffLogic):
 
     def get_prepared(self, **kwargs):
         """通用准备检查方法"""
-        return check_preparation(
-            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
-        )
+        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
 
     def check_record_module(self, **kwargs):
         """通用记录模块检查"""
@@ -44,10 +42,7 @@ class BasicComplexBuffClass(Buff.BuffLogic):
             self.buff_0 = JudgeTools.find_exist_buff_dict(
                 sim_instance=self.buff_instance.sim_instance
             )[char_name][self.buff_instance.ft.index]
-        if (
-            not hasattr(self.buff_0.history, "record")
-            or self.buff_0.history.record is None
-        ):
+        if not hasattr(self.buff_0.history, "record") or self.buff_0.history.record is None:
             self.buff_0.history.record = self.RECORD_CLASS()
         self.record = self.buff_0.history.record
 

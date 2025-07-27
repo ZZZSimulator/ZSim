@@ -10,6 +10,7 @@ class Hugo(Character):
     def special_resources(self, *args, **kwargs) -> None:
         """雨果的特殊资源模块"""
         if not self.listener_creat:
+            assert self.sim_instance is not None
             self.sim_instance.listener_manager.listener_factory(
                 listener_owner=self,
                 initiate_signal="Hugo",
@@ -17,8 +18,8 @@ class Hugo(Character):
             )
         return
 
-    def get_resources(self) -> tuple[str, float]:
-        pass
+    def get_resources(self) -> tuple[str | None, int | float | bool | None]:
+        return "特殊资源", 0.0
 
-    def get_special_stats(self, *args, **kwargs) -> dict[str, int | float | bool]:
-        pass
+    def get_special_stats(self, *args, **kwargs) -> dict[str | None, object | None]:
+        return {}

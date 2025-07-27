@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from zsim.models.event_enums import ListenerBroadcastSignal as LBS
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -7,13 +8,14 @@ if TYPE_CHECKING:
 
 class BaseListener(ABC):
     @abstractmethod
-    def __init__(self, listener_id: str = None, sim_instance: "Simulator" = None):
+    def __init__(self, listener_id: str | None = None, sim_instance: "Simulator | None" = None):
+        assert sim_instance is not None
         self.sim_instance: "Simulator" = sim_instance
         self.listener_id: str | None = listener_id
         self.schedule = None
 
     @abstractmethod
-    def listening_event(self, event, **kwargs):
+    def listening_event(self, event, signal: LBS, **kwargs):
         """监听事件的函数"""
         pass
 

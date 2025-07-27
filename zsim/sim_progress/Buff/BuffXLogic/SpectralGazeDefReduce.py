@@ -19,9 +19,7 @@ class SpectralGazeDefReduce(Buff.BuffLogic):
         self.record = None
 
     def get_prepared(self, **kwargs):
-        return check_preparation(
-            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
-        )
+        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
 
     def check_record_module(self):
         if self.equipper is None:
@@ -45,21 +43,13 @@ class SpectralGazeDefReduce(Buff.BuffLogic):
         self.get_prepared(equipper="索魂影眸")
         skill_node = kwargs.get("skill_node", None)
         if skill_node is None:
-            raise ValueError(
-                f"{self.buff_instance.ft.index}的xjudge中缺少skill_node参数"
-            )
+            raise ValueError(f"{self.buff_instance.ft.index}的xjudge中缺少skill_node参数")
         from zsim.sim_progress.Preload import SkillNode
 
         if not isinstance(skill_node, SkillNode):
             raise TypeError
-        if (
-            str(self.record.char.CID) not in skill_node.skill_tag
-            or not skill_node.skill.labels
-        ):
+        if str(self.record.char.CID) not in skill_node.skill_tag or not skill_node.skill.labels:
             return False
-        if (
-            skill_node.element_type == 3
-            and "aftershock_attack" in skill_node.skill.labels
-        ):
+        if skill_node.element_type == 3 and "aftershock_attack" in skill_node.skill.labels:
             return True
         return False

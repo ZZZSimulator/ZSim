@@ -35,6 +35,7 @@ class AstraYao(Character):
 
         def __init__(self, char_instantce: Character):
             super().__init__(char_instantce)
+            self.character: "AstraYao" = char_instantce  # type: ignore
             self._on_field = False  # 初始化父类的普通属性
 
         @property
@@ -66,7 +67,7 @@ class AstraYao(Character):
     def get_resources(self) -> tuple[str, int]:
         return "咏叹华彩", self.idyllic_cadenza
 
-    def get_special_stats(self, *args, **kwargs) -> dict[str, int | float | bool]:
+    def get_special_stats(self, *args, **kwargs) -> dict[str | None, object | None]:
         return {"和弦": self.chord}
 
 
@@ -124,9 +125,7 @@ class ChordCoattackManager:
             """单个触发器类"""
 
             def __init__(self, manager_instance, cd: int):
-                self.manager: ChordCoattackManager.QuickAssistTriggerManager = (
-                    manager_instance
-                )
+                self.manager: ChordCoattackManager.QuickAssistTriggerManager = manager_instance
                 self.cd = cd
                 self.last_update_tick = 0
 
@@ -144,14 +143,11 @@ class ChordCoattackManager:
                 1、下一个角色是耀嘉音——跳过耀嘉音，直接触发下下位角色的快速支援，
                 2、下一个角色不是耀嘉音——正常触发下一位角色的快速支援。
                 """
+                assert self.manager.preload_data is not None, "preload_data is not initialized"
                 _operating_node = self.manager.preload_data.get_on_field_node(tick)
-                all_name_order_box = (
-                    self.manager.preload_data.load_data.all_name_order_box
-                )
+                all_name_order_box = self.manager.preload_data.load_data.all_name_order_box
                 if _operating_node is None:
-                    raise ValueError(
-                        "想要触发耀嘉音的快速支援，则当前场上必须存在角色！"
-                    )
+                    raise ValueError("想要触发耀嘉音的快速支援，则当前场上必须存在角色！")
                 current_name_order = all_name_order_box[_operating_node.char_name]
 
                 if current_name_order[1] == "耀嘉音":
@@ -164,6 +160,8 @@ class ChordCoattackManager:
             def __active(self, tick: int, skill_node):
                 """触发快速支援！不包含CD判断，只包含触发逻辑。"""
                 if self.manager.preload_data is None:
+                    if self.manager.char.sim_instance is None:
+                        raise ValueError("sim_instance is None, cannot find preload_data")
                     self.manager.preload_data = JudgeTools.find_preload_data(
                         sim_instance=self.manager.char.sim_instance
                     )
@@ -171,6 +169,7 @@ class ChordCoattackManager:
                         raise TypeError("快速支援管理器无法找到PreloadData实例！")
                 self.last_update_tick = tick
                 target_char = self.determine_target_char(tick)
+                assert self.manager.preload_data.quick_assist_system is not None
                 self.manager.preload_data.quick_assist_system.force_active_quick_assist(
                     tick, skill_node, target_char
                 )
@@ -206,13 +205,13 @@ class ChordCoattackManager:
         def c2_ready(self, tick: int):
             return tick - self.c2_update_tick >= self.c2_trigger_cd
 
-        def try_spawn_chord_coattack(self, tick: int, skill_node: "SkillNode" = None):
+        def try_spawn_chord_coattack(self, tick: int, skill_node: "SkillNode | None"):
             """给外部的接口，尝试执行！"""
             if self.manager.char.sp < 25:
                 return
             self.coattack_active(tick, skill_node)
 
-        def coattack_active(self, tick: int, skill_node: "SkillNode" = None):
+        def coattack_active(self, tick: int, skill_node: "SkillNode | None"):
             """
             给外部函数调用的接口，用于生成协同攻击。
             如果有顺带传入skill_node参数，则意味着调用来自Buff系统的触发器，
@@ -221,7 +220,7 @@ class ChordCoattackManager:
             c2_count = 1 if self.manager.char.cinema >= 2 else 0
             loop_times = self.coattack_base_count + c2_count
             self.__chord_group_spawn_loop(tick, loop_times)
-            if skill_node:
+            if skill_node is not None:
                 self.__add_core_passive_buff(skill_node)
 
         def __chord_group_spawn_loop(self, tick: int, loop_times: int):
@@ -230,6 +229,8 @@ class ChordCoattackManager:
             并且可以进行重复执行，模仿耀嘉音技能模组中，多次触发的情况。
             """
             if self.preload_data is None:
+                if self.manager.char.sim_instance is None:
+                    raise ValueError("sim_instance is None, cannot find preload_data")
                 self.preload_data = JudgeTools.find_preload_data(
                     sim_instance=self.manager.char.sim_instance
                 )
@@ -253,6 +254,8 @@ class ChordCoattackManager:
                     preload_tick + self.tremolo_tick,
                 ]
                 preload_tick += self.tremolo_tick + self.tone_clusters_tick
+                if self.manager.char.sim_instance is None:
+                    raise ValueError("sim_instance is None, cannot schedule event")
                 schedule_preload_event_factory(
                     skill_tag_list=skill_tag_list,
                     preload_tick_list=skill_preload_tick_list,
@@ -267,13 +270,15 @@ class ChordCoattackManager:
             benifit_list = list(set(add_buff_list))
             from zsim.sim_progress.Buff.BuffAddStrategy import buff_add_strategy
 
+            if self.manager.char.sim_instance is None:
+                raise ValueError("sim_instance is None, cannot add buff")
+
             buff_add_strategy(
                 self.core_passive_buff_index,
                 benifit_list=benifit_list,
                 sim_instance=self.manager.char.sim_instance,
             )
             if ASTRAYAO_REPORT:
+                assert self.manager.char.sim_instance is not None
                 self.manager.char.sim_instance.schedule_data.change_process_state()
-                print(
-                    f"核心被动触发器激活！为{benifit_list}添加了{self.core_passive_buff_index}！"
-                )
+                print(f"核心被动触发器激活！为{benifit_list}添加了{self.core_passive_buff_index}！")

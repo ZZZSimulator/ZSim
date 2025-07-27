@@ -8,7 +8,6 @@ from .BuffAdd import add_debuff_to_enemy
 
 if TYPE_CHECKING:
     from zsim.simulator.simulator_class import Simulator
-    from zsim.sim_progress.Preload import SkillNode
     from zsim.sim_progress.Load import LoadingMission
 
 
@@ -34,6 +33,7 @@ def ScheduleBuffSettle(
     elif "skill_node" in kwargs:
         from zsim.sim_progress.Preload import SkillNode
         from zsim.sim_progress.Load import LoadingMission
+
         skill_node = kwargs["skill_node"]
         if isinstance(skill_node, SkillNode):
             action_result = skill_node
@@ -104,9 +104,7 @@ def process_schedule_on_field_buff(
         # Buff 激活
         adding_buff_code = str(int(buff.ft.add_buff_to)).zfill(4)
         selected_characters = [
-            name_box_now[i]
-            for i in range(len(name_box_now))
-            if adding_buff_code[i] == "1"
+            name_box_now[i] for i in range(len(name_box_now)) if adding_buff_code[i] == "1"
         ]
         # if buff.ft.index == 'Buff-武器-精1啜泣摇篮-全队增伤自增长':
         #     print(f'onfield函数处理了这个buff！当前的namebox是：{name_box_now}')
@@ -147,9 +145,7 @@ def process_schedule_backend_buff(
         name_box_now = all_name_order_box[main_char]
         adding_buff_code = str(int(buff.ft.add_buff_to)).zfill(4)
         selected_characters = [
-            name_box_now[i]
-            for i in range(len(name_box_now))
-            if adding_buff_code[i] == "1"
+            name_box_now[i] for i in range(len(name_box_now)) if adding_buff_code[i] == "1"
         ]
         # if buff.ft.index == 'Buff-武器-精1啜泣摇篮-全队增伤自增长':
         #     print(f'backend函数处理了这个buff！当前的namebox是：{name_box_now}')
@@ -185,8 +181,8 @@ def add_schedule_buff(
         # if buff.ft.index == 'Buff-武器-精1啜泣摇篮-全队增伤自增长':
         #     print(f'buff_0情况：{buff.dy.startticks, buff.dy.endticks}')
         #     print(f'新buff情况：{buff_new.dy.startticks, buff_new.dy.endticks}')
-        if not buff.ft.operator == characters:
-            continue
+        # if not buff.ft.operator == characters:
+        #     continue
         if buff.ft.simple_effect_logic:
             buff_new.simple_start(time_tick, sub_exist_buff_dict)
         else:

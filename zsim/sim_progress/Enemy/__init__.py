@@ -22,6 +22,7 @@ from .EnemyAttack import EnemyAttackMethod
 from .EnemyUniqueMechanic import unique_mechanic_factory
 from .QTEManager import QTEManager
 from zsim.sim_progress.data_struct.enemy_special_state_manager import SpecialStateManager
+from zsim.models.event_enums import ListenerBroadcastSignal as LBS
 
 if TYPE_CHECKING:
     from zsim.simulator.simulator_class import Simulator
@@ -45,7 +46,7 @@ class Enemy:
         sub_ID: int | None = None,
         adjustment_id: int | None = None,
         difficulty: float = 1,
-        sim_instance: "Simulator" = None,
+        sim_instance: "Simulator | None" = None,
     ):
         """
         根据数据库信息创建怪物属性对象。
@@ -65,7 +66,8 @@ class Enemy:
             get_stun_percentage()
         """
         # 读取敌人数据文件，初始化敌人信息
-        self.sim_instance = sim_instance
+        assert sim_instance is not None
+        self.sim_instance: "Simulator" = sim_instance
         self.__last_stun_increase_tick: int | None = None
         _raw_enemy_dataframe = pd.read_csv(ENEMY_DATA_PATH)
         _raw_enemy_adjustment_dataframe = pd.read_csv(ENEMY_ADJUSTMENT_PATH)
@@ -84,9 +86,7 @@ class Enemy:
         # 初始化敌人基础属性
         self.base_max_HP: float = float(self.data_dict["70级最大生命值"])
         self.max_HP: float = (
-            float(self.data_dict["70级最大生命值"])
-            * (1 + self.enemy_adjust["生命值"])
-            * difficulty
+            float(self.data_dict["70级最大生命值"]) * (1 + self.enemy_adjust["生命值"]) * difficulty
         )
         self.max_ATK: float = float(self.data_dict["70级最大攻击力"]) * (
             1 + self.enemy_adjust["攻击力"]
@@ -228,17 +228,13 @@ class Enemy:
             attack_method_code = 0
         else:
             attack_method_code = int(self.data_dict["进攻策略"])
-        self.attack_method = EnemyAttackMethod(
-            ID=attack_method_code, enemy_instance=self
-        )
+        self.attack_method = EnemyAttackMethod(ID=attack_method_code, enemy_instance=self)
         self.restore_stun()
 
         self.unique_machanic_manager = unique_mechanic_factory(self)  # 特殊机制管理器
         self.special_state_manager = SpecialStateManager(enemy_instance=self)
 
-        report_to_log(
-            f"[ENEMY]: 怪物对象 {self.name} 已创建，怪物ID {self.index_ID}", level=4
-        )
+        report_to_log(f"[ENEMY]: 怪物对象 {self.name} 已创建，怪物ID {self.index_ID}", level=4)
 
     def __restore_stun_recovery_time(self):
         self.stun_recovery_time = float(self.data_dict["失衡恢复时间"]) * 60
@@ -265,16 +261,14 @@ class Enemy:
                 self.__restore_stun_recovery_time()
                 self.stun_recovery_time += increase_tick
 
-    def get_active_anomaly_bar(self) -> type(AnomalyBar):
+    def get_active_anomaly_bar(self) -> type[AnomalyBar]:
         """用于外部获取当前正在激活的属性异常条对象"""
         output_list = []
         for element_type, anomaly_bar in self.anomaly_bars_dict.items():
             if anomaly_bar.active:
                 output_list.append(self.dynamic.active_anomaly_bar_dict[element_type])
         if len(output_list) == 0 or len(output_list) > 1:
-            raise ValueError(
-                f"状态错误！找到了{len(output_list)}种正在激活的属性异常条！"
-            )
+            raise ValueError(f"状态错误！找到了{len(output_list)}种正在激活的属性异常条！")
         return output_list[0]
 
     @staticmethod
@@ -311,6 +305,8 @@ class Enemy:
                 row = enemy_df[enemy_df["CN_enemy_ID"] == enemy_name].to_dict("records")
             else:
                 row = enemy_df[enemy_df["IndexID"] == 11531].to_dict("records")  # 默认打尼尼微（因为全部0抗）
+            if not row:
+                raise ValueError(f"找不到对应的敌人，请检查输入参数：name={enemy_name}, index_id={enemy_index_ID}, sub_id={enemy_sub_ID}")
         except IndexError:
             raise ValueError("找不到对应的敌人")
         # fmt: on
@@ -335,19 +331,26 @@ class Enemy:
 
     @staticmethod
     def __lookup_enemy_adjustment(
-        adjust_df: pd.DataFrame, adjust_ID: int
-    ) -> dict[
-        Literal["生命值", "攻击力", "失衡值上限", "防御力", "异常积蓄值上限"], float
-    ]:
+        adjust_df: pd.DataFrame, adjust_ID: int | None = None
+    ) -> dict[Literal["生命值", "攻击力", "失衡值上限", "防御力", "异常积蓄值上限"], float]:  # type: ignore
         """根据调整ID查找敌人调整数据，并返回调整数据字典。"""
-        try:
-            row = adjust_df[adjust_df["ID"] == adjust_ID].to_dict("records")
-        except IndexError:
-            raise ValueError(f"找不到属性调整ID：{adjust_ID}")
-        row_0: dict[
-            Literal["生命值", "攻击力", "失衡值上限", "防御力", "异常积蓄值上限"], float
-        ] = dict(row[0])
-        return row_0
+        if adjust_ID is not None:
+            try:
+                row = adjust_df[adjust_df["ID"] == adjust_ID].to_dict("records")
+            except IndexError:
+                raise ValueError(f"找不到属性调整ID：{adjust_ID}")
+            row_0: dict[
+                Literal["生命值", "攻击力", "失衡值上限", "防御力", "异常积蓄值上限"], float
+            ] = dict(row[0])  # type: ignore
+            return row_0
+        else:
+            return {
+                "生命值": 0,
+                "攻击力": 0,
+                "失衡值上限": 0,
+                "防御力": 0,
+                "异常积蓄值上限": 0,
+            }
 
     @staticmethod
     def __init_enemy_anomaly(
@@ -393,22 +396,12 @@ class Enemy:
         else:
             pass
 
-    @staticmethod
-    def __qte_tag_filter(self, tag: str) -> list[str]:
-        """判断输入的标签是否为QTE，并作为列表返回"""
-        result = []
-        if "QTE" in tag:
-            result.append(tag)
-        return result
-
     def update_anomaly(self, element: str | int = "ALL", *, times: int = 1) -> None:
         """更新怪物异常值，触发一次异常后调用。"""
 
         # 参数类型检查
         if not isinstance(element, (str, int)):
-            raise TypeError(
-                f"element参数类型错误，必须是整数或字符串，实际类型为{type(element)}"
-            )
+            raise TypeError(f"element参数类型错误，必须是整数或字符串，实际类型为{type(element)}")
         if not isinstance(times, int):
             raise TypeError(f"times参数必须是整数，实际类型为{type(times)}")
         if times <= 0:
@@ -497,12 +490,18 @@ class Enemy:
             self.unique_machanic_manager.update_myself(single_hit, tick)
 
         # 更新连携管理器
+        assert (
+            self.qte_manager is not None
+            and self.sim_instance.preload.preload_data.atk_manager is not None
+        )
         self.qte_manager.receive_hit(single_hit)
         self.sim_instance.preload.preload_data.atk_manager.receive_single_hit(
             single_hit=single_hit, tick=tick
         )
         # 在接收hit的时，向所有特殊状态进行广播，执行更新自检！
-        self.special_state_manager.broadcast_and_update(signal=SSUS.RECEIVE_HIT, single_hit=single_hit)
+        self.special_state_manager.broadcast_and_update(
+            signal=SSUS.RECEIVE_HIT, single_hit=single_hit
+        )
 
     # 遥远的需求：
     #  TODO：实时DPS的计算，以及预估战斗结束时间，用于进一步优化APL。（例：若目标预计死亡时间<5秒，则不补buff）
@@ -548,9 +547,7 @@ class Enemy:
                 self.restore_stun()
             else:
                 if _tick - self.dynamic.stun_update_tick > 1:
-                    raise ValueError(
-                        "状态更新间隔大于1！存在多个tick都未更新stun的情况！"
-                    )
+                    raise ValueError("状态更新间隔大于1！存在多个tick都未更新stun的情况！")
                 self.dynamic.stun_bar = 0  # 避免 log 差错
                 self.dynamic.stun_update_tick = _tick
 
@@ -561,18 +558,18 @@ class Enemy:
                 #     print("检测到怪物当前处于冻结状态，所以不会增加stun_tick！！")
         elif self.dynamic.stun_bar >= self.max_stun:
             # 若是检测到失衡状态的上升沿，则应该开启彩色失衡状态。
+            assert self.qte_manager is not None
             self.qte_manager.qte_data.reset()
             print("怪物陷入失衡了！")
             self.dynamic.stun = True
             self.dynamic.stun_bar = 0  # 避免 log 差错
             self.dynamic.stun_update_tick = _tick
             if single_hit:
-                self.sim_instance.decibel_manager.update(
-                    single_hit=single_hit, key="stun"
-                )
+                self.sim_instance.decibel_manager.update(single_hit=single_hit, key="stun")
                 self.sim_instance.listener_manager.broadcast_event(
-                    single_hit, stun_event=1
+                    event=single_hit, signal=LBS.STUN
                 )
+            assert self.sim_instance.preload.preload_data.atk_manager is not None
             if self.sim_instance.preload.preload_data.atk_manager.attacking:
                 self.sim_instance.preload.preload_data.atk_manager.interrupted(
                     tick=_tick, reason="被打进失衡"
@@ -587,7 +584,9 @@ class Enemy:
             self.dynamic.lost_hp = -1 * minus
             report_to_log(f"怪物{self.name}死亡！")
 
-    def __anomaly_prod(self, snapshot: tuple[int, np.float64, np.ndarray], single_hit: SingleHit) -> None:
+    def __anomaly_prod(
+        self, snapshot: tuple[int, np.float64, np.ndarray], single_hit: SingleHit
+    ) -> None:
         """用于更新异常条的角色面板快照"""
         if snapshot[1] >= 1e-6:  # 确保非零异常值才更新
             element_type_code = snapshot[0]
@@ -597,6 +596,7 @@ class Enemy:
     def reset_myself(self):
         self.dynamic.reset_myself()
         self.reset_anomaly_bars()
+        assert self.qte_manager is not None
         self.qte_manager.reset_myself()
         self.attack_method.reset_myself()
         if self.unique_machanic_manager is not None:
@@ -643,8 +643,11 @@ class Enemy:
             self.auricink_corruption = False  # 玄墨侵蚀状态
 
             self.dynamic_debuff_list = []  # 用来装debuff的list
+            # from zsim.sim_progress.data_struct.monitor_list_class import MonitoredList
+            # self.dynamic_dot_list = MonitoredList()  # 用来装dot的list
             self.dynamic_dot_list = []  # 用来装dot的list
-            self.active_anomaly_bar_dict = {
+
+            self.active_anomaly_bar_dict: dict[int, type[AnomalyBar] | None] = {
                 number: AnomalyBar for number in range(6)
             }  # 用来装激活属性异常的字典。
 
@@ -679,28 +682,28 @@ class Enemy:
             }
 
         def reset_myself(self):
-            self.stun = False
-            self.stun_update_tick = 0
-            self.frozen = False
-            self.frostbite = False
-            self.frost_frostbite = False
-            self.assault = False
-            self.shock = False
-            self.burn = False
-            self.corruption = False
-            self.dynamic_debuff_list = []
-            self.dynamic_dot_list = []
+            self.stun: bool = False
+            self.stun_update_tick: int = 0
+            self.frozen: bool = False
+            self.frostbite: bool = False
+            self.frost_frostbite: bool = False
+            self.assault: bool = False
+            self.shock: bool = False
+            self.burn: bool = False
+            self.corruption: bool = False
+            self.dynamic_debuff_list: list = []
+            self.dynamic_dot_list: list = []
             self.active_anomaly_bar_dict = {number: None for number in range(6)}
-            self.stun_bar = 0
-            self.lost_hp = 0
-            self.stun_tick = 0
-            self.frozen_tick = 0
-            self.frostbite_tick = 0
-            self.assault_tick = 0
-            self.shock_tick = 0
-            self.burn_tick = 0
-            self.corruption_tick = 0
-            self.stun_tick_feed_back_from_QTE = 0
+            self.stun_bar: float = 0
+            self.lost_hp: float = 0
+            self.stun_tick: int = 0
+            self.frozen_tick: int = 0
+            self.frostbite_tick: int = 0
+            self.assault_tick: int = 0
+            self.shock_tick: int = 0
+            self.burn_tick: int = 0
+            self.corruption_tick: int = 0
+            self.stun_tick_feed_back_from_QTE: int = 0
 
         def is_under_anomaly(self) -> bool:
             """若敌人正处于任意一种异常状态下，都会返回True"""
@@ -712,10 +715,11 @@ class Enemy:
                     self.burn,
                     self.corruption,
                     self.shock,
+                    self.auricink_corruption,
                 ]
             )
 
-        def get_active_anomaly(self) -> list[type(AnomalyBar) | None]:
+        def get_active_anomaly(self) -> list[type[AnomalyBar] | None]:
             if self.is_under_anomaly():
                 return [
                     _anomaly_bar

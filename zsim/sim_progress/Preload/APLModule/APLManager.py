@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 class APLManager:
     """APL管理器，用于管理和加载APL代码文件"""
 
-    def __init__(self, sim_instance: "Simulator" = None):
+    def __init__(self, sim_instance: "Simulator | None" = None):
         self.default_apl_dir = DEFAULT_APL_DIR
         self.custom_apl_dir = COSTOM_APL_DIR
         self._ensure_directories()
@@ -46,9 +46,7 @@ class APLManager:
                 return path
         return None
 
-    def load_apl(
-        self, path: str, mode: int = 0, preload_data: "PreloadData" = None
-    ) -> APLClass:
+    def load_apl(self, path: str, mode: int, preload_data: "PreloadData") -> APLClass:
         """
         加载并解析APL文件
         :param path: APL文件路径
@@ -56,6 +54,7 @@ class APLManager:
         :param preload_data: 外部传入的Preload_data
         :return: 已初始化的APLClass实例
         """
+
         return APLClass(
             APLParser(file_path=path).parse(mode=mode),
             preload_data=preload_data,

@@ -10,44 +10,67 @@ def page_character_config():
     if "name_box" in saved_char_config:
         default_chars = saved_char_config["name_box"]
     from zsim.lib_webui.constants import (
-        char_options,
         equip_set2_options,
         equip_set4_options,
         weapon_options,
         weapon_profession_map,
+        weapon_rarity_map,
+        weapon_char_map,
         char_profession_map,
+        profession_chars_map,
     )
 
-    col1, col2, col3 = st.columns(3)
+    col0, col1, col2, col3, col4, col5, col6, col7 = st.columns([1, 1, 1, 1, 1, 1, 1, 1])
+    with col0:
+        profession_0 = st.selectbox(
+            "角色1特性",
+            list(profession_chars_map.keys()),
+            index=list(profession_chars_map.keys()).index("不限特性"),
+            key="profession_select_0",
+        )
     with col1:
         name_box_0 = [
             st.selectbox(
                 "角色1",
-                char_options,
-                index=char_options.index(default_chars[0])
-                if len(default_chars) > 0
+                profession_chars_map[profession_0],
+                index=profession_chars_map[profession_0].index(default_chars[0])
+                if len(default_chars) > 0 and default_chars[0] in profession_chars_map[profession_0]
                 else 0,
                 key="char_select_0",
             )
         ]
-    with col2:
+    with col3:
+        profession_1 = st.selectbox(
+            "角色2特性",
+            list(profession_chars_map.keys()),
+            index=list(profession_chars_map.keys()).index("不限特性"),
+            key="profession_select_1",
+        )
+    with col4:
         name_box_1 = [
             st.selectbox(
                 "角色2",
-                char_options,
-                index=char_options.index(default_chars[1])
-                if len(default_chars) > 1
+                profession_chars_map[profession_1],
+                index=profession_chars_map[profession_1].index(default_chars[1])
+                if len(default_chars) > 1 and default_chars[1] in profession_chars_map[profession_1]
                 else 0,
                 key="char_select_1",
             )
         ]
-    with col3:
+    with col6:
+        profession_2 = st.selectbox(
+            "角色3特性",
+            list(profession_chars_map.keys()),
+            index=list(profession_chars_map.keys()).index("不限特性"),
+            key="profession_select_2",
+        )
+    with col7:
         name_box_2 = [
             st.selectbox(
                 "角色3",
-                char_options,
-                index=char_options.index(default_chars[2])
-                if len(default_chars) > 2
+                profession_chars_map[profession_2],
+                index=profession_chars_map[profession_2].index(default_chars[2])
+                if len(default_chars) > 2 and default_chars[2] in profession_chars_map[profession_2]
                 else 0,
                 key="char_select_2",
             )
@@ -62,18 +85,32 @@ def page_character_config():
         with st.expander(f"{name}的配置"):
             col_weapon, col_level, col_cinema = st.columns(3)
             with col_weapon:
-                show_adapted_weapon = st.session_state.get(
-                    f"{name}_show_adapted_weapon", True
-                )
+                show_adapted_weapon = st.session_state.get(f"{name}_show_adapted_weapon", True)
+                show_rarity_s = st.session_state.get(f"{name}_show_rarity_s", True)
+                show_rarity_a = st.session_state.get(f"{name}_show_rarity_a", True)
+                show_rarity_b = st.session_state.get(f"{name}_show_rarity_b", False)
                 char_profession = char_profession_map.get(name)
                 if show_adapted_weapon and char_profession:
                     filtered_weapon_options = [
-                        w
-                        for w in weapon_options
-                        if weapon_profession_map.get(w) == char_profession
+                        w for w in weapon_options if weapon_profession_map.get(w) == char_profession
                     ]
                 else:
                     filtered_weapon_options = list(weapon_options)
+
+                # 根据稀有度筛选
+                filtered_weapon_options = [
+                    w
+                    for w in filtered_weapon_options
+                    if (show_rarity_s and weapon_rarity_map.get(w) == "S")
+                    or (show_rarity_a and weapon_rarity_map.get(w) == "A")
+                    or (show_rarity_b and weapon_rarity_map.get(w) == "B")
+                ]
+                rarity_order = {"S": 0, "A": 1, "B": 2}
+                filtered_weapon_options = sorted(
+                    filtered_weapon_options,
+                    key=lambda w: (rarity_order.get(weapon_rarity_map.get(w), 3), w),
+                )
+
                 if name in saved_char_config:
                     current_weapon = saved_char_config[name].get("weapon")
                 else:
@@ -93,12 +130,37 @@ def page_character_config():
                         filtered_weapon_options,
                         index=filtered_weapon_options.index(current_weapon),
                         key=f"{name}_weapon",
+                        format_func=lambda x: (
+                            f"({weapon_rarity_map.get(x, '未知')}"
+                            f"{' ' + weapon_char_map.get(x) if weapon_char_map.get(x) else ''}) {x}"
+                        ),
                     )
-                show_adapted_weapon = st.checkbox(
-                    "只显示适配音擎",
-                    value=show_adapted_weapon,
-                    key=f"{name}_show_adapted_weapon",
-                )
+
+                col_rarity = st.columns(4)
+                with col_rarity[0]:
+                    show_adapted_weapon = st.checkbox(
+                        "只显示适配音擎",
+                        value=show_adapted_weapon,
+                        key=f"{name}_show_adapted_weapon",
+                    )
+                with col_rarity[1]:
+                    show_rarity_s = st.checkbox(
+                        "S",
+                        value=show_rarity_s,
+                        key=f"{name}_show_rarity_s",
+                    )
+                with col_rarity[2]:
+                    show_rarity_a = st.checkbox(
+                        "A",
+                        value=show_rarity_a,
+                        key=f"{name}_show_rarity_a",
+                    )
+                with col_rarity[3]:
+                    show_rarity_b = st.checkbox(
+                        "B",
+                        value=show_rarity_b,
+                        key=f"{name}_show_rarity_b",
+                    )
             with col_level:
                 st.number_input(
                     "音擎精炼等级",
@@ -123,8 +185,7 @@ def page_character_config():
                 "驱动盘搭配方式",
                 ["4+2", "2+2+2"],
                 index=0
-                if name not in saved_char_config
-                or "equip_style" not in saved_char_config[name]
+                if name not in saved_char_config or "equip_style" not in saved_char_config[name]
                 else (0 if saved_char_config[name]["equip_style"] == "4+2" else 1),
                 key=f"{name}_equip_style",
             )
@@ -134,11 +195,8 @@ def page_character_config():
                     st.selectbox(
                         "四件套",
                         equip_set4_options,
-                        index=equip_set4_options.index(
-                            saved_char_config[name]["equip_set4"]
-                        )
-                        if name in saved_char_config
-                        and "equip_set4" in saved_char_config[name]
+                        index=equip_set4_options.index(saved_char_config[name]["equip_set4"])
+                        if name in saved_char_config and "equip_set4" in saved_char_config[name]
                         else 0,
                         key=f"{name}_equip_set4",
                     )
@@ -169,8 +227,7 @@ def page_character_config():
                         index=equip_set2_options.index(
                             saved_char_config[name].get("equip_set2_b", "啄木鸟电音")
                         )
-                        if name in saved_char_config
-                        and "equip_set2_b" in saved_char_config[name]
+                        if name in saved_char_config and "equip_set2_b" in saved_char_config[name]
                         else 0,
                         key=f"{name}_equip_set2B",
                     )
@@ -180,8 +237,7 @@ def page_character_config():
                         index=equip_set2_options.index(
                             saved_char_config[name].get("equip_set2_c", "啄木鸟电音")
                         )
-                        if name in saved_char_config
-                        and "equip_set2_c" in saved_char_config[name]
+                        if name in saved_char_config and "equip_set2_c" in saved_char_config[name]
                         else 0,
                         key=f"{name}_equip_set2C",
                     )
@@ -195,9 +251,7 @@ def page_character_config():
                 st.selectbox(
                     "四号位主词条",
                     main_stat4_options,
-                    index=main_stat4_options.index(
-                        saved_char_config[name].get("drive4", "攻击力%")
-                    )
+                    index=main_stat4_options.index(saved_char_config[name].get("drive4", "攻击力%"))
                     if name in saved_char_config
                     else 0,
                     key=f"{name}_main_stat4",
@@ -205,9 +259,7 @@ def page_character_config():
                 st.selectbox(
                     "五号位主词条",
                     main_stat5_options,
-                    index=main_stat5_options.index(
-                        saved_char_config[name].get("drive5", "攻击力%")
-                    )
+                    index=main_stat5_options.index(saved_char_config[name].get("drive5", "攻击力%"))
                     if name in saved_char_config
                     else 0,
                     key=f"{name}_main_stat5",
@@ -331,9 +383,9 @@ def page_character_config():
                     key=f"{name}_crit_balancing",
                 )
                 if st.session_state.get(f"{name}_crit_rate_limit") is None:
-                    st.session_state[f"{name}_crit_rate_limit"] = saved_char_config[
-                        name
-                    ].get("crit_rate_limit", 0.95)
+                    st.session_state[f"{name}_crit_rate_limit"] = saved_char_config[name].get(
+                        "crit_rate_limit", 0.95
+                    )
                 if crit_balancing:
                     st.number_input(
                         "暴击率上限",

@@ -20,9 +20,7 @@ class VivianDotTrigger(Buff.BuffLogic):
         self.xhit = self.special_hit_logic
 
     def get_prepared(self, **kwargs):
-        return check_preparation(
-            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
-        )
+        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
 
     def check_record_module(self):
         if self.buff_0 is None:
@@ -71,13 +69,9 @@ class VivianDotTrigger(Buff.BuffLogic):
         from zsim.sim_progress.Load import LoadingMission
         from zsim.sim_progress.Update.UpdateAnomaly import spawn_normal_dot
 
-        dot = spawn_normal_dot(
-            "ViviansProphecy", sim_instance=self.buff_instance.sim_instance
-        )
+        dot = spawn_normal_dot("ViviansProphecy", sim_instance=self.buff_instance.sim_instance)
         dot.start(find_tick(sim_instance=self.buff_instance.sim_instance))
-        event_list = JudgeTools.find_event_list(
-            sim_instance=self.buff_instance.sim_instance
-        )
+        event_list = JudgeTools.find_event_list(sim_instance=self.buff_instance.sim_instance)
         dot.skill_node_data.loading_mission = LoadingMission(dot.skill_node_data)
         dot.skill_node_data.loading_mission.mission_start(
             find_tick(sim_instance=self.buff_instance.sim_instance)

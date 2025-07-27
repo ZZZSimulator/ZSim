@@ -10,9 +10,7 @@ from zsim.simulator.simulator_class import Simulator
 if __name__ == "__main__":
     # 创建命令行参数解析器
     parser = argparse.ArgumentParser(description="ZZZ模拟器")
-    parser.add_argument(
-        "--stop-tick", type=int, default=None, help="指定模拟的tick数量 int"
-    )
+    parser.add_argument("--stop-tick", type=int, default=None, help="指定模拟的tick数量 int")
     parser.add_argument(
         "--mode",
         type=str,
@@ -34,15 +32,9 @@ if __name__ == "__main__":
         choices=[1, 2, 3],
         help="调整的角色相对位置",
     )
-    parser.add_argument(
-        "--sc-name", type=str, default=None, help="要调整的副词条名称 str"
-    )
-    parser.add_argument(
-        "--sc-value", type=int, default=None, help="要调整的副词条数量 int"
-    )
-    parser.add_argument(
-        "--run-turn-uuid", type=str, default=None, help="运行的uuid str"
-    )
+    parser.add_argument("--sc-name", type=str, default=None, help="要调整的副词条名称 str")
+    parser.add_argument("--sc-value", type=int, default=None, help="要调整的副词条数量 int")
+    parser.add_argument("--run-turn-uuid", type=str, default=None, help="运行的uuid str")
     parser.add_argument(
         "--remove-equip",
         action="store_true",

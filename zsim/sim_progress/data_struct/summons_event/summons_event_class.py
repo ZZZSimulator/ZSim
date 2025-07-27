@@ -1,19 +1,20 @@
 from abc import ABC, abstractmethod
 from zsim.sim_progress.summons.summons_class import Summons
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from zsim.simulator.simulator_class import Simulator
 
 
 class SummonsEvent(ABC):
     @abstractmethod
-    def __init__(self, summons_obj: Summons,  execute_tick: int, event: object | None = None):
+    def __init__(self, summons_obj: Summons, execute_tick: int, event: object | None = None):
         self.summons = summons_obj
         self.description: str | None = None
         self.event = event
         self.execute_tick: int = execute_tick
         self._has_executed: bool = False
-        self._change_state: bool = False        # 状态锁定标志
+        self._change_state: bool = False  # 状态锁定标志
 
     @property
     def has_executed(self):
@@ -43,4 +44,3 @@ class SummonsEvent(ABC):
     def _execute_myself(self):
         """实际业务逻辑"""
         pass
-

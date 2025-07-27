@@ -9,9 +9,7 @@ class Qingyi(Character):
         super().__init__(**kwargs)
 
         self.__MAX_VOLTAGE: int = 10000
-        self.__QUAN_VOLTAGE: float = (
-            self.__MAX_VOLTAGE / 100 * (1.3 if self.cinema >= 1 else 1)
-        )
+        self.__QUAN_VOLTAGE: float = self.__MAX_VOLTAGE / 100 * (1.3 if self.cinema >= 1 else 1)
         self.__FLASH_THRESHOLD: float = self.__MAX_VOLTAGE * 0.75
         self.VOLTAGE_MAP: dict = {
             "1251_NA_3_NFC": self.__QUAN_VOLTAGE * 4.6875,
@@ -28,7 +26,7 @@ class Qingyi(Character):
             "1251_Q": self.__QUAN_VOLTAGE * 80,
         }
 
-        self.flash_connect_voltage: int = (
+        self.flash_connect_voltage: float = (
             0 if self.cinema == 0 else self.__MAX_VOLTAGE
         )  # 闪络电压，初始化为0
         self.flash_connect: bool = False if self.cinema == 0 else True  # 闪络状态
@@ -43,9 +41,7 @@ class Qingyi(Character):
                 skill_tag = node.skill_tag
                 self.flash_connect_voltage += self.VOLTAGE_MAP.get(skill_tag, 0)
             # 闪络电压不能超过最大值
-            self.flash_connect_voltage = min(
-                self.flash_connect_voltage, self.__MAX_VOLTAGE
-            )
+            self.flash_connect_voltage = min(self.flash_connect_voltage, self.__MAX_VOLTAGE)
             # 闪络电压超过75%时，进入闪络状态
             if self.flash_connect_voltage - self.__FLASH_THRESHOLD >= 1e-5:
                 self.flash_connect = True

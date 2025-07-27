@@ -28,9 +28,7 @@ class WoodpeckerElectroSet4_CA(Buff.BuffLogic):
         self.equipper = None
 
     def get_prepared(self, **kwargs):
-        return check_preparation(
-            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
-        )
+        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
 
     def check_record_module(self):
         if self.equipper is None:
@@ -47,9 +45,7 @@ class WoodpeckerElectroSet4_CA(Buff.BuffLogic):
 
     def special_judge_logic(self, **kwargs):
         self.check_record_module()
-        self.get_prepared(
-            equipper="啄木鸟电音", enemy=1, dynamic_buff_list=1, action_stack=1
-        )
+        self.get_prepared(equipper="啄木鸟电音", enemy=1, dynamic_buff_list=1, action_stack=1)
         skill_node = kwargs.get("skill_node", None)
         if skill_node is None:
             return False

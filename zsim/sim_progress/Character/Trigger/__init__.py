@@ -37,9 +37,7 @@ class Trigger(Character):
                 continue
 
             # 2、处理传入的强化E、Q，更新协战状态
-            self.after_shock_manager.coordinated_support_manager.update_myself(
-                tick, nodes
-            )
+            self.after_shock_manager.coordinated_support_manager.update_myself(tick, nodes)
             if nodes.skill_tag in ["1361_SNA_1", "1361_SNA_2"]:
                 if not self.sniper_stance:
                     raise ValueError(f"在非狙击姿态的情况下传入了{nodes.skill_tag}")

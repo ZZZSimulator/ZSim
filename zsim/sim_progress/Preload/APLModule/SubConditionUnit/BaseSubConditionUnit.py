@@ -16,9 +16,7 @@ class BaseSubConditionUnit(ABC):
             self.no_condition = True  # 无条件
         else:
             self.no_condition = False
-        self.check_target = sub_condition_dict[
-            "target"
-        ]  # 检查目标 比如enemy，self，或者角色ID
+        self.check_target = sub_condition_dict["target"]  # 检查目标 比如enemy，self，或者角色ID
         self.check_stat = None
         self.nested_stat_key_list = []
         """
@@ -30,9 +28,7 @@ class BaseSubConditionUnit(ABC):
             self.nested_stat_key_list = sub_condition_dict["stat"].split("→")[1:]
         else:
             self.check_stat = sub_condition_dict["stat"]
-        self.operation_type = sub_condition_dict[
-            "operation_type"
-        ]  # 计算类型，主要是比较符和调用符
+        self.operation_type = sub_condition_dict["operation_type"]  # 计算类型，主要是比较符和调用符
         self.check_value = check_number_type(
             sub_condition_dict["value"]
         )  # 参与计算的值 或者调用的函数名

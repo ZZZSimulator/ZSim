@@ -112,9 +112,7 @@ def process_buff(
             此类buff的更新往往不依赖start、hit、end三大子标签进行，
             所以单独进行处理
             """
-            buff_new = Buff(
-                active_condition_dict, judge_condition_dict, sim_instance=sim_instance
-            )
+            buff_new = Buff(active_condition_dict, judge_condition_dict, sim_instance=sim_instance)
             buff_new.logic.xeffect()
             if buff_new.dy.is_changed:
                 buff_new.ft.operator = buff_0.ft.operator
@@ -328,9 +326,7 @@ def BuffJudge(
         buff_now.ft.simple_exit_logic,
     ]
     if all(all_simple):
-        cache_key = hash(
-            (id(buff_now), tuple(judge_condition_dict.items()), id(mission))
-        )
+        cache_key = hash((id(buff_now), tuple(judge_condition_dict.items()), id(mission)))
         if cache_key in cache.cache:
             return cache[cache_key]
     result: bool
@@ -347,9 +343,7 @@ def BuffJudge(
         result = True
         return save_cache_and_return(result)
     if (
-        not any(
-            value if value is None else True for value in judge_condition_dict.values()
-        )
+        not any(value if value is None else True for value in judge_condition_dict.values())
         and buff_now.ft.simple_judge_logic
     ):
         # EXPLAIN：全部数据都是None并且是简单判断逻辑
@@ -367,9 +361,7 @@ def BuffJudge(
         all_match = simple_string_judge(judge_condition_dict, skill_now)
     else:
         # print(buff_now.ft.index)
-        all_match = buff_now.logic.xjudge(
-            loading_mission=mission, skill_node=mission.mission_node
-        )
+        all_match = buff_now.logic.xjudge(loading_mission=mission, skill_node=mission.mission_node)
     result = all_match
     return save_cache_and_return(result)
 

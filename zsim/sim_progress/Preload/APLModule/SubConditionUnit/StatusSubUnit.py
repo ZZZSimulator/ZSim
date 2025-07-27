@@ -11,9 +11,7 @@ if TYPE_CHECKING:
 
 class StatusSubUnit(BaseSubConditionUnit):
     def __init__(self, priority: int, sub_condition_dict: dict = None, mode=0):
-        super().__init__(
-            priority=priority, sub_condition_dict=sub_condition_dict, mode=mode
-        )
+        super().__init__(priority=priority, sub_condition_dict=sub_condition_dict, mode=mode)
         self.enemy = None
 
     class CheckHandler:
@@ -47,6 +45,18 @@ class StatusSubUnit(BaseSubConditionUnit):
 
         def handler(self, enemy):
             return enemy.anomaly_bars_dict[self.anomaly_number].get_buildup_pct()
+
+    class BuildupPctHandler(CheckHandler):
+        def __init__(self, element_type_1: int, element_type_2: int):
+            self.element_type_1 = element_type_1
+            self.element_type_2 = element_type_2
+
+        def handler(self, enemy):
+            result = (
+                enemy.anomaly_bars_dict[self.element_type_1].get_buildup_pct()
+                - enemy.anomaly_bars_dict[self.element_type_2].get_buildup_pct()
+            )
+            return result
 
     class StunPctHandler(CheckHandler):
         @classmethod
@@ -95,9 +105,7 @@ class StatusSubUnit(BaseSubConditionUnit):
         @classmethod
         def handler(cls, char_cid, found_char_dict, game_state, sim_instance):
             char = find_char(found_char_dict, game_state, char_cid)
-            quick_assist_available = (
-                char.dynamic.quick_assist_manager.quick_assist_available
-            )
+            quick_assist_available = char.dynamic.quick_assist_manager.quick_assist_available
             return quick_assist_available
 
     class WaitingAssistHandler(CheckHandler):
@@ -126,7 +134,7 @@ class StatusSubUnit(BaseSubConditionUnit):
     class AssultHandler(CheckHandler):
         @classmethod
         def handler(cls, enemy):
-            return enemy.dynamic.assult
+            return enemy.dynamic.assault
 
     class FrostbiteHandler(CheckHandler):
         @classmethod
@@ -159,12 +167,13 @@ class StatusSubUnit(BaseSubConditionUnit):
         "is_under_anomaly": ActiveAnomalyHandler,
         "is_shock": ShockHandler,
         "is_burn": BurnHandler,
-        "is_assult": AssultHandler,
+        "is_assault": AssultHandler,
         "is_frostbite": FrostbiteHandler,
         "is_frost_frostbite": FrostFrostbiteHandler,
         "is_corruption": CorruptionHandler,
         "quick_assist_available": QuickAssistHandler,
         "assist_waiting_for_anwser": WaitingAssistHandler,
+        "buildup_pct_delta": BuildupPctHandler,
     }
 
     def check_myself(
@@ -182,6 +191,11 @@ class StatusSubUnit(BaseSubConditionUnit):
             if "anomaly_pct" in self.check_stat:
                 anomaly_number = int(self.check_stat[-1])
                 handler = self.HANDLE_MAP["anomaly_pct"](anomaly_number)
+            elif "buildup_pct_delta" in self.check_stat:
+                stat_str = self.check_stat.strip().split("_")
+                anomaly_number_1 = int(stat_str[-1])
+                anomaly_number_2 = int(stat_str[-2])
+                handler = self.HANDLE_MAP["buildup_pct_delta"](anomaly_number_1, anomaly_number_2)
             else:
                 handler_cls = self.HANDLE_MAP.get(self.check_stat)
                 handler = handler_cls() if handler_cls else None
@@ -199,7 +213,5 @@ class StatusSubUnit(BaseSubConditionUnit):
                     f"当前检查的check_stat为：{self.check_stat}，优先级为{self.priority}，暂无处理该属性的逻辑模块！"
                 )
             return self.spawn_result(
-                handler.handler(
-                    int(self.check_target), found_char_dict, game_state, sim_instance
-                )
+                handler.handler(int(self.check_target), found_char_dict, game_state, sim_instance)
             )

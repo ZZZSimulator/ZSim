@@ -90,14 +90,16 @@ def ProcessFreezLikeDots(timetick: int, enemy, event_list: list, event):
         raise TypeError(
             f"ProcessFreezLikeDots函数接收到的{event}不是LoadingMission或是SkillNode类！"
         )
+
     if not is_heavy_attack:
         if "1291_CorePassive" not in skill_tag:
-            return
+            return False
     for dot in dot_list[:]:
         if not isinstance(dot, Dot.Dot):
             raise TypeError(f"{dot}不是Dot类！")
         if dot.ft.effect_rules != 4:
             continue
+
         dot.ready_judge(timetick)
         if dot.dy.ready:
             print(f"{skill_tag}结算了碎冰！")
@@ -135,8 +137,8 @@ def DamageEventJudge(
     # dynamic_buff_dict = kwargs.get("dynamic_buff_dict", None)
     process_overtime_mission(timetick, load_mission_dict)
     for mission in load_mission_dict.values():
-        if not isinstance(mission, LoadingMission | Dot.Dot):
-            raise TypeError(f"{mission}不是LoadingMission或是Dot类！")
+        if not isinstance(mission, LoadingMission):
+            raise TypeError(f"{mission}不是LoadingMission类！")
         if mission.is_hit_now(timetick):
             SpawnDamageEvent(mission, event_list)
             # 当Mission触发时，检查 effect_rules == 2 的 Dot

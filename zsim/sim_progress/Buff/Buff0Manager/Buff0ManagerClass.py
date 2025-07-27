@@ -16,7 +16,6 @@ from ..buff_class import Buff
 
 if TYPE_CHECKING:
     from zsim.simulator.simulator_class import Simulator
-    from zsim.sim_progress.Character.character import Character
 
 
 class Buff0Manager:
@@ -27,7 +26,7 @@ class Buff0Manager:
         weapon_dict: dict[str, list],
         cinema_dict: dict,
         char_obj_dict: dict | None,
-        sim_instance: "Simulator",
+        sim_instance: "Simulator | None",
     ):
         # 加载文件
         self.EXIST_FILE = pd.read_csv(EXIST_FILE_PATH, index_col="BuffName")
@@ -56,8 +55,7 @@ class Buff0Manager:
         self.__process_judge_list_set()
 
         self.total_judge_condition_list = (
-            list(itertools.chain.from_iterable(self.judge_list_set))
-            + self.__equip_set2_box
+            list(itertools.chain.from_iterable(self.judge_list_set)) + self.__equip_set2_box
         )
         self.__selector = self.__selector(self)
         self.__selector.select_buff_into_exist_buff_dict()
@@ -213,9 +211,7 @@ class Buff0Manager:
             }
             self.__special_set2_dict = {"如影相随": ["Buff-驱动盘-如影相随-二件套"]}
             self.__buff_0_pool: dict[str, tuple] = {}
-            self.__additional_ability_data = self.__additional_ability_data(
-                self.buff_0_manager
-            )
+            self.__additional_ability_data = self.__additional_ability_data(self.buff_0_manager)
             self.__get_buff_0_pool()
 
         class __additional_ability_data:
@@ -237,20 +233,14 @@ class Buff0Manager:
                 for _char_name in self.buff_0_manager.char_name_box:
                     sub_info_list = []
                     self.additional_ability_judge_info[_char_name] = {}
-                    self.additional_ability_judge_info[_char_name][
-                        "required_condition"
-                    ] = self.buff_0_manager.CHARACTER_FILE.loc[
-                        _char_name, "组队被动条件"
-                    ]
+                    self.additional_ability_judge_info[_char_name]["required_condition"] = (
+                        self.buff_0_manager.CHARACTER_FILE.loc[_char_name, "组队被动条件"]
+                    )
                     for condition in self.condition_list:
                         sub_info_list.append(
-                            self.buff_0_manager.CHARACTER_FILE.loc[
-                                _char_name, condition
-                            ]
+                            self.buff_0_manager.CHARACTER_FILE.loc[_char_name, condition]
                         )
-                    self.additional_ability_judge_info[_char_name]["config_info"] = (
-                        sub_info_list
-                    )
+                    self.additional_ability_judge_info[_char_name]["config_info"] = sub_info_list
 
             def addition_skill_info_trans(self, buff_from: str):
                 """
@@ -262,19 +252,13 @@ class Buff0Manager:
                 ['冰', '对空6课']
                 """
                 addition_skill_info = self.additional_ability_judge_info[buff_from]
-                required_condition_list = addition_skill_info[
-                    "required_condition"
-                ].split("|")
+                required_condition_list = addition_skill_info["required_condition"].split("|")
                 condition_list_after_trans = []
                 for conditions in required_condition_list:
                     if conditions == "同阵营":
-                        condition_list_after_trans.append(
-                            addition_skill_info["config_info"][1]
-                        )
+                        condition_list_after_trans.append(addition_skill_info["config_info"][1])
                     elif conditions == "同属性":
-                        condition_list_after_trans.append(
-                            addition_skill_info["config_info"][0]
-                        )
+                        condition_list_after_trans.append(addition_skill_info["config_info"][0])
                     elif conditions in ["异常", "强攻", "支援", "击破", "防护", "命破"]:
                         condition_list_after_trans.append(conditions)
                     elif conditions in ["招架", "回避"]:
@@ -299,15 +283,9 @@ class Buff0Manager:
                             == self.buff_0_manager.weapon_dict[charname][1]
                         ):
                             self.select_buffs(buff_name, row_data)
-                elif (
-                    row_data["is_cinema"]
-                    and buff_from in self.buff_0_manager.cinema_dict.keys()
-                ):
+                elif row_data["is_cinema"] and buff_from in self.buff_0_manager.cinema_dict.keys():
                     """影画Buff"""
-                    if (
-                        row_data["refinement"]
-                        <= self.buff_0_manager.cinema_dict[buff_from]
-                    ):
+                    if row_data["refinement"] <= self.buff_0_manager.cinema_dict[buff_from]:
                         self.select_buffs(buff_name, row_data)
                 else:
                     """角色Buff 和 Enemy"""
@@ -315,11 +293,13 @@ class Buff0Manager:
                         """组队被动"""
                         if row_data["is_additional_ability"]:
                             """获得【足以使组队被动激活的条件集合】"""
-                            condition_list_after_trans = self.__additional_ability_data.addition_skill_info_trans(
-                                buff_from
+                            condition_list_after_trans = (
+                                self.__additional_ability_data.addition_skill_info_trans(buff_from)
                             )
                             partner_condition_list = []
-                            for other_key in self.__additional_ability_data.additional_ability_judge_info:
+                            for (
+                                other_key
+                            ) in self.__additional_ability_data.additional_ability_judge_info:
                                 if other_key != buff_from:
                                     partner_condition_list.extend(
                                         self.__additional_ability_data.additional_ability_judge_info[
@@ -398,9 +378,7 @@ class Buff0Manager:
                 dict_1["passively_updating"] = False
             else:
                 dict_1["passively_updating"] = True
-            buff_new = Buff(
-                dict_1, dict_2, sim_instance=self.buff_0_manager.sim_instance
-            )
+            buff_new = Buff(dict_1, dict_2, sim_instance=self.buff_0_manager.sim_instance)
             buff_new.ft.beneficiary = benifiter
             self.buff_0_manager.exist_buff_dict[benifiter][buff_name] = buff_new
             # self.buff_0_manager.buff_info_inventory[benifiter][buff_name] = (dict_1, dict_2)
@@ -416,8 +394,7 @@ class Buff0Manager:
             if personal_equip_dict["equip_style"] == "4+2":
                 if (
                     personal_equip_dict["equip_set2_a"] in buff_name
-                    and personal_equip_dict["equip_set2_a"]
-                    not in self.__special_set2_dict
+                    and personal_equip_dict["equip_set2_a"] not in self.__special_set2_dict
                 ):
                     """
                     如果检测到装备者选择配装风格是4+2，并且装备者二件套的名字出现在Buff名中，
@@ -438,9 +415,7 @@ class Buff0Manager:
                 ):
                     return
             selected_characters = [
-                current_name_box[i]
-                for i in range(len(current_name_box))
-                if adding_code[i] == "1"
+                current_name_box[i] for i in range(len(current_name_box)) if adding_code[i] == "1"
             ]
             if equipment_carrier not in selected_characters:
                 selected_characters.append(equipment_carrier)

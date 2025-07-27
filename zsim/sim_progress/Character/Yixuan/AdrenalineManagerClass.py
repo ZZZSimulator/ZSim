@@ -29,9 +29,7 @@ class AdrenalineManager:
     def broadcast(self, skill_node: "SkillNode"):
         """向所有回能事件进行广播"""
         if self.adrenaline_recover_event_group is None:
-            self.adrenaline_recover_event_group = adrenaline_event_factory(
-                char_instance=self.char
-            )
+            self.adrenaline_recover_event_group = adrenaline_event_factory(char_instance=self.char)
         for event in self.adrenaline_recover_event_group:
             event.update_status(skill_node=skill_node)
 

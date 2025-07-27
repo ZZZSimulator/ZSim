@@ -31,9 +31,7 @@ class LinaCoreSkillPenRatioBonus(Buff.BuffLogic):
         self.xexit = self.special_exit_logic
 
     def get_prepared(self, **kwargs):
-        return check_preparation(
-            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
-        )
+        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
 
     def check_record_module(self):
         if self.buff_0 is None:
@@ -67,9 +65,7 @@ class LinaCoreSkillPenRatioBonus(Buff.BuffLogic):
         tick_now = JudgeTools.find_tick(sim_instance=self.buff_instance.sim_instance)
         self.buff_instance.simple_start(tick_now, self.record.sub_exist_buff_dict)
         self.buff_0.dy.count -= self.buff_0.ft.step
-        mul_data = Mul(
-            self.record.enemy, self.record.dynamic_buff_list, self.record.char
-        )
+        mul_data = Mul(self.record.enemy, self.record.dynamic_buff_list, self.record.char)
 
         pen_ratio = Cal.RegularMul.cal_pen_ratio(mul_data)
 

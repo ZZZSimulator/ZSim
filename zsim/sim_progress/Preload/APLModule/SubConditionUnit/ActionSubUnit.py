@@ -16,9 +16,7 @@ if TYPE_CHECKING:
 
 class ActionSubUnit(BaseSubConditionUnit):
     def __init__(self, priority: int, sub_condition_dict: dict = None, mode=0):
-        super().__init__(
-            priority=priority, sub_condition_dict=sub_condition_dict, mode=mode
-        )
+        super().__init__(priority=priority, sub_condition_dict=sub_condition_dict, mode=mode)
 
     class ActionCheckHandler:
         @classmethod
@@ -157,9 +155,7 @@ class ActionSubUnit(BaseSubConditionUnit):
             )
             if action_replace_manager is None:
                 return False
-            assault_aid_enable = (
-                action_replace_manager.parry_aid_strategy.assault_aid_enable
-            )
+            assault_aid_enable = action_replace_manager.parry_aid_strategy.assault_aid_enable
             return assault_aid_enable
 
     ActionHandlerMap = {

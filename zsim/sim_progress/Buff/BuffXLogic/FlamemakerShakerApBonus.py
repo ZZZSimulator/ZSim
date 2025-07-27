@@ -20,9 +20,7 @@ class FlamemakerShakerApBonus(Buff.BuffLogic):
         self.record = None
 
     def get_prepared(self, **kwargs):
-        return check_preparation(
-            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
-        )
+        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
 
     def check_record_module(self):
         if self.equipper is None:
@@ -40,9 +38,7 @@ class FlamemakerShakerApBonus(Buff.BuffLogic):
     def special_judge_logic(self, **kwargs):
         """检测到目标buff层数>=5时候放行"""
         self.check_record_module()
-        self.get_prepared(
-            equipper="灼心摇壶", trigger_buff_0=("equipper", "灼心摇壶-增伤")
-        )
+        self.get_prepared(equipper="灼心摇壶", trigger_buff_0=("equipper", "灼心摇壶-增伤"))
         if not self.record.trigger_buff_0.dy.active:
             return False
         if self.record.trigger_buff_0.dy.count < 5:

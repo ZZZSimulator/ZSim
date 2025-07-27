@@ -30,24 +30,16 @@ class APLOperator:
         self.sim_instance = simulator_instance
         from zsim.sim_progress.Preload.apl_unit.APLUnit import APLUnit
 
-        self.apl_unit_inventory: dict[
-            int, APLUnit
-        ] = {}  # 用于装已经解析过的apl子条件实例。
+        self.apl_unit_inventory: dict[int, APLUnit] = {}  # 用于装已经解析过的apl子条件实例。
         for unit_dict in all_apl_unit_list:
-            self.apl_unit_inventory[unit_dict["priority"]] = self.apl_unit_factory(
-                unit_dict
-            )
+            self.apl_unit_inventory[unit_dict["priority"]] = self.apl_unit_factory(unit_dict)
             # print(unit_dict["priority"], unit_dict)
 
-    def spawn_next_action_in_common_mode(
-        self, tick
-    ) -> tuple[int, str, int, "ActionAPLUnit"]:
+    def spawn_next_action_in_common_mode(self, tick) -> tuple[int, str, int, "ActionAPLUnit"]:
         """APL执行器的核心功能函数——筛选出优先级最高的下一个动作（普通模式）"""
         atk_response_mode = self.preload_data.atk_manager.attacking
         if atk_response_mode:
-            raise ValueError(
-                "在进攻响应模式下，不能调用spawn_next_action_in_common_mode方法！"
-            )
+            raise ValueError("在进攻响应模式下，不能调用spawn_next_action_in_common_mode方法！")
 
         for priority, apl_unit in self.apl_unit_inventory.items():
             from zsim.sim_progress.Preload.apl_unit.ActionAPLUnit import ActionAPLUnit
@@ -87,9 +79,7 @@ class APLOperator:
         else:
             raise ValueError("没有找到符合要求的APL！")
 
-    def spawn_next_action_in_atk_response_mode(
-        self, tick
-    ) -> tuple[int, str, int, "ActionAPLUnit"]:
+    def spawn_next_action_in_atk_response_mode(self, tick) -> tuple[int, str, int, "ActionAPLUnit"]:
         """APL执行器的核心功能函数——筛选出优先级最高的下一个动作（进攻响应模式）"""
         if not self.preload_data.atk_manager.attacking:
             raise ValueError(
@@ -131,17 +121,10 @@ class APLOperator:
         if apl_unit_dict["type"] in ["action+=", "action.no_swap_cancel+="]:
             return ActionAPLUnit(apl_unit_dict, sim_instance=self.sim_instance)
         elif "action.atk_response" in apl_unit_dict["type"]:
-            return AtkResponseAPLUnit(
-                apl_unit_dict=apl_unit_dict, sim_instance=self.sim_instance
-            )
+            return AtkResponseAPLUnit(apl_unit_dict=apl_unit_dict, sim_instance=self.sim_instance)
 
-        elif all(
-            code_str in apl_unit_dict["type"]
-            for code_str in ["a", "c", "t", "i", "o", "n"]
-        ):
-            raise ValueError(
-                f"貌似是拼写错误，当前输入的APL类型为：{apl_unit_dict['type']}"
-            )
+        elif all(code_str in apl_unit_dict["type"] for code_str in ["a", "c", "t", "i", "o", "n"]):
+            raise ValueError(f"貌似是拼写错误，当前输入的APL类型为：{apl_unit_dict['type']}")
         else:
             raise ValueError(f"无法识别的APL类型：{apl_unit_dict['type']}")
         # # Optimized Code:

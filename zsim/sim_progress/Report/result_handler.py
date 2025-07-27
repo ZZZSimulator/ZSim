@@ -2,6 +2,7 @@ import asyncio
 import os
 import queue
 import uuid
+from typing import Literal
 
 import aiofiles
 import numpy as np
@@ -14,7 +15,7 @@ result_queue: queue.Queue = queue.Queue()
 
 def report_dmg_result(
     tick: int,
-    element_type: ElementType | int,
+    element_type: ElementType,
     skill_tag: str | None = None,
     dmg_expect: float | np.float64 = 0,
     dmg_crit: float | np.float64 | None = None,
@@ -57,32 +58,21 @@ async def async_result_writer(result_id: str):
             buffer.append(result_dict)
 
             if len(buffer) >= max_buffer_size or result_queue.empty():
-                if buffer:
-                    result_df = pl.DataFrame(buffer)
-                    csv_data = result_df.write_csv(
-                        include_header=new_file, separator=","
-                    )
-                    mode = "w" if new_file else "a"
-                    async with aiofiles.open(
-                        result_path, mode, encoding="utf-8-sig"
-                    ) as file:
-                        await file.write(csv_data)
-
-                    new_file = False
-                    buffer.clear()
+                await write_result(result_path, new_file, buffer)
+                new_file = False
 
             result_queue.task_done()
         except queue.Empty:
-            if buffer:
-                result_df = pl.DataFrame(buffer)
-                csv_data = result_df.write_csv(include_header=new_file, separator=",")
-                mode = "w" if new_file else "a"
-                async with aiofiles.open(
-                    result_path, mode, encoding="utf-8-sig"
-                ) as file:
-                    await file.write(csv_data)
-
-                new_file = False
-                buffer.clear()
-
             await asyncio.sleep(0.01)
+            if buffer:
+                await write_result(result_path, new_file, buffer)
+                new_file = False
+
+
+async def write_result(result_path: str, new_file: bool, buffer: list[dict]):
+    result_df = pl.DataFrame(buffer)
+    csv_data: str = result_df.write_csv(include_header=new_file, separator=",")
+    mode: Literal["w", "a"] = "w" if new_file else "a"
+    async with aiofiles.open(result_path, mode, encoding="utf-8-sig") as file:
+        await file.write(csv_data)
+    buffer.clear()

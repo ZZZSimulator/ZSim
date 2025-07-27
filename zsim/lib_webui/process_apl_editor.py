@@ -42,9 +42,7 @@ class APLArchive:
             apl.get("general", {}).get("title", None): relative_path
             for relative_path, apl in all_apl_map.items()
         }
-        self.options = [
-            title for title in self.title_apl_map.keys() if title is not None
-        ]
+        self.options = [title for title in self.title_apl_map.keys() if title is not None]
 
     def save_apl_data(self, title: str, edited_data: dict[str, Any]):
         """保存编辑后的APL数据到对应的TOML文件。
@@ -86,17 +84,13 @@ class APLArchive:
             if "general" in data_to_save:
                 from datetime import datetime
 
-                now_str = (
-                    datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "+08:00"
-                )
+                now_str = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "+08:00"
                 data_to_save["general"]["latest_change_time"] = now_str
             else:
                 # 如果没有 general 部分，也尝试添加时间戳
                 from datetime import datetime
 
-                now_str = (
-                    datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "+08:00"
-                )
+                now_str = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "+08:00"
                 data_to_save["general"] = {"latest_change_time": now_str}
 
             # 保存到文件
@@ -165,9 +159,7 @@ class APLArchive:
 
         return full_relative_path
 
-    def change_title(
-        self, former_title: str, new_title: str, new_comment: str | None = None
-    ):
+    def change_title(self, former_title: str, new_title: str, new_comment: str | None = None):
         # Step 1: Check if the former title exists
 
         if former_title not in self.title_apl_map.keys():
@@ -205,9 +197,7 @@ class APLArchive:
         elif relative_path in self.custom_apl_map:
             base_dir = COSTOM_APL_DIR
         else:
-            st.error(
-                f"内部错误：无法确定文件 '{relative_path}' 的所属目录。"
-            )  # Should not happen
+            st.error(f"内部错误：无法确定文件 '{relative_path}' 的所属目录。")  # Should not happen
             return
 
         absolute_path = os.path.abspath(os.path.join(base_dir, relative_path))
@@ -257,9 +247,7 @@ class APLArchive:
                                 relative_path = os.path.basename(base_path)
                                 toml_dict_map[relative_path] = toml_dict
                     except Exception as e:
-                        st.exception(
-                            Exception(f"Error loading TOML file {base_path}: {e}")
-                        )
+                        st.exception(Exception(f"Error loading TOML file {base_path}: {e}"))
             elif os.path.isdir(base_path):
                 # 如果是目录，遍历所有toml文件
                 for root, _, files in os.walk(base_path):
@@ -269,25 +257,14 @@ class APLArchive:
                             try:
                                 with open(file_path, "r", encoding="utf-8") as f:
                                     toml_dict: dict = toml.load(f)
-                                    if (
-                                        toml_dict.get("apl_logic", {}).get("logic")
-                                        is not None
-                                    ):
-                                        relative_path = os.path.relpath(
-                                            file_path, base_path
-                                        )
+                                    if toml_dict.get("apl_logic", {}).get("logic") is not None:
+                                        relative_path = os.path.relpath(file_path, base_path)
                                         toml_dict_map[relative_path] = toml_dict
                             except Exception as e:
-                                st.exception(
-                                    Exception(
-                                        f"Error loading TOML file {file_path}: {e}"
-                                    )
-                                )
+                                st.exception(Exception(f"Error loading TOML file {file_path}: {e}"))
             else:
                 # 如果路径既不是文件也不是目录，则记录警告或错误
-                st.warning(
-                    f"APL path does not exist or is not a file/directory: {apl_path}"
-                )
+                st.warning(f"APL path does not exist or is not a file/directory: {apl_path}")
             return toml_dict_map
         except Exception as e:
             raise ValueError(f"读取APL文件失败：{str(e)}")
@@ -405,16 +382,12 @@ def display_apl_details(
         "作者", value=general_info.get("author", "")
     )
     # Display create/change times - typically read-only
-    general_info["comment"] = st.text_area(
-        "注释", value=general_info.get("comment", "")
-    )
+    general_info["comment"] = st.text_area("注释", value=general_info.get("comment", ""))
     edited_data["general"] = general_info  # Update the edited data
 
     # --- Characters 信息编辑 (Basic Framework) ---
     st.markdown("**角色信息**")
-    characters_info: dict = edited_data.setdefault(
-        "characters", {}
-    )  # 使用 setdefault 确保存在
+    characters_info: dict = edited_data.setdefault("characters", {})  # 使用 setdefault 确保存在
 
     # --- 读取角色列表 ---
     try:
@@ -463,9 +436,9 @@ def display_apl_details(
 
     # 清理掉不在 selected_chars 中的角色配置
     # 需要在这里重新获取最新的 selected_chars 列表
-    _selected_chars_for_cleanup = characters_info.get(
-        "required", []
-    ) + characters_info.get("optional", [])
+    _selected_chars_for_cleanup = characters_info.get("required", []) + characters_info.get(
+        "optional", []
+    )
     _current_config_keys = list(characters_info.keys())
     for _key in _current_config_keys:
         if _key not in _selected_chars_for_cleanup and _key not in [
@@ -478,9 +451,7 @@ def display_apl_details(
 
     # --- 编辑角色配置 ---
     st.markdown("**角色配置编辑**")
-    selected_chars = characters_info.get("required", []) + characters_info.get(
-        "optional", []
-    )
+    selected_chars = characters_info.get("required", []) + characters_info.get("optional", [])
 
     if not selected_chars:
         st.markdown("- 请先在上方选择“必须角色”或“可选角色”。")
@@ -510,9 +481,7 @@ def display_apl_details(
                     # 确保 current_cinema_val 是列表，并且元素是整数
                     if isinstance(current_cinema_val, int):
                         default_cinema = (
-                            [current_cinema_val]
-                            if current_cinema_val in cinema_options
-                            else []
+                            [current_cinema_val] if current_cinema_val in cinema_options else []
                         )
                     elif isinstance(current_cinema_val, list):
                         # 过滤掉无效值或非整数值
@@ -523,10 +492,7 @@ def display_apl_details(
                             and str(v).isdigit()
                             and int(v) in cinema_options
                         ]
-                    elif (
-                        isinstance(current_cinema_val, str)
-                        and current_cinema_val.isdigit()
-                    ):
+                    elif isinstance(current_cinema_val, str) and current_cinema_val.isdigit():
                         default_cinema = (
                             [int(current_cinema_val)]
                             if int(current_cinema_val) in cinema_options
@@ -671,9 +637,7 @@ def go_apl_editor():
         def create_new_apl():
             st.write("基于模板创建新的APL")
             # 读取模板文件内容
-            template_path = os.path.abspath(
-                os.path.join(DEFAULT_APL_DIR, "APL template.toml")
-            )
+            template_path = os.path.abspath(os.path.join(DEFAULT_APL_DIR, "APL template.toml"))
             try:
                 with open(template_path, "r", encoding="utf-8") as f:
                     template_data = toml.load(f)
@@ -703,31 +667,27 @@ def go_apl_editor():
 
                 from datetime import datetime
 
-                now_str = (
-                    datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "+08:00"
-                )
+                now_str = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "+08:00"
 
                 new_apl_data["general"]["title"] = new_title
                 if new_author:
                     new_apl_data["general"]["author"] = new_author
                 else:
                     # 如果用户未输入作者，可以保留模板中的或设为默认值
-                    new_apl_data["general"]["author"] = template_data.get(
-                        "general", {}
-                    ).get("author", "未知作者")
+                    new_apl_data["general"]["author"] = template_data.get("general", {}).get(
+                        "author", "未知作者"
+                    )
                 if new_comment:
                     new_apl_data["general"]["comment"] = new_comment
                 else:
-                    new_apl_data["general"]["comment"] = template_data.get(
-                        "general", {}
-                    ).get("comment", "")
+                    new_apl_data["general"]["comment"] = template_data.get("general", {}).get(
+                        "comment", ""
+                    )
                 new_apl_data["general"]["create_time"] = now_str
                 new_apl_data["general"]["latest_change_time"] = now_str
 
                 # 生成文件名 (简单处理，替换空格和特殊字符)
-                safe_filename = "".join(
-                    c for c in new_title if c.isalnum() or c in "-_ "
-                ).rstrip()
+                safe_filename = "".join(c for c in new_title if c.isalnum() or c in "-_ ").rstrip()
                 safe_filename = safe_filename.replace(" ", "_") + ".toml"
                 new_file_path = os.path.join(COSTOM_APL_DIR, safe_filename)
 
@@ -738,9 +698,7 @@ def go_apl_editor():
                     with open(new_file_path, "w", encoding="utf-8") as f:
                         toml.dump(new_apl_data, f)
 
-                    st.success(
-                        f"APL '{new_title}' 已成功创建并保存至 '{safe_filename}'"
-                    )
+                    st.success(f"APL '{new_title}' 已成功创建并保存至 '{safe_filename}'")
                     time.sleep(1)
                     # 刷新 APL 列表
                     apl_archive.refresh()

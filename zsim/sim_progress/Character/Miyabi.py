@@ -1,3 +1,4 @@
+from typing import Literal
 from zsim.sim_progress.anomaly_bar import Disorder
 from zsim.sim_progress.Preload import SkillNode
 from zsim.sim_progress.Report import report_to_log
@@ -34,10 +35,7 @@ class Miyabi(Character):
             if self.frosty <= 6:
                 if node.skill_tag in ["1091_E_EX_A_1", "1091_E_EX_B_1"]:
                     self.frosty += 2
-                elif (
-                    node.skill_tag == "1091_Core_Passive"
-                    and not self._shatter_internal_cd()
-                ):
+                elif node.skill_tag == "1091_Core_Passive" and not self._shatter_internal_cd():
                     """
                     霜灼·破的产生，在冰焰buff的exist逻辑里。
                     在exist逻辑返回True之前，会把霜灼破扔给special_resources以及eventlist
@@ -67,6 +65,7 @@ class Miyabi(Character):
 
     def _shatter_internal_cd(self) -> bool:
         """判断落霜叠层是否处于CD"""
+        assert self.sim_instance is not None
         tick: int = self.sim_instance.tick
         if self.last_tick is None:
             self.last_tick = tick
@@ -77,5 +76,5 @@ class Miyabi(Character):
             self.last_tick = tick
             return False
 
-    def get_resources(self):
+    def get_resources(self) -> tuple[Literal["落霜"], int]:
         return "落霜", self.frosty

@@ -55,18 +55,17 @@ class Lighter(Character):
                 report_to_log(f"[Character] 莱特的士气消耗至 {self.morale / 100:.2f}")
 
             if self.morale < 0:
-                report_to_log(
-                    f"[Character] 莱特的士气消耗至 {self.morale / 100:.2f}, 请检查"
-                )
+                report_to_log(f"[Character] 莱特的士气消耗至 {self.morale / 100:.2f}, 请检查")
                 self.morale = 0
 
         # 时间每 6 ticks 更新
-        tick = self.sim_instance.tick
+        assert self.sim_instance is not None
+        tick: int = self.sim_instance.tick
         if tick is not None:
             if (minus := tick - self.last_tick) >= 6:
                 self.morale += minus // 6 * 29  # 地板除保证整形对齐
                 self.last_tick = tick - minus % 6  # 求余以保证余数不计入本次计算
             self.morale = min(self.morale, 10000)
 
-    def get_resources(self, *args, **kwargs) -> tuple[str, float]:
+    def get_resources(self) -> tuple[str, float]:
         return "士气", self.morale / 100

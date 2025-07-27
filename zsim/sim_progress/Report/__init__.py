@@ -6,25 +6,33 @@ import threading
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from .buff_handler import dump_buff_csv, report_buff_to_queue  # noqa: F401
-from .log_handler import async_log_writer, log_queue, report_to_log  # noqa: F401
-from .result_handler import (  # noqa: F401
+from zsim.define import NORMAL_MODE_ID_JSON
+
+from .buff_handler import dump_buff_csv, report_buff_to_queue
+from .log_handler import async_log_writer, log_queue, report_to_log
+from .result_handler import (
     async_result_writer,
     report_dmg_result,
     result_queue,
 )
-from zsim.define import NORMAL_MODE_ID_JSON
 
+__all__ = [
+    "report_buff_to_queue",
+    "report_to_log",
+    "report_dmg_result",
+    "start_report_threads",
+    "stop_report_threads",
+]
 
-__result_id: str | None = None
-__event_loop = None  # 存储事件循环的引用
+__result_id: str = "Unknown"
+__event_loop: asyncio.AbstractEventLoop | None = None  # 存储事件循环的引用
 
 
 if TYPE_CHECKING:
-    from zsim.simulator.dataclasses import SimCfg
+    from zsim.models.session.session_run import ExecAttrCurveCfg, ExecWeaponCfg
 
 
-def regen_result_id(sim_cfg: "SimCfg | None", *, session_id=None) -> None:
+def regen_result_id(sim_cfg: "ExecAttrCurveCfg | ExecWeaponCfg | None", *, session_id=None) -> None:
     """
     根据运行模式生成结果ID并处理相关文件。
 
@@ -48,9 +56,9 @@ def regen_result_id(sim_cfg: "SimCfg | None", *, session_id=None) -> None:
     if sim_cfg is not None:
         # 并行模式：session_id(API模式)/随机生成的uuid(WebUI模式) + 配置列表作为id
         if sim_cfg.func == "attr_curve":
-            __result_id = f"./results/{sim_cfg.run_turn_uuid}/{sim_cfg.func}_{sim_cfg.sc_name}_{sim_cfg.sc_value}"
+            __result_id = f"./results/{sim_cfg.run_turn_uuid}/{sim_cfg.func}_{sim_cfg.sc_name}_{sim_cfg.sc_value}"  # type: ignore
         elif sim_cfg.func == "weapon":
-            __result_id = f"./results/{sim_cfg.run_turn_uuid}/{sim_cfg.func}_{sim_cfg.weapon_name}_{sim_cfg.weapon_level}"
+            __result_id = f"./results/{sim_cfg.run_turn_uuid}/{sim_cfg.func}_{sim_cfg.weapon_name}_{sim_cfg.weapon_level}"  # type: ignore
         # 创建结果目录
         os.makedirs(__result_id, exist_ok=True)
         # 将 parallel_config 保存为 JSON 文件
@@ -129,17 +137,17 @@ def regen_result_id(sim_cfg: "SimCfg | None", *, session_id=None) -> None:
 
 def start_async_tasks():
     """启动异步任务处理日志和结果写入"""
-    global __event_loop
-
-    # 如果已有事件循环在运行，则不再创建新的
-    if __event_loop is not None:
-        return
-
-    # 创建新的事件循环
-    __event_loop = asyncio.new_event_loop()
 
     # 在新线程中运行事件循环
     def run_event_loop():
+        global __event_loop
+
+        # 如果已有事件循环在运行，则不再创建新的
+        if __event_loop is not None:
+            return
+
+        # 创建新的事件循环
+        __event_loop = asyncio.new_event_loop()
         asyncio.set_event_loop(__event_loop)
         __event_loop.create_task(async_log_writer(__result_id))
         __event_loop.create_task(async_result_writer(__result_id))

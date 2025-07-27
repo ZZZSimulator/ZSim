@@ -18,7 +18,6 @@ from .skill_class import Skill, lookup_name_or_cid
 from .utils.filters import _skill_node_filter, _sp_update_data_filter
 
 if TYPE_CHECKING:
-    
     from zsim.sim_progress.Buff.buff_class import Buff
     from zsim.sim_progress.data_struct.sp_update_data import SPUpdateData
     from zsim.sim_progress.Preload.SkillsQueue import SkillNode
@@ -145,7 +144,7 @@ class Character:
         self.cinema: int = cinema
         self.baseCRIT_score: float = 60
         self.sp_get_ratio: float = 1  # 能量获得效率
-        self.sp_limit: int = sp_limit
+        self.sp_limit: int = int(sp_limit)
         self.sp: float = 40.0
 
         self.decibel: float = 1000.0
@@ -155,13 +154,14 @@ class Character:
 
         self.crit_balancing: bool = crit_balancing
         self.crit_rate_limit: float = crit_rate_limit
+        self.sheer_attack_conversion_rate: dict[int, float] | None = None
 
         # 初始化角色基础属性    .\data\character.csv
         self._init_base_attribute(name)
         # fmt: off
         # 如果并行配置没有移除套装，就初始化套装效果和主副词条
         if sim_cfg is not None:
-            if sim_cfg.func == "attr_curve":
+            if isinstance(sim_cfg, ExecAttrCurveCfg):
                 if not sim_cfg.remove_equip:
                     self.__init_all_equip_static(drive4, drive5, drive6, 
                                                 equip_set2_a, equip_set2_b, equip_set2_c, equip_set4, equip_style, 
@@ -169,7 +169,7 @@ class Character:
                                                 scCRIT_DMG, scDEF, scDEF_percent, scHP, scHP_percent, scPEN)
                 self.__init_attr_curve_config(sim_cfg)
                 self._init_weapon_primitive(weapon, weapon_level)
-            elif sim_cfg.func == "weapon":
+            elif isinstance(sim_cfg, ExecWeaponCfg):
                 self.__init_all_equip_static(drive4, drive5, drive6, 
                                          equip_set2_a, equip_set2_b, equip_set2_c, equip_set4, equip_style, 
                                          scATK, scATK_percent, scAnomalyProficiency, scCRIT, 
@@ -199,7 +199,7 @@ class Character:
         self.action_list = self.skill_object.action_list 
         self.skills_dict = self.skill_object.skills_dict
         self.dynamic = self.Dynamic(self)
-        self.sim_instance = None        # 模拟器实例
+        self.sim_instance: "Simulator | None" = None        # 模拟器实例
         self.equip_buff_map: dict[int, "Buff"] = {}     # 来自装备的Buff0的指针
 
     # fmt: off
@@ -346,7 +346,7 @@ class Character:
         def __init__(self, char_instantce: Character):
             self.character = char_instantce
             self.lasting_node = LastingNode(self.character)
-            from zsim.sim_progress.data_struct.QuickAssistSystem.QuickAssistManager import (
+            from zsim.sim_progress.data_struct.QuickAssistSystem.quick_assist_manager import (
                 QuickAssistManager,
             )
 
@@ -883,23 +883,31 @@ class LastingNode:
         异常:
             ValueError: 当尝试过早更新节点时抛出
         """
+        # 若传入动作不是自己的技能
         if node.char_name != self.char_instance.NAME:
             if self.node is None:
+                # 若此时自己没有技能，则直接返回
                 return
             if self.is_spamming and self.node.end_tick <= tick:
+                # 若此时自己正在持续释放某技能但是该技能已经结束，则结束技能释放状态、清空技能节点，重置参数；
                 self.is_spamming = False
                 self.node = None
                 self.update_tick = tick
                 self.repeat_times = 0
                 return
         else:
+            # 若传入动作是自己的技能
             if self.node is None:
+                # 若此时自己没有登记中的技能，那么就登记当前技能，并且更新参数
                 self.node = node
                 self.start_tick = tick
                 self.update_tick = tick
                 self.repeat_times = 1
                 return
+
+            # 若此时自己有正在进行中的技能
             if node.skill_tag in ["被打断", "发呆"]:
+                # 若此时技能是“被打断”或是“发呆”，则进行参数更新，并且关闭spamming参数；
                 self.is_spamming = False
                 self.node = node
                 self.start_tick = tick
@@ -907,25 +915,33 @@ class LastingNode:
                 self.repeat_times = 0
                 return
             else:
+                # 若此时传入技能是其他正常技能，则需要进行判断
                 if self.node.end_tick > tick and node.active_generation:
+                    # 若已经登记的技能尚未结束，且新传入技能是主动释放，那需要进行验错——理论上，APL不会在角色当前尚还有动作时放行一个新技能。
                     if not self.node.skill.do_immediately and node.skill.do_immediately:
+                        # 若已登记技能并非高优先级，而传入技能为高优先级，则说明是发生了技能顶替（比如大招顶替自己的平A），这是一个正常情况，所以不进入报错分支；
                         pass
                     else:
                         if "dodge" in self.node.skill_tag:
+                            # 若已经登记技能为闪避，那么此时无论传入什么技能，都不进入报错分支——因为闪避是可以被任意取消的
                             pass
                         else:
+                            # 其他的情况则说明APL模块确实出现了错误，报错。
                             raise ValueError(
                                 f"过早传入了node{node.skill_tag}，当前node{self.node.skill_tag}为{self.node.preload_tick}开始 {self.node.end_tick}结束,\n"
                                 f"但是{node.skill_tag}的企图在{tick}tick进行更新，它预计从{node.preload_tick}开始 {node.end_tick}结束！"
                             )
-
+                # 在验错环节结束后，正式进行技能信息的更新、替换；
                 if self.node.skill_tag == node.skill_tag:
+                    # 若传入技能和已登记技能一致，则直接更新参数
                     self.is_spamming = True
                     self.repeat_times += 1
                 else:
+                    # 若传入技能和已登记技能不一致，则关闭spamming参数，并更新技能信息
                     self.is_spamming = False
                     self.start_tick = tick
                     self.repeat_times = 1
+                # 无论如何，node以及update_tick参数都会更新
                 self.node = node
                 self.update_tick = tick
 

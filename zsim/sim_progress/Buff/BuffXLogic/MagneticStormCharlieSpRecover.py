@@ -22,9 +22,7 @@ class MagneticStormCharlieSpRecover(Buff.BuffLogic):
         self.record = None
 
     def get_prepared(self, **kwargs):
-        return check_preparation(
-            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
-        )
+        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
 
     def check_record_module(self):
         if self.equipper is None:
@@ -71,12 +69,8 @@ class MagneticStormCharlieSpRecover(Buff.BuffLogic):
         self.get_prepared(equipper="「电磁暴」-叁式", sub_exist_buff_dict=1)
         tick_now = JudgeTools.find_tick(sim_instance=self.buff_instance.sim_instance)
         self.buff_instance.simple_start(tick_now, self.record.sub_exist_buff_dict)
-        energy_value = self.record.energy_value_dict[
-            int(self.buff_instance.ft.refinement)
-        ]
-        event_list = JudgeTools.find_event_list(
-            sim_instance=self.buff_instance.sim_instance
-        )
+        energy_value = self.record.energy_value_dict[int(self.buff_instance.ft.refinement)]
+        event_list = JudgeTools.find_event_list(sim_instance=self.buff_instance.sim_instance)
         from zsim.sim_progress.data_struct import ScheduleRefreshData
 
         refresh_data = ScheduleRefreshData(

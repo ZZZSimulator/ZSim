@@ -19,9 +19,7 @@ def _result_manager():
     st.markdown("选择一个结果：")
     col1, col2, col3, col4 = st.columns(4)
     with col1:
-        selected_key = st.selectbox(
-            "选择你要查看的结果", options, label_visibility="collapsed"
-        )
+        selected_key = st.selectbox("选择你要查看的结果", options, label_visibility="collapsed")
     with col2:
         st.markdown(
             f'<span style="color:gray;">备注：<br>{id_cache.get(selected_key, "N/A")}</span>',
@@ -56,9 +54,7 @@ def _result_manager():
             st.warning(f"你确定要删除 {key_to_delete} 吗？", icon="⚠️")
             col1_dialog, col2_dialog = st.columns(2)
             with col1_dialog:
-                if st.button(
-                    "确定", key="confirm_del_result", use_container_width=True
-                ):
+                if st.button("确定", key="confirm_del_result", use_container_width=True):
                     delete_result(key_to_delete)
                     st.rerun()
             with col2_dialog:

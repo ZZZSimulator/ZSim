@@ -21,9 +21,7 @@ class HormonePunkAtkBonus(Buff.BuffLogic):
         self.record = None
 
     def get_prepared(self, **kwargs):
-        return check_preparation(
-            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
-        )
+        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
 
     def check_record_module(self):
         if self.equipper is None:
@@ -43,10 +41,8 @@ class HormonePunkAtkBonus(Buff.BuffLogic):
         self.check_record_module()
         self.get_prepared(equipper="激素朋克")
         if not self.record.listener_exist:
-            self.record.listener = (
-                self.buff_instance.sim_instance.listener_manager.get_listener(
-                    listener_owner=self.record.char, listener_id="Hormone_Punk_1"
-                )
+            self.record.listener = self.buff_instance.sim_instance.listener_manager.get_listener(
+                listener_owner=self.record.char, listener_id="Hormone_Punk_1"
             )
             self.record.listener_exist = True
             # print(f"为{self.record.char.NAME}创建了一个激素朋克的监听器！")
@@ -58,9 +54,7 @@ class HormonePunkAtkBonus(Buff.BuffLogic):
             return False
         else:
             self.record.listener.active_signal = None
-            if self.buff_0.is_ready(
-                find_tick(sim_instance=self.buff_instance.sim_instance)
-            ):
+            if self.buff_0.is_ready(find_tick(sim_instance=self.buff_instance.sim_instance)):
                 # print(
                 #     f"{self.buff_instance.ft.index}接收到了匹配的更新信号（佩戴者为{active_signal[0].NAME}），buff更新时间{self.buff_0.dy.startticks}， buff结束时间为{self.buff_0.dy.endticks}"
                 # )

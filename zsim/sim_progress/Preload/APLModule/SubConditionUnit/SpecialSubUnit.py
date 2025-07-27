@@ -8,9 +8,7 @@ if TYPE_CHECKING:
 
 class SpecialSubUnit(BaseSubConditionUnit):
     def __init__(self, priority: int, sub_condition_dict: dict = None, mode=0):
-        super().__init__(
-            priority=priority, sub_condition_dict=sub_condition_dict, mode=mode
-        )
+        super().__init__(priority=priority, sub_condition_dict=sub_condition_dict, mode=mode)
         self.preload_data = None
 
     class SpecialHandler:
@@ -22,7 +20,7 @@ class SpecialSubUnit(BaseSubConditionUnit):
         @classmethod
         def handler(cls, preload_data):
             cid = preload_data.operating_now
-            # print(f'调用了特殊检查，当前正在操作的CID为：{cid}')
+            # print(f'调用了特殊检查，当前正在操作的CID为：{cid}，当前被检测的技能为：{preload_data.latest_active_generation_node.skill_tag}')
             return cid
 
     class IsAttackingHandler(SpecialHandler):

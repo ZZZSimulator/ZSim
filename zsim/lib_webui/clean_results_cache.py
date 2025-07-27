@@ -25,9 +25,7 @@ def get_all_results(
 
     # 获取results文件夹内的所有文件夹名
     folder_names = [
-        name
-        for name in os.listdir(results_dir)
-        if os.path.isdir(os.path.join(results_dir, name))
+        name for name in os.listdir(results_dir) if os.path.isdir(os.path.join(results_dir, name))
     ]
 
     # 找出需要删除的key
@@ -108,9 +106,7 @@ def rename_result(
         json.dump(id_cache, f, indent=4)
 
 
-def delete_result(
-    former_name: str, *, id_cache_path=NORMAL_MODE_ID_JSON, results_dir=results_dir
-):
+def delete_result(former_name: str, *, id_cache_path=NORMAL_MODE_ID_JSON, results_dir=results_dir):
     """
     删除结果文件夹并更新id_cache.json文件中的对应条目。
     参数:

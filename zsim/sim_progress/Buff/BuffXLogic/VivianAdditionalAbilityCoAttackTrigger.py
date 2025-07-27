@@ -23,9 +23,7 @@ class VivianAdditionalAbilityCoAttackTrigger(Buff.BuffLogic):
         self.xeffect = self.special_effect_logic
 
     def get_prepared(self, **kwargs):
-        return check_preparation(
-            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
-        )
+        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
 
     def check_record_module(self):
         if self.buff_0 is None:
@@ -54,9 +52,7 @@ class VivianAdditionalAbilityCoAttackTrigger(Buff.BuffLogic):
             if "1331" in anomaly_bar.activated_by.skill_tag:
                 if VIVIAN_REPORT:
                     self.buff_instance.sim_instance.schedule_data.change_process_state()
-                    print(
-                        "组队被动：检测到薇薇安触发的属性异常，不放行！"
-                    )
+                    print("组队被动：检测到薇薇安触发的属性异常，不放行！")
                 return False
         # 如果是首次传入的属性异常类，则直接放行。
         tick = find_tick(sim_instance=self.buff_instance.sim_instance)

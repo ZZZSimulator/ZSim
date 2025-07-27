@@ -45,9 +45,7 @@ class Buff:
         new_instance.__dict__ = existing_instance.__dict__.copy()  # 复制原实例的属性
         return new_instance
 
-    def __init__(
-        self, config: pd.Series, judge_config: pd.Series, sim_instance: "Simulator"
-    ):
+    def __init__(self, config: pd.Series, judge_config: pd.Series, sim_instance: "Simulator"):
         if not hasattr(self, "ft"):
             self.ft = self.BuffFeature(config)
             self.dy = self.BuffDynamic()
@@ -83,9 +81,7 @@ class Buff:
                 module_name = config["module"]
                 class_name = config["class"]
                 # 动态加载模块
-                module = importlib.import_module(
-                    module_name, package="zsim.sim_progress.Buff"
-                )
+                module = importlib.import_module(module_name, package="zsim.sim_progress.Buff")
                 logic_class = getattr(module, class_name)
                 self.logic = logic_class(self)
             else:
@@ -93,9 +89,7 @@ class Buff:
                 pass
         except ModuleNotFoundError:
             # 处理模块找不到的情况
-            print(
-                f"Module for {self.ft.index} not found. Falling back to default logic."
-            )
+            print(f"Module for {self.ft.index} not found. Falling back to default logic.")
             pass
 
     class BuffFeature:
@@ -121,18 +115,14 @@ class Buff:
                 except TypeError:
                     raise TypeError(f"{meta_config} is not a mapping")
                 self.buff = None
-                self.simple_judge_logic = config_dict[
-                    "simple_judge_logic"
-                ]  # 复杂判断逻辑,
+                self.simple_judge_logic = config_dict["simple_judge_logic"]  # 复杂判断逻辑,
                 self.simple_start_logic = config_dict[
                     "simple_start_logic"
                 ]  # 复杂开始逻辑,指的是buff的start方式比较特殊，需要代码控制
                 self.simple_end_logic = config_dict[
                     "simple_end_logic"
                 ]  # 复杂结束逻辑,指的是buff的结束不以常规buff的结束条件为约束的,比如消耗完层数才消失的,比如受击导致持续时间发生跳变的,
-                self.simple_hit_logic = config_dict[
-                    "simple_hit_logic"
-                ]  # 复杂的命中判定逻辑
+                self.simple_hit_logic = config_dict["simple_hit_logic"]  # 复杂的命中判定逻辑
                 self.simple_effect_logic = config_dict[
                     "simple_effect_logic"
                 ]  # 复杂的生效逻辑，和simple_start对应
@@ -141,9 +131,7 @@ class Buff:
                 如果某buff既有复杂的judge_logic，又有复杂的start/hit/end_logic，
                 那么后者就应该使用xeffect来写，要不然就会进入simple_start分支而导致代码块无法执行。
                 """
-                self.simple_exit_logic = config_dict[
-                    "simple_exit_logic"
-                ]  # 复杂退出逻辑
+                self.simple_exit_logic = config_dict["simple_exit_logic"]  # 复杂退出逻辑
                 self.index = config_dict["BuffName"]  # buff的英文名,也是buff的索引
                 self.is_weapon = config_dict["is_weapon"]  # buff是否是武器特效
                 self.is_additional_ability = config_dict[
@@ -182,9 +170,7 @@ class Buff:
                 ]  # buff的层数增长类型,True就增长层数 = 命中次数,而False是增长层数为固定值,取决于step数据;
                 self.cd = int(config_dict["increaseCD"])  # buff的叠层内置CD
                 self.add_buff_to = config_dict["add_buff_to"]  # 记录了buff会被添加给谁?
-                self.is_debuff = config_dict[
-                    "is_debuff"
-                ]  # 记录了这个buff是否是个debuff
+                self.is_debuff = config_dict["is_debuff"]  # 记录了这个buff是否是个debuff
                 self.schedule_judge = config_dict[
                     "schedule_judge"
                 ]  # 记录了这个buff是否需要在schedule阶段处理。
@@ -223,8 +209,8 @@ class Buff:
                 """
 
                 """Buff标签"""
-                self.label: dict[str, list[str] | str] | None = (
-                    self.__process_label_str(config_dict)
+                self.label: dict[str, list[str] | str] | None = self.__process_label_str(
+                    config_dict
                 )
 
                 """
@@ -233,14 +219,10 @@ class Buff:
                 0：所有标签都通过时，才生效，
                 n(0以外的任意int)：通过n个标签时，就生效。
                 """
-                self.label_effect_rule: int | None = self.__process_label_rule(
-                    config_dict
-                )
+                self.label_effect_rule: int | None = self.__process_label_rule(config_dict)
                 self.buff0_id = None
 
-                __listener_id_str = config_dict.get(
-                    "listener_id"
-                )  # 与Buff的伴生的监听器的ID
+                __listener_id_str = config_dict.get("listener_id")  # 与Buff的伴生的监听器的ID
                 if __listener_id_str is None or __listener_id_str is np.nan:
                     self.listener_id = None
                 else:
@@ -433,9 +415,7 @@ class Buff:
             buff = all_buff_js[index]
         except KeyError as e:
             buff = {}
-            report_to_log(
-                f"[WARNING] {e}: 索引{index}没有找到，或buff效果json结构错误", level=4
-            )
+            report_to_log(f"[WARNING] {e}: 索引{index}没有找到，或buff效果json结构错误", level=4)
         return buff
 
     @staticmethod
@@ -525,25 +505,19 @@ class Buff:
         no_start = kwargs.get("no_start", False)
         no_end = kwargs.get("no_end", False)
         no_count = kwargs.get("no_count", False)
-        specified_count = kwargs.get(
-            "specified_count", None
-        )  # 外部定制层数——层数不独立结算的Buff
+        specified_count = kwargs.get("specified_count", None)  # 外部定制层数——层数不独立结算的Buff
         _simple_start_buff_0 = sub_exist_buff_dict[self.ft.index]
         individule_settled_count = kwargs.get("individule_settled_count", 0)
         if no_count and any([individule_settled_count, specified_count]):
             raise ValueError("在传入no_count参数时，同时传入了其他控制层数的参数。")
         if specified_count and self.ft.individual_settled:
-            raise ValueError(
-                "企图使用specified_count参数来控制层数，但该buff不是层数独立结算的。"
-            )
+            raise ValueError("企图使用specified_count参数来控制层数，但该buff不是层数独立结算的。")
         if individule_settled_count != 0 and not self.ft.individual_settled:
             raise ValueError(
                 f"对于层数不独立结算的{self.ft.index}，在调用simple_start函数时，不应传入individule_settled_count参数。"
             )
         if individule_settled_count and specified_count:
-            raise ValueError(
-                "同时传入了individule_settled_count和specified_count参数。"
-            )
+            raise ValueError("同时传入了individule_settled_count和specified_count参数。")
         if individule_settled_count == 0:
             individule_settled_count = 1
         self.dy.active = True
@@ -554,9 +528,7 @@ class Buff:
         if not no_count:
             if self.ft.individual_settled:
                 for i in range(0, individule_settled_count):
-                    self.dy.built_in_buff_box.append(
-                        (self.dy.startticks, self.dy.endticks)
-                    )
+                    self.dy.built_in_buff_box.append((self.dy.startticks, self.dy.endticks))
                 while len(self.dy.built_in_buff_box) > self.ft.maxcount:
                     self.dy.built_in_buff_box.pop(0)
                 self.dy.count = len(self.dy.built_in_buff_box)
@@ -616,9 +588,7 @@ class Buff:
         根据Buff的更新特性（比如fresh、Prejudge等参数）以及对应正在发生的子任务节点，对应的处理buff的dynamic属性。
         """
         if self.ft.index not in sub_exist_buff_dict:
-            raise TypeError(
-                f"{self.ft.index}并不存在于{char_name}的exist_buff_dict中！"
-            )
+            raise TypeError(f"{self.ft.index}并不存在于{char_name}的exist_buff_dict中！")
         buff_0 = sub_exist_buff_dict[self.ft.index]
         if self.ft.alltime:
             self.dy.active = True
@@ -737,9 +707,7 @@ class Buff:
                     # EXAMPLE：发动普攻时，使当前招式伤害增加X%，
                     self.dy.startticks = timenow
                     self.dy.endticks = timenow + timecost
-                    self.dy.count = min(
-                        buff_0.dy.count + self.ft.step, self.ft.maxcount
-                    )
+                    self.dy.count = min(buff_0.dy.count + self.ft.step, self.ft.maxcount)
                     self.dy.ready = False
                     self.dy.is_changed = True
         else:
@@ -760,9 +728,7 @@ class Buff:
                     self.dy.startticks = timenow
                     self.dy.endticks = timenow + self.ft.maxduration
                     if not self.ft.hitincrease:
-                        self.dy.count = min(
-                            buff_0.dy.count + self.ft.step, self.ft.maxcount
-                        )
+                        self.dy.count = min(buff_0.dy.count + self.ft.step, self.ft.maxcount)
                     self.dy.ready = False
                     self.dy.is_changed = True
                     """ 
@@ -795,9 +761,7 @@ class Buff:
                     self.dy.active = True
                     self.dy.startticks = timenow
                     self.dy.endticks = timenow + self.ft.maxduration
-                    self.dy.count = min(
-                        buff_0.dy.count + self.ft.step, self.ft.maxcount
-                    )
+                    self.dy.count = min(buff_0.dy.count + self.ft.step, self.ft.maxcount)
                     self.dy.ready = False
                     self.dy.is_changed = True
             # report_to_log(f"[Buff INFO]:{timenow}:{buff_0.ft.index}第{buff_0.history.active_times}次触发", level=3)
@@ -859,9 +823,7 @@ class Buff:
                 只有非瞬时buff，才会因hit刷新了持续时间而更新endticks。
                 """
                 self.dy.endticks = (
-                    timenow + self.ft.maxduration
-                    if self.ft.maxduration != 0
-                    else endticks
+                    timenow + self.ft.maxduration if self.ft.maxduration != 0 else endticks
                 )
                 self.dy.count = min(buff_0.dy.count + self.ft.step, self.ft.maxcount)
                 self.dy.active = True
@@ -887,9 +849,7 @@ class Buff:
         return f"Buff名: {self.ft.index}→{self.ft.description}"
 
     def __deepcopy__(self, memo):
-        new_obj = Buff(
-            self.feature_config, self.judge_config, sim_instance=self.sim_instance
-        )
+        new_obj = Buff(self.feature_config, self.judge_config, sim_instance=self.sim_instance)
         memo[id(self)] = new_obj
         return new_obj
 
@@ -914,7 +874,6 @@ def spawn_buff_from_index(index: str):
     judge_dict = find_row_as_dict(index, JUDGE_FILE_PATH)
     # 创建Buff实例
     return Buff(trigger_dict, judge_dict)
-
 
 
 if __name__ == "__main__":

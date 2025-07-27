@@ -32,9 +32,7 @@ class FeatherManager:
     def trans_feather(self):
         """将现有的飞羽全部转化成护羽：注意，飞羽转化为护羽的时间点为SNA_2的最后一跳，所以这里不能走特殊资源，只能从触发器走。"""
         trans_count = self.flight_feather
-        self.guard_feather = min(
-            self.guard_feather + trans_count, self.feather_max_count
-        )
+        self.guard_feather = min(self.guard_feather + trans_count, self.feather_max_count)
         self.flight_feather = 0
         if VIVIAN_REPORT:
             self.char.sim_instance.schedule_data.change_process_state()
@@ -71,9 +69,7 @@ class FeatherManager:
             if self.char.cinema >= 1:
                 self.c1_counter += 1
                 if self.c1_counter >= 4:
-                    self.flight_feather = min(
-                        self.flight_feather + 1, self.feather_max_count
-                    )
+                    self.flight_feather = min(self.flight_feather + 1, self.feather_max_count)
                     self.c1_counter -= 4
             if VIVIAN_REPORT:
                 self.char.sim_instance.schedule_data.change_process_state()

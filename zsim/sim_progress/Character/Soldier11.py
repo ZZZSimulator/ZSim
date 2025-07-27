@@ -14,7 +14,8 @@ class Soldier11(Character):
         """模拟11号的火力镇压机制"""
         # 输入类型检查
         skill_nodes: list[SkillNode] = _skill_node_filter(*args, **kwargs)
-        tick = self.sim_instance.tick
+        assert self.sim_instance is not None
+        tick: int = self.sim_instance.tick
         for node in skill_nodes:
             if self.settle_tick is not None:
                 # 超时重置

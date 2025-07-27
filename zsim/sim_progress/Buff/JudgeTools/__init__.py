@@ -13,14 +13,21 @@ from .FindMain import (
     find_preload_data,
     find_stack,
     find_tick,  # noqa: F401
-    find_init_data
+    find_init_data,
 )
 
 if TYPE_CHECKING:
     from .. import Buff
 
 
-def check_preparation(buff_0, buff_instance: "Buff", **kwargs):
+def check_preparation(
+    buff_0: "Buff",
+    buff_instance: "Buff",
+    equipper: str | None = None,
+    char_CID: int | None = None,
+    char_NAME: str | None = None,
+    **kwargs,
+):
     """
     这是一个综合函数。根据传入的参数，来执行不同的内容。
     """
@@ -30,9 +37,6 @@ def check_preparation(buff_0, buff_instance: "Buff", **kwargs):
     record = buff_0.history.record
 
     # 参数获取
-    equipper: str = kwargs.get("equipper")
-    char_CID: int = kwargs.get("char_CID")
-    char_NAME: str = kwargs.get("char_NAME")
     enemy = kwargs.get("enemy")
     sub_exist_buff_dict = kwargs.get("sub_exist_buff_dict")
     dynamic_buff_list = kwargs.get("dynamic_buff_list")
@@ -44,20 +48,11 @@ def check_preparation(buff_0, buff_instance: "Buff", **kwargs):
     na_skill_level = kwargs.get("na_skill_level")
 
     # 参数正确性检查
-    if (
-        sub_exist_buff_dict
-        and char_NAME is None
-        and char_CID is None
-        and equipper is None
-    ):
+    if sub_exist_buff_dict and char_NAME is None and char_CID is None and equipper is None:
         raise ValueError(
             "在查询sub_exist_buff_dict的同时，应保证传入char_CID/char_NAME/equipper中的一个参数"
         )
-    if (
-        trigger_buff_0
-        and trigger_buff_0[0] == "enemy"
-        and not any([char_CID, char_NAME, equipper])
-    ):
+    if trigger_buff_0 and trigger_buff_0[0] == "enemy" and not any([char_CID, char_NAME, equipper]):
         raise ValueError(
             "在查询来自于enemy的trigger_buff_0的同时，应保证传入char_CID/char_NAME/equipper中的一个参数"
         )
@@ -65,23 +60,17 @@ def check_preparation(buff_0, buff_instance: "Buff", **kwargs):
     # 函数主体部分
     if equipper:
         if record.equipper is None:
-            record.equipper = find_equipper(
-                equipper, sim_instance=buff_instance.sim_instance
-            )
+            record.equipper = find_equipper(equipper, sim_instance=buff_instance.sim_instance)
         if record.char is None:
             record.char = find_char_from_name(
                 record.equipper, sim_instance=buff_instance.sim_instance
             )
     if char_CID:
         if record.char is None:
-            record.char = find_char_from_CID(
-                char_CID, sim_instance=buff_instance.sim_instance
-            )
+            record.char = find_char_from_CID(char_CID, sim_instance=buff_instance.sim_instance)
     if char_NAME:
         if record.char is None:
-            record.char = find_char_from_name(
-                char_NAME, sim_instance=buff_instance.sim_instance
-            )
+            record.char = find_char_from_name(char_NAME, sim_instance=buff_instance.sim_instance)
 
     if sub_exist_buff_dict:
         if record.char is None:
@@ -109,14 +98,10 @@ def check_preparation(buff_0, buff_instance: "Buff", **kwargs):
         trigger_buff_0_handler(record, trigger_buff_0, buff_instance=buff_instance)
     if preload_data:
         if record.preload_data is None:
-            record.preload_data = find_preload_data(
-                sim_instance=buff_instance.sim_instance
-            )
+            record.preload_data = find_preload_data(sim_instance=buff_instance.sim_instance)
     if char_obj_list:
         if record.char_obj_list is None:
-            record.char_obj_list = find_char_list(
-                sim_instance=buff_instance.sim_instance
-            )
+            record.char_obj_list = find_char_list(sim_instance=buff_instance.sim_instance)
     if na_skill_level:
         if record.char is None:
             raise ValueError("在buff_0.history.record 中并未读取到对应的char")
@@ -139,31 +124,25 @@ def trigger_buff_0_handler(record, trigger_buff_0, buff_instance: "Buff"):
         buff_index = trigger_buff_0[1]
         if operator == "equipper":
             if record.equipper is None:
-                record.equipper = find_equipper(
-                    operator, sim_instance=buff_instance.sim_instance
-                )
+                record.equipper = find_equipper(operator, sim_instance=buff_instance.sim_instance)
                 # FIXME:这里要解决传入的operator 是“equipper”字符串的问题！！！！虽然该分支不会被执行，所以从未出错（obsidian笔记详解一下）
 
             operator = record.equipper
         elif operator == "enemy":
             operator = record.char.NAME
-        sub_exist_buff_dict = find_exist_buff_dict(
-            sim_instance=buff_instance.sim_instance
-        )[operator]
+        sub_exist_buff_dict = find_exist_buff_dict(sim_instance=buff_instance.sim_instance)[
+            operator
+        ]
         founded_list = []
         for _buff_founded in sub_exist_buff_dict.values():
             if buff_index in _buff_founded.ft.index:
                 founded_list.append(_buff_founded)
         if len(founded_list) != 1:
             """说明提供的关键词筛选出了多个Buff，此时需要进一步筛选出正确结果"""
-            founded_buff_index_list = [
-                founded_buff.ft.index for founded_buff in founded_list
-            ]
+            founded_buff_index_list = [founded_buff.ft.index for founded_buff in founded_list]
             """验错环节"""
             if len(set(founded_buff_index_list)) != len(founded_list):
-                raise ValueError(
-                    f"在{operator}的sub_exist_buff_dict中找到了2个以上的同名buff！"
-                )
+                raise ValueError(f"在{operator}的sub_exist_buff_dict中找到了2个以上的同名buff！")
             trigger_index_length = len(buff_index)
             for _buffs in founded_list:
                 if _buffs.ft.index[-trigger_index_length:] == buff_index:

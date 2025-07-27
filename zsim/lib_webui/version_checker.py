@@ -25,9 +25,7 @@ class GitHubVersionChecker:
         self.repo_owner = repo_owner
         self.repo_name = repo_name
         self.current_version = current_version
-        self.api_url = (
-            f"https://api.github.com/repos/{repo_owner}/{repo_name}/releases/latest"
-        )
+        self.api_url = f"https://api.github.com/repos/{repo_owner}/{repo_name}/releases/latest"
         self.repo_url = f"https://github.com/{repo_owner}/{repo_name}"
 
     def _parse_version(self, version: str) -> tuple[list, str, int]:
@@ -216,9 +214,7 @@ class GitHubVersionChecker:
                     st.session_state.update_dismissed = True
 
             with col2:
-                if st.button(
-                    "❌ 暂不更新", use_container_width=True, key="dismiss_btn"
-                ):
+                if st.button("❌ 暂不更新", use_container_width=True, key="dismiss_btn"):
                     st.session_state.update_dismissed = True
                     st.rerun()
 

@@ -44,14 +44,12 @@ class QTEData:
         )  # 最多可以触发几次QTE
         self.qte_activation_available = False  # 彩色失衡阶段——在StunJudge中被打开，在SingeQTE的merge方法中被关闭，当然，失衡阶段的结束也会关闭该参数（依旧是StunJudge）。
         self.single_qte = None  # 单次QTE的实例
-        self.__single_hit_check = (
-            lambda hit: all(
-                [
-                    hit.hitted_count == 1
-                    or hit.heavy_hit  # 第一跳、重击（通常为重攻击标签的最后一跳）均能通过判定，
-                    # hit.proactive or (not hit.proactive and 'QTE' in hit.skill_tag),  # 筛选出主动技能，所有的被动释放的技能都不能和QTE的激活行为进行互动。
-                ]
-            )
+        self.__single_hit_check = lambda hit: all(
+            [
+                hit.hitted_count == 1
+                or hit.heavy_hit  # 第一跳、重击（通常为重攻击标签的最后一跳）均能通过判定，
+                # hit.proactive or (not hit.proactive and 'QTE' in hit.skill_tag),  # 筛选出主动技能，所有的被动释放的技能都不能和QTE的激活行为进行互动。
+            ]
         )
         self.strategies_map = {
             "qte_received_box": ListMergeStrategy,
@@ -59,8 +57,10 @@ class QTEData:
         }
         self.preload_data = None
 
-    def check_myself(self) -> bool:
+    def check_myself(self, single_hit: SingleHit | None = None) -> bool:
         """该函数用于检查自身目前的状态，即当前是彩色失衡还是灰色失衡；"""
+        if self.qte_triggerable_times is None:
+            return False
         if self.qte_triggered_times > self.qte_triggerable_times:
             raise ValueError(
                 f"QTE的实际响应总次数为{self.qte_triggered_times}次，大于其最大次数{self.qte_triggerable_times}次！"
@@ -70,12 +70,35 @@ class QTEData:
                 f"QTE总计包含了{len(self.qte_received_box)}个skill_tag，而实际的响应次数为{self.qte_triggered_times}次！"
             )
         if self.enemy_instance.dynamic.stun:
+            if self.qte_triggerable_times is None:
+                return False
             if self.qte_triggered_times < self.qte_triggerable_times:
                 return True
             else:
                 self.qte_activation_available = False
                 return False
         else:
+            """
+            v0.3.1b2更新：
+            为了复现柚叶2画在非失衡期也能激发一次连携技的机制，
+            所以为single_hit以及skill_node添加了一个新参数——force_qte_trigger（强制激发QTE）
+            该参数可以让QTE管理器在非失衡期放行这个single_hit，并且使其顺利进入后续的判定。
+            后续更新：
+            QTE结构仅需要针对两种情况进行特殊放行：
+            1、在非失衡期能够激发连携的skill_node——force_qte_trigger==True
+            2、在非失衡期激发连携后，进行响应的QTE技能；
+            """
+            if self.single_qte is None:
+                if single_hit is not None:
+                    if single_hit.force_qte_trigger:
+                        return True
+            else:
+                if single_hit is not None:
+                    if (
+                        single_hit.skill_node
+                        and single_hit.skill_node.skill.trigger_buff_level == 5
+                    ):
+                        return True
             return False
 
     def try_qte(self, hit: SingleHit) -> None:
@@ -84,7 +107,7 @@ class QTEData:
         其核心作用为：用传入的SingleHit来尝试激发QTE。
         """
         # 0、 如果是非失衡状态或是灰色失衡状态，那么直接返回
-        if not self.check_myself():
+        if not self.check_myself(single_hit=hit):
             return
 
         # 1、可行性审查，这里，只有主动动作的第一跳、以及含有重击标签的、主动动作的最后一跳能够通过判定。
@@ -106,6 +129,7 @@ class QTEData:
                 # 3.1、如果是能够激发连携的hit，而此时又没有SingleHit存在，那么就是激活了新的QTE阶段，进入下一步判断。
                 self.single_qte = SingleQTE(self, single_hit=hit)
                 self.enemy_instance.sim_instance.schedule_data.change_process_state()
+                assert hit.skill_node is not None
                 print(
                     f"{hit.skill_node.char_name}  的  {hit.skill_node.skill.skill_text}  激发了连携技！当前已经激发过{self.qte_triggered_times + 1}次连携技！"
                 )
@@ -158,6 +182,12 @@ class QTEData:
 
         if not isinstance(self.preload_data, PreloadData):
             raise TypeError("QTEData的preload_data属性不是PreloadData类！")
+        if not self.enemy_instance.dynamic.stun:
+            assert _hit.skill_node is not None
+            if _hit.skill_node.force_qte_trigger:
+                # FIXME: 临时解决方案，理论上2画触发连携技需要柚叶在前台，合轴会导致激发失败；
+                #  但是这涉及到的底层逻辑较为复杂，APL也不太好改，所以这里暂时先这么临时解决一下
+                return True
         if self.preload_data.operating_now is None:
             """说明目前没有任何角色在前台"""
             return False
@@ -169,12 +199,14 @@ class SingleQTE:
     def __init__(self, qte_data: QTEData, single_hit: SingleHit):
         self.qte_data = qte_data
         self.qte_received_box: list[str] = []  # 用于接受QTE阶段输入的QTE skill_tag
-        self.qte_triggerable_times: int = (
+        self.qte_triggerable_times: int | None = (
             self.qte_data.qte_triggerable_times
         )  # 最多可以触发几次QTE
         self.qte_triggered_times: int = 0  # 已经响应了几次QTE
         self.qte_activation_available = False  # 彩色失衡阶段
-        self.__is_hitted = False  # 每个SingleHit都只会被响应一次，所以这里用一个bool变量来标记是否已经被响应过。
+        self.__is_hitted = (
+            False  # 每个SingleHit都只会被响应一次，所以这里用一个bool变量来标记是否已经被响应过。
+        )
         self.active_by: SingleHit = single_hit
 
     def receive_hit(self, _single_hit: SingleHit):
@@ -191,31 +223,36 @@ class SingleQTE:
             return
         if not _single_hit.proactive:  # 如果传进来的是一个非主动动作，也直接return
             return
+        if self.qte_data.enemy_instance.dynamic.stun:
+            """正常的QTE接收逻辑"""
+            self.receive_hit_while_stun(_single_hit)
+        else:
+            """非失衡阶段的QTE接收逻辑（强制触发的QTE）"""
+            self.receive_qte_without_stun(_single_hit)
 
-        """无论传进来的是哪一个技能的第一跳，都意味着响应了QTE"""
+    def receive_hit_while_stun(self, _single_hit: SingleHit):
+        """失衡期接收QTE的业务逻辑"""
         self.qte_triggered_times += 1
-
+        assert _single_hit.skill_node is not None
         if "QTE" not in _single_hit.skill_tag:
             """说明QTE被取消了"""
             self.qte_data.enemy_instance.sim_instance.schedule_data.change_process_state()
             print(
-                f"{_single_hit.skill_node.char_name}  取消第{self.qte_data.qte_triggered_times + 1}次QTE，并释放了  {_single_hit.skill_node.skill.skill_text}  "
+                f"【QTE事件】{_single_hit.skill_node.char_name}  取消第{self.qte_data.qte_triggered_times + 1}次QTE，并释放了  {_single_hit.skill_node.skill.skill_text}  "
             )
         else:
             """角色响应了QTE，释放连携技"""
+            assert self.active_by.skill_node is not None
             if _single_hit.skill_node.char_name == self.active_by.skill_node.char_name:
-                raise ValueError(
-                    f"{_single_hit.skill_node.char_name}  企图响应自己激发的QTE！"
-                )
+                raise ValueError(f"{_single_hit.skill_node.char_name}  企图响应自己激发的QTE！")
             self.qte_received_box.append(_single_hit.skill_tag)
 
             """QTE成功响应之后，返还1秒QTE时间"""
             self.qte_data.enemy_instance.sim_instance.schedule_data.change_process_state()
             self.qte_data.enemy_instance.dynamic.stun_tick_feed_back_from_QTE += 60
             print(
-                f"QTE计数器接收到来自  {_single_hit.skill_node.char_name}  的连携技（skill_tag为{_single_hit.skill_tag})，返还1秒失衡时间！"
+                f"【QTE事件】 {_single_hit.skill_node.char_name}  响应了连携，释放连携技（skill_tag为{_single_hit.skill_tag})，返还1秒失衡时间！"
             )
-
         self.__is_hitted = True
         self.merge_single_qte()
 
@@ -226,3 +263,29 @@ class SingleQTE:
                 strategy.apply(self.qte_data, self, attr_name)
         self.qte_data.single_qte = None
         self.qte_data.check_myself()
+
+    def receive_qte_without_stun(self, _single_hit: SingleHit):
+        """在非失衡阶段接收hit"""
+        assert _single_hit.skill_node is not None
+        if "QTE" not in _single_hit.skill_tag:
+            """说明QTE被取消了"""
+            self.qte_data.enemy_instance.sim_instance.schedule_data.change_process_state()
+            print(
+                f"【QTE事件】{_single_hit.skill_node.char_name}  取消了强制触发的QTE，并释放了  {_single_hit.skill_node.skill.skill_text}  "
+            )
+        else:
+            """角色响应了QTE，释放连携技"""
+            assert self.active_by.skill_node is not None
+            if (
+                _single_hit.skill_node.char_name == self.active_by.skill_node.char_name
+                and not self.active_by.skill_node.force_qte_trigger
+            ):
+                raise ValueError(f"{_single_hit.skill_node.char_name}  企图响应自己激发的QTE！")
+                # FIXME：由于柚叶2画有强行在非失衡期触发连携技的特性，为了系统稳定暂时让这个激发在后台也能生效。
+                #  所以这里的验错也需要避开这个情况，否则就会报“自己响应自己QTE”的错误
+            self.qte_data.enemy_instance.sim_instance.schedule_data.change_process_state()
+            print(
+                f"【QTE事件】 {_single_hit.skill_node.char_name}  响应了强制触发的连携，释放连携技 {_single_hit.skill_node.skill.skill_text}（skill_tag为{_single_hit.skill_tag})"
+            )
+        self.__is_hitted = True
+        self.merge_single_qte()

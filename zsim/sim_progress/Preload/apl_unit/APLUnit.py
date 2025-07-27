@@ -29,12 +29,12 @@ class APLUnit(ABC):
         self.sim_instance = sim_instance
 
     @abstractmethod
-    def check_all_sub_units(
-            self, found_char_dict, game_state, sim_instance: "Simulator", **kwargs
-    ):
+    def check_all_sub_units(self, found_char_dict, game_state, sim_instance: "Simulator", **kwargs):
         pass
 
-    def evaluate_condition_ast(self, node: "ExprNode", found_char_dict, game_state, sim_instance, tick, result_box):
+    def evaluate_condition_ast(
+        self, node: "ExprNode", found_char_dict, game_state, sim_instance, tick, result_box
+    ):
         """递归地评估逻辑树的表达式节点"""
         if node.is_leaf():
             if not isinstance(node.sub_condition, BaseSubConditionUnit):
@@ -45,10 +45,12 @@ class APLUnit(ABC):
             result_box.append(result)
             return result
         else:
-            left_result = self.evaluate_condition_ast(node.left, found_char_dict, game_state, sim_instance, tick,
-                                                      result_box)
-            right_result = self.evaluate_condition_ast(node.right, found_char_dict, game_state, sim_instance, tick,
-                                                       result_box)
+            left_result = self.evaluate_condition_ast(
+                node.left, found_char_dict, game_state, sim_instance, tick, result_box
+            )
+            right_result = self.evaluate_condition_ast(
+                node.right, found_char_dict, game_state, sim_instance, tick, result_box
+            )
             if node.operator == "and":
                 return left_result and right_result
             elif node.operator == "or":
@@ -80,9 +82,7 @@ def spawn_sub_condition(
             break
     else:
         raise ValueError(f"不正确的计算符！{code_body}")
-    sub_condition_output = sub_condition_unit_factory(
-        priority, sub_condition_dict, mode=logic_mode
-    )
+    sub_condition_output = sub_condition_unit_factory(priority, sub_condition_dict, mode=logic_mode)
     return sub_condition_output
 
 
@@ -102,9 +102,7 @@ def sub_condition_unit_factory(priority: int, sub_condition_dict: dict = None, m
     elif condition_type == "special":
         return SpecialSubUnit(priority, sub_condition_dict, mode)
     else:
-        raise ValueError(
-            f"special类的APL解析，是当前尚未开发的功能！优先级为{priority}，"
-        )
+        raise ValueError(f"special类的APL解析，是当前尚未开发的功能！优先级为{priority}，")
 
 
 class SimpleUnitForForceAdd(APLUnit):
@@ -112,13 +110,9 @@ class SimpleUnitForForceAdd(APLUnit):
         super().__init__(sim_instance=sim_instance)
 
         for condition_str in condition_list:
-            self.sub_conditions_unit_list.append(
-                spawn_sub_condition(self.priority, condition_str)
-            )
+            self.sub_conditions_unit_list.append(spawn_sub_condition(self.priority, condition_str))
 
-    def check_all_sub_units(
-        self, found_char_dict, game_state, sim_instance: "Simulator", **kwargs
-    ):
+    def check_all_sub_units(self, found_char_dict, game_state, sim_instance: "Simulator", **kwargs):
         if self.sim_instance is None:
             self.sim_instance = sim_instance
 
@@ -128,9 +122,7 @@ class SimpleUnitForForceAdd(APLUnit):
             return True, result_box
         for sub_units in self.sub_conditions_unit_list:
             if not isinstance(sub_units, BaseSubConditionUnit):
-                raise TypeError(
-                    "ActionAPLUnit类的sub_conditions_unit_list中的对象构建不正确！"
-                )
+                raise TypeError("ActionAPLUnit类的sub_conditions_unit_list中的对象构建不正确！")
             result = sub_units.check_myself(
                 found_char_dict, game_state, tick=tick, sim_instance=sim_instance
             )
@@ -142,7 +134,9 @@ class SimpleUnitForForceAdd(APLUnit):
 
 
 class ExprNode:
-    def __init__(self, operator=None, left=None, right=None, sub_condition: "BaseSubConditionUnit" = None):
+    def __init__(
+        self, operator=None, left=None, right=None, sub_condition: "BaseSubConditionUnit" = None
+    ):
         """
         - operator: "and", "or"（逻辑运算符）
         - left/right: ExprNode 对象

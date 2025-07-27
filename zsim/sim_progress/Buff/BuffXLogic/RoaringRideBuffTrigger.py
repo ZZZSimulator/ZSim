@@ -21,9 +21,7 @@ class RoaringRideBuffTrigger(Buff.BuffLogic):
         self.record: RoaringRideBuffTriggerRecord | None = None
 
     def get_prepared(self, **kwargs):
-        return check_preparation(
-            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
-        )
+        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
 
     def check_record_module(self):
         if self.equipper is None:
@@ -57,20 +55,14 @@ class RoaringRideBuffTrigger(Buff.BuffLogic):
         rng: RNG = self.buff_instance.sim_instance.rng_instance
         normalized_value = rng.random_float()
         if 0 <= normalized_value < 1 / 3:
-            buff_add_strategy(
-                self.record.buff_map[0], sim_instance=self.buff_instance.sim_instance
-            )
+            buff_add_strategy(self.record.buff_map[0], sim_instance=self.buff_instance.sim_instance)
             # print(f'轰鸣座驾触发了攻击力Buff')
         elif 1 / 3 <= normalized_value < 2 / 3:
-            buff_add_strategy(
-                self.record.buff_map[1], sim_instance=self.buff_instance.sim_instance
-            )
+            buff_add_strategy(self.record.buff_map[1], sim_instance=self.buff_instance.sim_instance)
             # print(f'轰鸣座驾触发了精通Buff')
         else:
             # print(f'轰鸣座驾触发了积蓄效率Buff')
-            buff_add_strategy(
-                self.record.buff_map[2], sim_instance=self.buff_instance.sim_instance
-            )
+            buff_add_strategy(self.record.buff_map[2], sim_instance=self.buff_instance.sim_instance)
 
         self.buff_instance.simple_start(
             find_tick(sim_instance=self.buff_instance.sim_instance),

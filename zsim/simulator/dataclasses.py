@@ -2,14 +2,14 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Literal
 
 from zsim.define import saved_char_config
-from zsim.sim_progress import Buff
+from zsim.models.session.session_run import CharConfig, CommonCfg
+from zsim.sim_progress.Buff import Buff
 from zsim.sim_progress.Buff.Buff0Manager import Buff0ManagerClass, change_name_box
 from zsim.sim_progress.Character import Character, character_factory
 from zsim.sim_progress.data_struct import ActionStack
 from zsim.sim_progress.Enemy import Enemy
-from zsim.models.session.session_run import CommonCfg, CharConfig
-from .config_classes import SimulationConfig as SimCfg
 
+from .config_classes import SimulationConfig as SimCfg
 
 if TYPE_CHECKING:
     from .simulator_class import Simulator
@@ -103,13 +103,16 @@ class InitData:
 
     def __adjust_weapon_with_sim_cfg(self):
         # 根据sim_cfg调整武器配置
-        if self.sim_cfg is not None and self.sim_cfg.func == "weapon":
+        from zsim.models.session.session_run import ExecWeaponCfg
+
+        if self.sim_cfg is not None and isinstance(self.sim_cfg, ExecWeaponCfg):
+            if self.sim_cfg.adjust_char is None:
+                return
             adjust_char_index = (
                 self.sim_cfg.adjust_char - 1
             )  # UI从1开始计数，这里需要转换为0开始的索引
             if 0 <= adjust_char_index < len(self.name_box):
                 char_dict_to_adjust = getattr(self, f"char_{adjust_char_index}")
-
                 # 更新武器名称和精炼等级
                 char_dict_to_adjust["weapon"] = self.sim_cfg.weapon_name
                 char_dict_to_adjust["weapon_level"] = self.sim_cfg.weapon_level
@@ -132,7 +135,13 @@ class CharacterData:
                 sim_cfg = None
                 if self.sim_cfg is not None and self.sim_cfg.adjust_char == i + 1:
                     # UI那边不是从0开始数数的
-                    sim_cfg = self.sim_cfg
+                    from zsim.models.session.session_run import ExecAttrCurveCfg, ExecWeaponCfg
+
+                    if isinstance(self.sim_cfg, (ExecAttrCurveCfg, ExecWeaponCfg)):
+                        sim_cfg = self.sim_cfg
+                    else:
+                        # 如果类型不匹配，使用None
+                        sim_cfg = None
                 # 创建CharConfig对象
                 char_config = CharConfig(**char_dict)
                 char_obj: Character = character_factory(char_config, sim_cfg=sim_cfg)
@@ -142,11 +151,37 @@ class CharacterData:
                 i += 1
         self.char_obj_dict = {char_obj.NAME: char_obj for char_obj in self.char_obj_list}
 
+    def find_next_char_obj(self, char_now: int, direction: int = 1) -> Character:
+        """输入查找起点（CID），以及查找方向，返回下一位角色"""
+        __index = 0
+        for char_obj in self.char_obj_list:
+            __index += 1
+            if char_now != char_obj.CID:
+                continue
+            if direction == 1:
+                """顺向查找"""
+                if __index + 1 == len(self.char_obj_list):
+                    return self.char_obj_list[0]
+                else:
+                    return self.char_obj_list[__index]
+            elif direction == -1:
+                """逆向查找"""
+                if __index == 0:
+                    return self.char_obj_list[-1]
+                else:
+                    return self.char_obj_list[__index - 1]
+            else:
+                raise ValueError("direction参数错误！")
+        else:
+            raise ValueError(f"未找到CID为{char_now}的角色！")
+
     def reset_myself(self):
         for obj in self.char_obj_list:
             obj.reset_myself()
 
-    def find_char_obj(self, CID: int = None, char_name: str = None) -> Character | None:
+    def find_char_obj(
+        self, CID: int | None = None, char_name: str | None = None
+    ) -> Character | None:
         if not CID and not char_name:
             raise ValueError("查找角色时，必须提供CID或是char_name中的一个！")
         for char_obj in self.char_obj_list:
@@ -173,7 +208,7 @@ class LoadData:
     all_name_order_box: dict = field(default_factory=dict)
     preload_tick_stamp: dict = field(default_factory=dict)
     char_obj_dict: dict | None = None
-    sim_instance: "Simulator" = None
+    sim_instance: "Simulator | None" = None
 
     def __post_init__(self):
         self.buff_0_manager = Buff0ManagerClass.Buff0Manager(
@@ -214,15 +249,15 @@ class ScheduleData:
     char_obj_list: list[Character]
     event_list: list = field(default_factory=list)
     # judge_required_info_dict = {"skill_node": None}
-    loading_buff: dict[str, list[Buff.Buff]] = field(default_factory=dict)
-    dynamic_buff: dict[str, list[Buff.Buff]] = field(default_factory=dict)
-    sim_instance: "Simulator" = None
+    loading_buff: dict[str, list[Buff]] = field(default_factory=dict)
+    dynamic_buff: dict[str, list[Buff]] = field(default_factory=dict)
+    sim_instance: "Simulator | None" = None
     processed_event: bool = False
     # 记录已处理的事件次数, 给外部判断是否有事件发生, 便于前端跳过没有 event 的帧的 log
     # 实际执行时, 当 event 是 Preload.SkillNode | LoadingMission 时, 大多数情况是没有 log 输出的, 所以仍然会输出大量空帧.
     # 10800 帧的情况目前可以只打印 1500 条左右的 log. 但是打印的帧数字不规律, 可能看起来有点怪.
     processed_times: int = field(default=0)
-    processe_state_update_tick: int = field(default=0)      # process_state的更新时间
+    processe_state_update_tick: int = field(default=0)  # process_state的更新时间
 
     def reset_myself(self):
         """重置ScheduleData的动态数据！"""
@@ -251,8 +286,8 @@ class ScheduleData:
 @dataclass
 class GlobalStats:
     name_box: list
-    DYNAMIC_BUFF_DICT: dict[str, list[Buff.Buff]] = field(default_factory=dict)
-    sim_instance: "Simulator" = None
+    DYNAMIC_BUFF_DICT: dict[str, list[Buff]] = field(default_factory=dict)
+    sim_instance: "Simulator | None" = None
 
     def __post_init__(self):
         for name in self.name_box + ["enemy"]:

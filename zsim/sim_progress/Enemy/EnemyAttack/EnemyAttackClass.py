@@ -45,9 +45,7 @@ class EnemyAttackMethod:
             self.attack_skill_tag = None
         elif ENEMY_REGULAR_ATTACK:
             self.random_attack = False
-            self.attack_skill_tag = EnemyAttackAction(
-                ID=int(method_file.loc[ID]["action_set"])
-            ).tag
+            self.attack_skill_tag = EnemyAttackAction(ID=int(method_file.loc[ID]["action_set"])).tag
         else:
             self.random_attack = False
             self.attack_skill_tag = None
@@ -69,15 +67,13 @@ class EnemyAttackMethod:
             action_rate = float(rate_list[i])
             enemy_attack_action = EnemyAttackAction(int(action_id))
             self.action_set[action_rate] = enemy_attack_action
+            if ENEMY_ATTACK_REPORT:
+                print(f"【进攻交互系统初始化】：为敌人添加进攻动作：{enemy_attack_action}")
+        if ENEMY_ATTACK_REPORT:
+            print("【进攻交互系统初始化】：敌人进攻动作初始化完毕！")
             print(
-                f"【进攻交互系统初始化】：为敌人添加进攻动作：{enemy_attack_action}"
-            ) if ENEMY_ATTACK_REPORT else None
-        print(
-            "【进攻交互系统初始化】：敌人进攻动作初始化完毕！"
-        ) if ENEMY_ATTACK_REPORT else None
-        print(
-            f"【进攻交互系统初始化】：敌人（{self.enemy.name}）共拥有{len(self.action_set)}个进攻动作，每次进攻决策的冷却时间为：{self.rest_tick}tick！"
-        ) if ENEMY_ATTACK_REPORT else None
+                f"【进攻交互系统初始化】：敌人（{self.enemy.name}）共拥有{len(self.action_set)}个进攻动作，每次进攻决策的冷却时间为：{self.rest_tick}tick！"
+            )
         if not self.active and ENEMY_ATTACK_REPORT:
             print(
                 "【进攻交互系统初始化】：由于在配置文件中并未开启任意一种进攻策略，所以在本次模拟中敌人不会进攻！"
@@ -90,11 +86,11 @@ class EnemyAttackMethod:
                 self.ready = True
         return self.ready
 
-    def probablity_driven_action_selection(
-        self, current_tick: int
-    ) -> "EnemyAttackAction | None":
+    def probablity_driven_action_selection(self, current_tick: int) -> "EnemyAttackAction | None":
         """根据概率选择一个进攻动作"""
-        cumulative_probability = 0  # 累积概率，这个数字没有实际意义，只是为了方便计算，每次函数运行时都初始化为0
+        cumulative_probability = (
+            0  # 累积概率，这个数字没有实际意义，只是为了方便计算，每次函数运行时都初始化为0
+        )
         rng: RNG = self.enemy.sim_instance.rng_instance
         normalized_value = rng.random_float()
         if not self.ready_check(current_tick):
@@ -110,17 +106,17 @@ class EnemyAttackMethod:
             """如果循环结束，还没有选中任何一个动作，说明无事发生，返回None"""
             return None
 
-    def time_anchored_action_selection(
-        self, current_tick: int
-    ) -> "EnemyAttackAction | None":
+    def time_anchored_action_selection(self, current_tick: int) -> "EnemyAttackAction | None":
         """以固定的时间间隔选择固定的进攻动作"""
         if self.ready_check(current_tick=current_tick):
             self.last_start_tick = current_tick
             self.last_end_tick = current_tick + self.action_set[1].duration
             self.ready = False
-            print(
-                f"{self.enemy.name}（ID：{self.enemy.index_ID}）抛出进攻动作{self.action_set[1].tag}"
-            ) if ENEMY_ATTACK_REPORT else None
+            if ENEMY_ATTACK_REPORT:
+                self.enemy.sim_instance.schedule_data.change_process_state()
+                print(
+                    f"{self.enemy.name}（ID：{self.enemy.index_ID}）抛出进攻动作{self.action_set[1].tag}"
+                )
             return self.action_set[1]
         else:
             return None
@@ -159,18 +155,11 @@ class EnemyAttackAction:
             self.hit_list = ast.literal_eval(hit_list_str)
 
         if len(self.hit_list) != self.hit:
-            raise ValueError(
-                f"{self.tag}的命中数量与命中时间列表长度不符，请检查配置信息！"
-            )
+            raise ValueError(f"{self.tag}的命中数量与命中时间列表长度不符，请检查配置信息！")
 
         self.parryable = bool(self.action_dict.get("blockable", True))  # 是否可以招架
-        self.interruption_level_list = self.action_dict.get(
-            "interruption_level_list", None
-        )
-        if (
-            self.interruption_level_list is None
-            or self.interruption_level_list is np.nan
-        ):
+        self.interruption_level_list = self.action_dict.get("interruption_level_list", None)
+        if self.interruption_level_list is None or self.interruption_level_list is np.nan:
             self.interruption_level_list = [1] * self.hit
         else:
             self.interruption_level_list = self.interruption_level_list.split("|")
@@ -192,11 +181,7 @@ class EnemyAttackAction:
         if not self.hit_list:
             raise ValueError("hit_list为空，无法获取命中点！")
         hit_tick = self.hit_list[hit_count - 1]
-        Ta = (
-            ENEMY_ATK_PARAMETER_DICT.get("Taction")
-            if another_ta is None
-            else another_ta
-        )
+        Ta = ENEMY_ATK_PARAMETER_DICT.get("Taction") if another_ta is None else another_ta
         if hit_tick < Ta:
             raise ValueError(
                 f"{self.tag}的第一个命中点({hit_tick})小于响应动作持续时间({Ta})，请检查数据库！"

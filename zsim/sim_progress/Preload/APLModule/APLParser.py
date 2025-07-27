@@ -77,9 +77,7 @@ class APLParser:
                         "CID": CID,
                         "type": apl_type.strip(),
                         "action": action_name.strip(),
-                        "conditions": [
-                            cond.strip() for cond in conditions if cond.strip()
-                        ],
+                        "conditions": [cond.strip() for cond in conditions if cond.strip()],
                         "conditions_tree": logic_tree,  # dict表示的逻辑树结构
                         "priority": priority,
                     }
@@ -131,12 +129,12 @@ def renumber_priorities(data_list):
 
 def tokenize(expression):
     # 括号、and、or 分割，保留分隔符
-    return re.findall(r'\(|\)|\band\b|\bor\b|[^()\s]+', expression)
+    return re.findall(r"\(|\)|\band\b|\bor\b|[^()\s]+", expression)
 
 
 def extract_conditions(tokens):
     # 提取子条件单元（非运算符和括号）
-    return sorted(set(t for t in tokens if t not in ('and', 'or', '(', ')')))
+    return sorted(set(t for t in tokens if t not in ("and", "or", "(", ")")))
 
 
 def parse_expression(tokens):
@@ -147,9 +145,9 @@ def parse_expression(tokens):
     def parse_factor(index):
         """解析基本因子：括号或单个条件"""
         token = tokens[index]
-        if token == '(':
+        if token == "(":
             subtree, index = parse_or(index + 1)
-            if tokens[index] != ')':
+            if tokens[index] != ")":
                 raise ValueError("缺失右括号")
             return subtree, index + 1
         else:
@@ -159,19 +157,19 @@ def parse_expression(tokens):
         """解析 and 级别表达式"""
         left, index = parse_factor(index)
         items = [left]
-        while index < len(tokens) and tokens[index] == 'and':
+        while index < len(tokens) and tokens[index] == "and":
             right, index = parse_factor(index + 1)
             items.append(right)
-        return {'and': items} if len(items) > 1 else items[0], index
+        return {"and": items} if len(items) > 1 else items[0], index
 
     def parse_or(index):
         """解析 or 级别表达式"""
         left, index = parse_and(index)
         items = [left]
-        while index < len(tokens) and tokens[index] == 'or':
+        while index < len(tokens) and tokens[index] == "or":
             right, index = parse_and(index + 1)
             items.append(right)
-        return {'or': items} if len(items) > 1 else items[0], index
+        return {"or": items} if len(items) > 1 else items[0], index
 
     tree, final_index = parse_or(0)  # 从最低优先级开始解析
     if final_index != len(tokens):

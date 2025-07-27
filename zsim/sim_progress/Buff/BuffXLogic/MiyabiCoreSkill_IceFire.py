@@ -3,6 +3,10 @@ from zsim.sim_progress.ScheduledEvent import Calculator
 from zsim.sim_progress.ScheduledEvent.Calculator import MultiplierData
 
 from .. import Buff, JudgeTools, check_preparation
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from zsim.sim_progress.Preload import SkillNode
 
 
 class MiyabiCoreSkillIF:
@@ -25,15 +29,13 @@ class MiyabiCoreSkill_IceFire(Buff.BuffLogic):
         super().__init__(buff_instance)
         self.buff_instance: Buff = buff_instance
         self.xjudge = self.special_judge_logic
-        self.xexit = self.special_exit_logic
         self.xhit = self.special_hit_logic
+        self.xexit = self.special_exit_logic
         self.buff_0 = None
         self.record = None
 
     def get_prepared(self, **kwargs):
-        return check_preparation(
-            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
-        )
+        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
 
     def check_record_module(self):
         if self.buff_0 is None:
@@ -51,13 +53,15 @@ class MiyabiCoreSkill_IceFire(Buff.BuffLogic):
         两者都通过，才会return True
         """
         self.check_record_module()
-        self.get_prepared(enemy=1, action_stack=1)
-
+        self.get_prepared(char_CID=1091, enemy=1, action_stack=1)
         enemy = self.record.enemy
-        mission_now = self.record.action_stack.peek()
         debuff_list = enemy.dynamic.dynamic_debuff_list
-
-        if mission_now.mission_node.element_type != 5:
+        skill_node: "SkillNode" = kwargs.get("skill_node")
+        if skill_node is None:
+            return False
+        if skill_node.char_name != self.record.char.NAME:
+            return False
+        if skill_node.skill.element_type != 5:
             return False
         else:
             for debuff in debuff_list:
@@ -88,9 +92,7 @@ class MiyabiCoreSkill_IceFire(Buff.BuffLogic):
         self.record.last_frostbite = frostbite_now
         # print(f'当前tick，冰焰退出情况：{result}')
         if result:
-            event_list = JudgeTools.find_event_list(
-                sim_instance=self.buff_instance.sim_instance
-            )
+            event_list = JudgeTools.find_event_list(sim_instance=self.buff_instance.sim_instance)
             skill_obj = self.record.char.skills_dict["1091_Core_Passive"]
             skill_node = Preload.SkillNode(skill_obj, 0)
             event_list.append(skill_node)
@@ -104,9 +106,7 @@ class MiyabiCoreSkill_IceFire(Buff.BuffLogic):
         但是如果buff判定不通过，那么烈霜伤害，该buff层数的变动就没有实际意义，
         """
         self.check_record_module()
-        self.get_prepared(
-            char_CID=1091, enemy=1, dynamic_buff_list=1, sub_exist_buff_dict=1
-        )
+        self.get_prepared(char_CID=1091, enemy=1, dynamic_buff_list=1, sub_exist_buff_dict=1)
         enemy = self.record.enemy
         dynamic_buff = self.record.dynamic_buff_list
         tick_now = JudgeTools.find_tick(sim_instance=self.buff_instance.sim_instance)
