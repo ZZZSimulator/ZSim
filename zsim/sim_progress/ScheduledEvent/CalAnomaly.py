@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 import numpy as np
 
@@ -6,6 +6,8 @@ from zsim.define import ElementType
 from zsim.sim_progress.anomaly_bar import AnomalyBar
 from zsim.sim_progress.anomaly_bar.CopyAnomalyForOutput import (
     DirgeOfDestinyAnomaly as Abloom,
+)
+from zsim.sim_progress.anomaly_bar.CopyAnomalyForOutput import (
     Disorder,
     PolarityDisorder,
 )
@@ -17,6 +19,8 @@ from .Calculator import Calculator as Cal
 from .Calculator import MultiplierData as MulData
 
 if TYPE_CHECKING:
+    from zsim.sim_progress.Buff import Buff
+    from zsim.sim_progress.Character import Character
     from zsim.simulator.simulator_class import Simulator
 
 
@@ -25,7 +29,7 @@ class CalAnomaly:
         self,
         anomaly_obj: AnomalyBar,
         enemy_obj: Enemy,
-        dynamic_buff: dict,
+        dynamic_buff: dict[str, list["Buff"]],
         sim_instance: "Simulator",
     ):
         """
@@ -38,7 +42,7 @@ class CalAnomaly:
         """
         self.sim_instance = sim_instance
         self.enemy_obj = enemy_obj
-        self.anomaly_obj = anomaly_obj
+        self.anomaly_obj: AnomalyBar = anomaly_obj
         self.dynamic_buff = dynamic_buff
         snapshot: tuple[ElementType, np.ndarray] = (
             self.anomaly_obj.element_type,
@@ -51,14 +55,15 @@ class CalAnomaly:
             print(
                 f"【CalAnomaly Warnning】:检测到异常实例(属性类型：{anomaly_obj.element_type}）的激活源为空，改异常实例将无法享受Buff加成。"
             )
+            raise NotImplementedError
         else:
-            char_obj = anomaly_obj.activated_by.skill.char_obj
+            char_obj: "Character | None" = anomaly_obj.activated_by.skill.char_obj
         # 根据动态buff读取怪物面板
 
         self.data: MulData = MulData(
             enemy_obj=self.enemy_obj,
             dynamic_buff=self.dynamic_buff,
-            judge_node=anomaly_obj,
+            judge_node=anomaly_obj,  # type: ignore
             character_obj=char_obj,
         )
         # 虚拟角色等级
@@ -100,7 +105,7 @@ class CalAnomaly:
             stun_vulnerability,
             special_mul,
             imp_mul,
-            stun_mul
+            stun_mul,
         )
 
     @staticmethod
@@ -203,7 +208,9 @@ class CalAnomaly:
     def cal_anomaly_dmg(self) -> np.float64:
         """计算异常伤害期望"""
 
-        return np.float64(np.prod(self.final_multipliers)/(self.dmg_sp[0,9] * self.dmg_sp[0,10]))
+        return np.float64(
+            np.prod(self.final_multipliers) / (self.dmg_sp[0, 9] * self.dmg_sp[0, 10])
+        )
 
 
 class CalDisorder(CalAnomaly):
@@ -211,7 +218,7 @@ class CalDisorder(CalAnomaly):
         self,
         disorder_obj: Disorder,
         enemy_obj: Enemy,
-        dynamic_buff: dict,
+        dynamic_buff: dict[str, list["Buff"]],
         sim_instance: "Simulator",
     ):
         """
@@ -251,7 +258,9 @@ class CalDisorder(CalAnomaly):
             case _:
                 assert False, f"Invalid Element Type {self.element_type}"
         # 计算紊乱基础倍率增幅
-        disorder_basic_mul_map = self.data.dynamic.disorder_basic_mul_map
+        disorder_basic_mul_map: dict[ElementType | Literal["all"], float] = (
+            self.data.dynamic.disorder_basic_mul_map
+        )
         disorder_base_dmg *= 1 + (
             disorder_basic_mul_map[self.element_type] + disorder_basic_mul_map["all"]
         )
@@ -263,8 +272,8 @@ class CalDisorder(CalAnomaly):
 
         异常额外增伤区 = 1 + 对应属性异常额外增伤
         """
-        map = self.data.dynamic.ano_extra_bonus
-        return 1 + map[-1]
+        map: dict[ElementType | Literal["all", -1], float] = self.data.dynamic.ano_extra_bonus
+        return np.float64(1 + map[-1])
 
     def cal_disorder_stun(self) -> np.float64:
         imp = self.final_multipliers[9]
@@ -283,7 +292,7 @@ class CalPolarityDisorder(CalDisorder):
         self,
         disorder_obj: PolarityDisorder,
         enemy_obj: Enemy,
-        dynamic_buff: dict,
+        dynamic_buff: dict[str, list["Buff"]],
         sim_instance: "Simulator",
     ):
         super().__init__(disorder_obj, enemy_obj, dynamic_buff, sim_instance=sim_instance)
@@ -297,7 +306,7 @@ class CalPolarityDisorder(CalDisorder):
         ) + (ap * disorder_obj.additional_dmg_ap_ratio)
 
     def __find_yanagi(self) -> Yanagi | None:
-        yanagi_obj: Yanagi | None = self.sim_instance.char_data.char_obj_dict.get("柳", None)
+        yanagi_obj: Yanagi | None = self.sim_instance.char_data.char_obj_dict.get("柳", None)  # type: ignore
         if yanagi_obj is None:
             assert False, "没柳你哪来的极性紊乱"
         return yanagi_obj
@@ -308,7 +317,7 @@ class CalAbloom(CalAnomaly):
         self,
         abloom_obj: Abloom,
         enemy_obj: Enemy,
-        dynamic_buff: dict,
+        dynamic_buff: dict[str, list["Buff"]],
         sim_instance: "Simulator",
     ):
         super().__init__(abloom_obj, enemy_obj, dynamic_buff, sim_instance=sim_instance)

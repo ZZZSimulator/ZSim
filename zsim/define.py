@@ -96,7 +96,7 @@ ENEMY_ATK_PARAMETER_DICT: dict[str, int | float | bool] = {
     "Taction": 30,  # 角色弹刀与闪避动作的持续时间，不开放给用户更改。
     "Tbase": 273,  # 人类反应时间大数据中位数，单位ms，不可更改！
     "PlayerLevel": _config["apl_mode"]["player_level"],  # 玩家水平系数，由用户自己填写。
-    "PerfectPlayer": _config["apl_mode"].get("perfect_player", True),       # 是否是完美玩家（默认是）
+    "PerfectPlayer": _config["apl_mode"].get("perfect_player", True),  # 是否是完美玩家（默认是）
     "theta": 90,  # θ，人类胜利最小反应时间（神经传导极限），为90ms，不可更改！
     "c": 0.5,  # 波动调节系数，暂取0.5，不开放给用户更改。
     "delta": 30,  # 玩家水平系数所导致的中位数波动单位，暂时取30ms，不开放给用户更改。
@@ -104,9 +104,7 @@ ENEMY_ATK_PARAMETER_DICT: dict[str, int | float | bool] = {
 PARRY_BASE_PARAMETERS: dict[str, int | float] = {
     "ChainParryActionTimeCost": 10,  # 连续招架动作的时间消耗
 }
-CHAR_PARRY_STRATEGY_MAP: dict = {
-    1411: "1411_Assault_Aid_A"
-}
+CHAR_PARRY_STRATEGY_MAP: dict = {1411: "1411_Assault_Aid_A"}
 
 # debug参数，用于检查APL在窗口期间的想法
 APL_THOUGHT_CHECK: bool = _config["apl_mode"].get("apl_thought_check", False)

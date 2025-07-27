@@ -59,10 +59,12 @@ class Jane(Character):
                 self.salchow_jump -= 1
                 self.__check_salchow_jump()
 
-            labels = node.labels if node.labels is not None else {}
-            passion_get = labels.get("passion_get", 0)
-            passion_consume = labels.get("passion_consume", 0)
-            passion_direct_add = labels.get("passion_direct_add", 0)
+            labels: dict[str, list[str] | str | int | float] = (
+                node.labels if node.labels is not None else {}
+            )
+            passion_get: float = float(labels.get("passion_get", 0))  # type: ignore
+            passion_consume: float = float(labels.get("passion_consume", 0))  # type: ignore
+            passion_direct_add: float = float(labels.get("passion_direct_add", 0))  # type: ignore
             self.__passion_core(passion_get, passion_consume, passion_direct_add)
 
         # TODO 关于萨霍夫跳的第一段（1301_SNA_1）的拆分问题：
@@ -91,7 +93,7 @@ class Jane(Character):
     def get_resources(self) -> tuple[str, float]:
         return "狂热心流", self.passion_stream
 
-    def get_special_stats(self, *args, **kwargs) -> dict[str, int | float | bool]:
+    def get_special_stats(self, *args, **kwargs) -> dict[str | None, object | None]:
         """获取简的特殊状态"""
         return {
             "狂热心流": self.passion_stream,

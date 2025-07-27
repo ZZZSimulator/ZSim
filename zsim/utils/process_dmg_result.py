@@ -1,12 +1,11 @@
 import json
 import os
 
-import plotly.express as px
 import polars as pl
 from zsim.define import ANOMALY_MAPPING
 from zsim.sim_progress.Character.skill_class import lookup_name_or_cid
 
-from .constants import element_mapping, results_dir, SKILL_TAG_MAPPING
+from .constants import results_dir, SKILL_TAG_MAPPING
 
 
 def _load_dmg_data(rid: int | str) -> pl.DataFrame | None:

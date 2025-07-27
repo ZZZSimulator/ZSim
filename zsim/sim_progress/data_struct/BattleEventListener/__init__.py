@@ -1,7 +1,9 @@
 import importlib
 from collections import defaultdict
 from typing import TYPE_CHECKING
+
 from zsim.models.event_enums import ListenerBroadcastSignal as LBS
+
 from .BaseListenerClass import BaseListener
 
 if TYPE_CHECKING:
@@ -15,7 +17,7 @@ class ListenerManger:
 
     def __init__(self, sim_instance: "Simulator"):
         self.sim_instance = sim_instance
-        self._listeners_group: defaultdict[str | int : dict[str, BaseListener]] = defaultdict(dict)
+        self._listeners_group: defaultdict[str | int, dict[str, BaseListener]] = defaultdict(dict)
         self.__listener_map: dict[str, str] = {
             "Hugo_1": "HugoCorePassiveBuffListener",
             "Hormone_Punk_1": "HormonePunkListener",
@@ -29,16 +31,21 @@ class ListenerManger:
 
     def add_listener(self, listener_owner: "Character | Enemy | None", listener: BaseListener):
         """添加一个监听器"""
-        owner_type = type(listener_owner).__bases__[0].__name__
-        if owner_type == "Character":
+        if listener_owner is None or listener.listener_id is None:
+            raise TypeError("监听器所有者或监听器ID不能为空")
+        from zsim.sim_progress.Character.character import Character
+
+        if isinstance(listener_owner, Character):
             self._listeners_group[listener_owner.CID][listener.listener_id] = listener
-        elif owner_type == "Enemy":
+        elif isinstance(listener_owner, Enemy):
             self._listeners_group["enemy"][listener.listener_id] = listener
         else:
             raise TypeError(f"无法解析的监听器所有者类型: {type(listener_owner)}")
 
-    def remove_listener(self, listener_owner, listener: BaseListener):
+    def remove_listener(self, listener_owner: "Character | Enemy | None", listener: BaseListener):
         """移除一个监听器"""
+        if listener_owner is None or listener.listener_id is None:
+            raise TypeError("监听器所有者或监听器ID不能为空")
         if isinstance(listener_owner, Character):
             listeners_group = self._listeners_group[listener_owner.CID]
         elif isinstance(listener_owner, Enemy):
@@ -57,8 +64,8 @@ class ListenerManger:
     def listener_factory(
         self,
         listener_owner: "Character | Enemy | None",
-        initiate_signal: str = None,
-        sim_instance: "Simulator" = None,
+        initiate_signal: str | None = None,
+        sim_instance: "Simulator | None" = None,
     ):
         """初始化监听器的工厂函数"""
         if initiate_signal is None:
@@ -84,10 +91,12 @@ class ListenerManger:
         self, listener_owner: "Character | Enemy | None", listener_id: str
     ) -> BaseListener | None:
         """获取指定监听器"""
-        owner_type = type(listener_owner).__bases__[0].__name__
-        if owner_type == "Character":
+        if listener_owner is None:
+            raise TypeError("监听器所有者不能为空")
+
+        if isinstance(listener_owner, Character):
             listener = self._listeners_group[listener_owner.CID].get(listener_id, None)
-        elif owner_type == "Enemy":
+        elif isinstance(listener_owner, Enemy):
             listener = self._listeners_group["enemy"].get(listener_id, None)
         else:
             raise TypeError(f"无法解析的监听器所有者类型: {type(listener_owner)}")
@@ -97,14 +106,10 @@ class ListenerManger:
             )
         return listener
 
-    def __str__(self):
-        print("==========监听器组的现状如下==========")
+    def __str__(self) -> str:
+        output = "==========监听器组的现状如下==========\n"
         for owner_id, owner_dict in self._listeners_group.items():
-            print(f"监听器组子集 ID: {owner_id}")
-            print(f"{['监听器' + __key + '  |  ' for __key in owner_dict.keys()]}")
-        print("===================================")
-
-
-#
-# # import时，就创建一个单例
-# listener_manager_instance = ListenerManger()
+            output += f"监听器组子集 ID: {owner_id}\n"
+            output += f"{['监听器' + __key + '  |  ' for __key in owner_dict.keys()]}\n"
+        output += "==================================="
+        return output

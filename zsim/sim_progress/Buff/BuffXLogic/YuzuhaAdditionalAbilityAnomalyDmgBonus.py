@@ -55,4 +55,6 @@ class YuzuhaAdditionalAbilityAnomalyDmgBonus(Buff.BuffLogic):
         self.buff_instance.update_to_buff_0(buff_0=self.buff_0)
         if YUZUHA_REPORT:
             self.buff_instance.sim_instance.schedule_data.change_process_state()
-            print(f"【柚叶组队被动】检测到【狸之愿】激活，当前柚叶的异常掌控为{am:.2f}点，共计提供{count * 0.2:.2f}%的异常积蓄效率以及属性异常/紊乱增伤")
+            print(
+                f"【柚叶组队被动】检测到【狸之愿】激活，当前柚叶的异常掌控为{am:.2f}点，共计提供{count * 0.2:.2f}%的异常积蓄效率以及属性异常/紊乱增伤"
+            )

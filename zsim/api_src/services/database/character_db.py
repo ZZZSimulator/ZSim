@@ -1,6 +1,5 @@
-import json
 import aiosqlite
-from typing import Any, List, Optional
+from typing import Any, List
 from zsim.define import SQLITE_PATH
 from zsim.models.character.character_config import CharacterConfig
 from datetime import datetime

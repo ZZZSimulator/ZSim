@@ -104,7 +104,7 @@ class SwapCancelValidateEngine(BasePreloadEngine):
         return True
 
     def _validate_char_avaliable(
-        self, skill_tag: str, apl_skill_node: SkillNode, tick: int
+        self, skill_tag: str, apl_skill_node: SkillNode | None, tick: int
     ) -> bool:
         """角色是否可以获取的判定"""
         cid = int(skill_tag.split("_")[0])
@@ -135,7 +135,11 @@ class SwapCancelValidateEngine(BasePreloadEngine):
                 """对于衔接于招架之后的击退，要立即放行"""
                 return True
             """正在进行的技能并非立即执行类型，而新的技能是立即执行类型，则放行"""
-            if apl_skill_node.skill.do_immediately and not char_latest_node.skill.do_immediately:
+            if (
+                apl_skill_node is not None
+                and apl_skill_node.skill.do_immediately
+                and not char_latest_node.skill.do_immediately
+            ):
                 return True
             else:
                 return False
@@ -186,7 +190,7 @@ class SwapCancelValidateEngine(BasePreloadEngine):
                     )
             return True
 
-    def _validate_qte_activation(self, tick: int, skill_node: SkillNode) -> bool:
+    def _validate_qte_activation(self, tick: int, skill_node: SkillNode | None) -> bool:
         """针对当前技能的QTE是否处于激活状态的检测，当检查到有角色正在释放QTE时，返回True"""
         # enemy = self.data.sim_instance.schedule_data.enemy
         # if enemy.qte_manager.qte_data.single_qte is not None:
@@ -196,7 +200,7 @@ class SwapCancelValidateEngine(BasePreloadEngine):
             if stack.peek() is None:
                 continue
             node_now = stack.peek()
-            if node_now.end_tick > tick:
+            if node_now is not None and node_now.end_tick > tick:
                 if "QTE" in node_now.skill_tag:
                     # FIXME: 由于伊芙琳的QTE是可以进行合轴的，这里一定会遇到Bug。
                     return True
@@ -204,7 +208,7 @@ class SwapCancelValidateEngine(BasePreloadEngine):
         else:
             return False
 
-    def _validate_wait_event(self, apl_skill_tag: str = None) -> bool:
+    def _validate_wait_event(self, apl_skill_tag: str | None = None) -> bool:
         """用于检测传入的apl动作是否为wait。"""
         if apl_skill_tag == "wait":
             return True
@@ -212,13 +216,15 @@ class SwapCancelValidateEngine(BasePreloadEngine):
             return False
 
     def _validate_char_task_conflict(
-        self, skill_tag: str, apl_skill_node: SkillNode, tick: int
+        self, skill_tag: str, apl_skill_node: SkillNode | None, tick: int
     ) -> bool:
         """
         针对角色自身的任务冲突的检测——尽管角色当前tick有空
         但并不意味着apl抛出的动作就可以直接执行。
         APL抛出的动作还需要和角色自身的任务进行冲突检测，相互竞争和覆盖。
         """
+        if apl_skill_node is None:
+            return True
         cid = int(skill_tag.split("_")[0])
         for _tuples in self.data.preload_action_list_before_confirm:
             _tuples: tuple[str, bool, int]
@@ -247,7 +253,10 @@ class SwapCancelValidateEngine(BasePreloadEngine):
                         skill_info = obj.get_skill_info(skill_tag=_tag, attr_info="labels")
                         if skill_info is None:
                             skill_info = {}
-                        if "additional_damage" not in skill_info.keys():
+                        if (
+                            not isinstance(skill_info, dict)
+                            or "additional_damage" not in skill_info
+                        ):
                             """但若当前tick被force_add 添加的skill_tag只是个普通技能，那么就要执行顶替。"""
                             print(
                                 f"即将添加的衔接技能：{_tuples}被{skill_tag}顶替！"
@@ -262,7 +271,9 @@ class SwapCancelValidateEngine(BasePreloadEngine):
         else:
             return True
 
-    def _validate_swap_state_check(self, tick: int, skill_tag: str, apl_skill_node: SkillNode):
+    def _validate_swap_state_check(
+        self, tick: int, skill_tag: str, apl_skill_node: SkillNode | None
+    ):
         """检查角色当前的状态是否允许当前技能进行合轴"""
         cid = int(skill_tag.split("_")[0])
         node_on_field: SkillNode | None = self.data.get_on_field_node(tick)
@@ -303,6 +314,8 @@ class SwapCancelValidateEngine(BasePreloadEngine):
                 """当前角色的切人CD已经冷却完毕，则直接放行。"""
                 return True
             else:
+                if apl_skill_node is None:
+                    return False
                 if (
                     any([_sub_tag in skill_tag for _sub_tag in ["QTE", "Aid", "knock_back"]])
                     or apl_skill_node.skill.do_immediately
@@ -387,10 +400,11 @@ class SwapCancelValidateEngine(BasePreloadEngine):
                 f"当前tick不满足{skill_tag}合轴所需的时间！"
             ) if skill_tag == SWAP_CANCEL_DEBUG_TARGET_SKILL else None
         elif mode == 5:
-            print(
-                f"{skill_tag}的上一个主动动作{last_actively_generated_node.skill.skill_tag}的APL策略为不要合轴！"
-            ) if not skill_compare else print(
-                f"{skill_tag}的上一个主动动作{last_actively_generated_node.skill.skill_tag}的APL策略为不要合轴！"
-            ) if skill_tag == SWAP_CANCEL_DEBUG_TARGET_SKILL else None
+            if last_actively_generated_node:
+                print(
+                    f"{skill_tag}的上一个主动动作{last_actively_generated_node.skill.skill_tag}的APL策略为不要合轴！"
+                ) if not skill_compare else print(
+                    f"{skill_tag}的上一个主动动作{last_actively_generated_node.skill.skill_tag}的APL策略为不要合轴！"
+                ) if skill_tag == SWAP_CANCEL_DEBUG_TARGET_SKILL else None
         else:
             raise ValueError("mode参数错误！")

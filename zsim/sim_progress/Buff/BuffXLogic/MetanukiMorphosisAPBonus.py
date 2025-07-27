@@ -1,5 +1,6 @@
 from .. import Buff, JudgeTools, check_preparation
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from zsim.sim_progress.Preload import SkillNode
 
@@ -20,9 +21,7 @@ class MetanukiMorphosisAPBonus(Buff.BuffLogic):
         self.record: MetanukiMorphosisAPBonusRecord | None = None
 
     def get_prepared(self, **kwargs):
-        return check_preparation(
-            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
-        )
+        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
 
     def check_record_module(self):
         if self.equipper is None:

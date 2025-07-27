@@ -3,13 +3,15 @@ APL数据库服务
 负责APL相关数据的数据库操作
 """
 
-import os
-import toml
-import uuid
-import aiosqlite
 import asyncio
-from typing import Dict, List, Any, Optional
-from zsim.define import DEFAULT_APL_DIR, COSTOM_APL_DIR, SQLITE_PATH
+import os
+import uuid
+from typing import Any, Dict, List, Optional
+
+import aiosqlite
+import toml
+
+from zsim.define import COSTOM_APL_DIR, DEFAULT_APL_DIR, SQLITE_PATH
 
 
 class APLDatabase:
@@ -240,11 +242,9 @@ class APLDatabase:
         # 解析file_id获取source和相对路径
         try:
             if file_id.startswith("default_"):
-                source = "default"
                 rel_path = file_id[len("default_") :]
                 base_dir = DEFAULT_APL_DIR
             elif file_id.startswith("custom_"):
-                source = "custom"
                 rel_path = file_id[len("custom_") :]
                 base_dir = COSTOM_APL_DIR
             else:
@@ -299,7 +299,6 @@ class APLDatabase:
                 # 不允许更新默认文件
                 return False
             elif file_id.startswith("custom_"):
-                source = "custom"
                 rel_path = file_id[len("custom_") :]
                 base_dir = COSTOM_APL_DIR
             else:
@@ -326,7 +325,6 @@ class APLDatabase:
                 # 不允许删除默认文件
                 return False
             elif file_id.startswith("custom_"):
-                source = "custom"
                 rel_path = file_id[len("custom_") :]
                 base_dir = COSTOM_APL_DIR
             else:

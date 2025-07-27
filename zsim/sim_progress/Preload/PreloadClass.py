@@ -1,23 +1,27 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Iterable
 
 from .PreloadDataClass import PreloadData
 from .PreloadStrategy import SwapCancelStrategy
 
 if TYPE_CHECKING:
+    from zsim.sim_progress.Character.skill_class import Skill
+    from zsim.simulator.dataclasses import LoadData
     from zsim.simulator.simulator_class import Simulator
 
 
 class PreloadClass:
     def __init__(
         self,
-        skills,
+        skills: Iterable["Skill"],
         *,
-        load_data,
+        load_data: "LoadData",
         apl_path: str | None = None,
-        sim_instance: "Simulator" = None,
+        sim_instance: "Simulator | None" = None,
         **kwargs,
     ):
-        self.preload_data = PreloadData(skills, load_data=load_data, sim_instance=sim_instance)
+        self.preload_data: "PreloadData" = PreloadData(
+            skills, load_data=load_data, sim_instance=sim_instance
+        )
         self.apl_path = apl_path
         self.strategy = SwapCancelStrategy(self.preload_data, apl_path)
 

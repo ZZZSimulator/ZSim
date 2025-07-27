@@ -1,12 +1,17 @@
 import threading
 import uuid
+from typing import TYPE_CHECKING, Iterable
 
 import pandas as pd
 
-from zsim.define import APL_MODE, ElementType, ELEMENT_TYPE_MAPPING as etm
+from zsim.define import APL_MODE, ElementType
+from zsim.define import ELEMENT_TYPE_MAPPING as ETM
 from zsim.sim_progress.Character.skill_class import Skill
 from zsim.sim_progress.data_struct.LinkedList import LinkedList
 from zsim.sim_progress.Report import report_to_log
+
+if TYPE_CHECKING:
+    from zsim.sim_progress.Load import LoadingMission
 
 
 class SkillNode:
@@ -56,7 +61,7 @@ class SkillNode:
                     tick_list.append(tick_key)
             self.tick_list = tick_list
 
-            self.loading_mission = None
+            self.loading_mission: "LoadingMission | None" = None
             self._effective_anomaly_buildup: bool = True
             self._element_type_change: ElementType | None = None
             self.force_qte_trigger: bool = False
@@ -70,15 +75,15 @@ class SkillNode:
             return self._element_type_change
 
     @property
-    def element_type_change(self):
+    def element_type_change(self) -> ElementType | None:
         """技能的染色"""
         return self._element_type_change
 
     @element_type_change.setter
-    def element_type_change(self, value: ElementType):
+    def element_type_change(self, value: ElementType | None):
         if self._element_type_change is not None:
             raise ValueError(
-                f"技能{self.skill_tag}已经被染色为【{etm.get(self.element_type_change)}】属性！不能被重复染色！"
+                f"技能{self.skill_tag}已经被染色为【{ETM.get(self._element_type_change)}】属性！不能被重复染色！"
             )
         self._element_type_change = value
 
@@ -103,7 +108,7 @@ class SkillNode:
         """判断当前skill_node是否拥有传入数值的skill_label"""
         if self.skill.labels is None:
             return False
-        if label_key in self.labels.keys():
+        if self.labels is not None and label_key in self.labels.keys():
             return True
         else:
             return False
@@ -136,7 +141,7 @@ class SkillNode:
             return tick - 1 < self.tick_list[-1] <= tick
 
 
-def spawn_node(tag: str, preload_tick: int, skills: list[Skill], **kwargs) -> SkillNode:
+def spawn_node(tag: str, preload_tick: int, skills: Iterable[Skill], **kwargs) -> SkillNode:
     """
     通过输入的tag和preload_tick，直接创建SkillNode。
     """
@@ -184,6 +189,7 @@ def get_skills_queue(
         raise TypeError("输入的技能必须是 Skill 类")
 
     skills_queue = LinkedList()  # 用于储存技能节点
+    preload_skills: pd.Series = pd.Series()
     try:
         preload_skills: pd.Series = preload_table["skill_tag"]  # 传入的数据必须包含 skill_tag 列
     except KeyError:

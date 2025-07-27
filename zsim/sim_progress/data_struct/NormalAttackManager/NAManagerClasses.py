@@ -1,6 +1,6 @@
-from .BaseNAManager import BaseNAManager
-
 from typing import TYPE_CHECKING
+
+from .BaseNAManager import BaseNAManager
 
 if TYPE_CHECKING:
     from zsim.sim_progress.Character.character import Character
@@ -28,7 +28,7 @@ class YanagiNAManager(BaseNAManager):
 
 
 class HugoNAManager(BaseNAManager):
-    def __init__(self, char_obj, rule_inventory_dict: dict):
+    def __init__(self, char_obj: "Character", rule_inventory_dict: dict):
         super().__init__(char_obj, rule_inventory_dict)
         self.char = char_obj
         self.na_rule_inventory = rule_inventory_dict

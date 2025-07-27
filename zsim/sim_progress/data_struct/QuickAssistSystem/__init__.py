@@ -4,10 +4,11 @@ from typing import TYPE_CHECKING
 
 from zsim.sim_progress.Buff import JudgeTools
 
-from .QuickAssistManager import QuickAssistManager
+from .quick_assist_manager import QuickAssistManager
 
 if TYPE_CHECKING:
     from zsim.sim_progress.Character.character import Character
+    from zsim.sim_progress.Preload import SkillNode
     from zsim.simulator.simulator_class import Simulator
 
 
@@ -21,7 +22,7 @@ class QuickAssistSystem:
         for char_obj in self.char_obj_list:
             self.quick_assist_manager_group[char_obj.NAME] = char_obj.dynamic.quick_assist_manager
 
-    def update(self, tick: int, skill_node, all_name_order_box: dict[str, list[str]]):
+    def update(self, tick: int, skill_node: "SkillNode", all_name_order_box: dict[str, list[str]]):
         """外部接口，通过传入的skill_node来判断如何激活快速支援。"""
         current_name_order_dict = all_name_order_box[skill_node.char_name]
         if skill_node.skill.aid_direction == 0:
@@ -49,7 +50,7 @@ class QuickAssistSystem:
                     )
             self.answer_assist(tick, skill_node)
 
-    def answer_assist(self, tick: int, skill_node):
+    def answer_assist(self, tick: int, skill_node: "SkillNode"):
         """该函数用于在检测到角色响应了快速支援时，向Eventlist提前抛出结束事件。"""
         char_name = skill_node.char_name
         manager = self.quick_assist_manager_group[char_name]
@@ -64,7 +65,9 @@ class QuickAssistSystem:
         event_list.append(end_event)
         # print(f'{skill_node.char_name}响应了快速支援！')
 
-    def spawn_event_group(self, tick_now: int, skill_node, active_manager: QuickAssistManager):
+    def spawn_event_group(
+        self, tick_now: int, skill_node: "SkillNode", active_manager: QuickAssistManager
+    ):
         """创建一个事件对，包含开始事件和结束事件，并将他们添加到event_list里面去。"""
         start_event = QuickAssistEvent(
             update_tick=tick_now,
@@ -85,7 +88,7 @@ class QuickAssistSystem:
         event_list.append(start_event)
         event_list.append(end_event)
 
-    def force_active_quick_assist(self, tick_now: int, skill_node, char_name: str):
+    def force_active_quick_assist(self, tick_now: int, skill_node: "SkillNode", char_name: str):
         """强制激活快速支援，主要是服务于外部调用。"""
         self.spawn_event_group(tick_now, skill_node, self.quick_assist_manager_group[char_name])
 
@@ -96,7 +99,7 @@ class QuickAssistEvent:
     def __init__(
         self,
         update_tick: int,
-        updated_by,
+        updated_by: "SkillNode",
         operation: bool,
         manager: QuickAssistManager,
         answer: bool = False,

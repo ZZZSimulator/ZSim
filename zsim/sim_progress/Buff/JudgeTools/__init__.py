@@ -20,7 +20,14 @@ if TYPE_CHECKING:
     from .. import Buff
 
 
-def check_preparation(buff_0, buff_instance: "Buff", **kwargs):
+def check_preparation(
+    buff_0: "Buff",
+    buff_instance: "Buff",
+    equipper: str | None = None,
+    char_CID: int | None = None,
+    char_NAME: str | None = None,
+    **kwargs,
+):
     """
     这是一个综合函数。根据传入的参数，来执行不同的内容。
     """
@@ -30,9 +37,6 @@ def check_preparation(buff_0, buff_instance: "Buff", **kwargs):
     record = buff_0.history.record
 
     # 参数获取
-    equipper: str = kwargs.get("equipper")
-    char_CID: int = kwargs.get("char_CID")
-    char_NAME: str = kwargs.get("char_NAME")
     enemy = kwargs.get("enemy")
     sub_exist_buff_dict = kwargs.get("sub_exist_buff_dict")
     dynamic_buff_list = kwargs.get("dynamic_buff_list")

@@ -1,3 +1,4 @@
+from typing import Literal
 from zsim.sim_progress.anomaly_bar import Disorder
 from zsim.sim_progress.Preload import SkillNode
 from zsim.sim_progress.Report import report_to_log
@@ -64,6 +65,7 @@ class Miyabi(Character):
 
     def _shatter_internal_cd(self) -> bool:
         """判断落霜叠层是否处于CD"""
+        assert self.sim_instance is not None
         tick: int = self.sim_instance.tick
         if self.last_tick is None:
             self.last_tick = tick
@@ -74,5 +76,5 @@ class Miyabi(Character):
             self.last_tick = tick
             return False
 
-    def get_resources(self):
+    def get_resources(self) -> tuple[Literal["落霜"], int]:
         return "落霜", self.frosty

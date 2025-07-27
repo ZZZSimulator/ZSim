@@ -1,4 +1,6 @@
 from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING
+
 from zsim.models.event_enums import SpecialStateUpdateSignal as SSUS
 from zsim.sim_progress.Preload.PreloadEngine import (
     APLEngine,
@@ -7,9 +9,10 @@ from zsim.sim_progress.Preload.PreloadEngine import (
     ForceAddEngine,
     SwapCancelValidateEngine,
 )
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from zsim.simulator.simulator_class import Simulator
+
     from .PreloadDataClass import PreloadData
 
 
@@ -18,7 +21,7 @@ class BasePreloadStrategy(ABC):
 
     def __init__(self, data, apl_path):
         self.data: "PreloadData" = data
-        self.apl_engine = APLEngine(data, apl_path=apl_path, preload_data=self.data)
+        self.apl_engine = APLEngine(data, apl_path=apl_path)
         self.force_add_engine = ForceAddEngine(data)
         self.confirm_engine = ConfirmEngine(data)
         self.finish_post_init: bool = False  # 是否完成了后置初始化
@@ -49,6 +52,7 @@ class SwapCancelStrategy(BasePreloadStrategy):
         """合轴逻辑"""
         # 0、自检
         self.check_myself(enemy, tick)
+        assert self.data.sim_instance is not None
         self.data.sim_instance.schedule_data.enemy.special_state_manager.broadcast_and_update(
             signal=SSUS.BEFORE_PRELOAD
         )
@@ -85,7 +89,6 @@ class SwapCancelStrategy(BasePreloadStrategy):
                 tick, apl_skill_node=apl_skill_node, apl_skill_tag=apl_skill_tag
             )
 
-
     def check_myself(self, enemy, tick, *args, **kwargs):
         """准备工作"""
         if not self.finish_post_init:
@@ -98,8 +101,7 @@ class SwapCancelStrategy(BasePreloadStrategy):
 
     def post_init_all_object(self):
         """后置初始化所有数据"""
-        from ...simulator.simulator_class import Simulator
-
+        assert self.data.sim_instance is not None
         sim_insatnce: Simulator = self.data.sim_instance
         for char_obj in sim_insatnce.char_data.char_obj_list:
             char_obj.POST_INIT_DATA(sim_insatnce=sim_insatnce)

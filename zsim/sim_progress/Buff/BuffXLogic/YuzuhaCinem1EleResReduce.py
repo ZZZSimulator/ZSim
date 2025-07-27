@@ -1,5 +1,6 @@
 from .. import Buff, JudgeTools, check_preparation
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from ...Preload import SkillNode
 
@@ -20,9 +21,7 @@ class YuzuhaCinem1EleResReduce(Buff.BuffLogic):
         self.xjudge = self.special_judge_logic
 
     def get_prepared(self, **kwargs):
-        return check_preparation(
-            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
-        )
+        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
 
     def check_record_module(self):
         if self.buff_0 is None:
@@ -36,9 +35,7 @@ class YuzuhaCinem1EleResReduce(Buff.BuffLogic):
     def special_judge_logic(self, **kwargs):
         """只有两种强化E和大招的重攻击才能触发甜蜜惊吓效果"""
         self.check_record_module()
-        self.get_prepared(
-            char_CID=1411, enemy=1
-        )
+        self.get_prepared(char_CID=1411, enemy=1)
         skill_node: "SkillNode" = kwargs.get("skill_node")
         if skill_node is None:
             return False
@@ -48,4 +45,3 @@ class YuzuhaCinem1EleResReduce(Buff.BuffLogic):
             return False
         else:
             return True
-

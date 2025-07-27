@@ -5,6 +5,7 @@ from zsim.sim_progress.Report import report_to_log
 from .. import SkillNode, SkillsQueue
 from ..PreloadEngine import BasePreloadEngine
 from zsim.models.event_enums import ListenerBroadcastSignal as LBS
+
 if TYPE_CHECKING:
     from zsim.sim_progress.Character import Character
     from zsim.sim_progress.Preload.PreloadDataClass import PreloadData
@@ -24,7 +25,7 @@ class ConfirmEngine(BasePreloadEngine):
         self.external_add_skill_list = []
         self.validators = [self._validate_timing]
 
-    def run_myself(self, tick: int, **kwargs):
+    def run_myself(self, tick: int, **kwargs) -> bool:
         """依次执行 Node构造、验证、内外部数据交互"""
         apl_skill_node: SkillNode | None = kwargs.get("apl_skill_node", None)
         apl_skill_tag = kwargs.get("apl_skill_tag", None)
@@ -50,6 +51,7 @@ class ConfirmEngine(BasePreloadEngine):
                 #     )
             else:
                 pass
+        return True
 
     def spawn_node_from_tag(
         self,
@@ -76,22 +78,27 @@ class ConfirmEngine(BasePreloadEngine):
 
     def update_external_data(self, node: SkillNode, tick: int):
         """与外部数据交互，主要是和char进行交互。"""
-        for char in self.data.char_data.char_obj_list:
-            char.update_sp_and_decibel(node)
-            char.special_resources(node, tick=tick)
-            char.dynamic.lasting_node.update_node(node, tick)
+        if self.data.char_data:
+            for char in self.data.char_data.char_obj_list:
+                char.update_sp_and_decibel(node)
+                char.special_resources(node, tick=tick)
+                char.dynamic.lasting_node.update_node(node, tick)
         # 切人逻辑
         name_box = self.data.name_box
         if (
             isinstance(name_box, list)
             and all(isinstance(name, str) for name in name_box)
             and node.active_generation
+            and self.data.char_data is not None
         ):
             self.switch_char(node, self.data.char_data)
-        self.data.sim_instance.decibel_manager.update(skill_node=node)
+        if self.data.sim_instance:
+            self.data.sim_instance.decibel_manager.update(skill_node=node)
 
     def switch_char(self, this_node: SkillNode, char_data) -> None:
         name_box = self.data.name_box
+        if name_box is None:
+            return
         old_name_box = name_box.copy()
         name_index = name_box.index(this_node.char_name)
         # 更改前台角色（切人逻辑）
@@ -108,9 +115,10 @@ class ConfirmEngine(BasePreloadEngine):
             if name_box[0] == char.NAME:
                 if name_box[0] != old_name_box[0]:
                     """在更新name_box的时候，将切人事件对所有监听器进行广播。"""
-                    self.data.sim_instance.listener_manager.broadcast_event(
-                        event=char, signal=LBS.SWITCHING_IN, skill_node=this_node
-                    )
+                    if self.data.sim_instance:
+                        self.data.sim_instance.listener_manager.broadcast_event(
+                            event=char, signal=LBS.SWITCHING_IN, skill_node=this_node
+                        )
                     char.dynamic.on_field = True
             else:
                 char.dynamic.on_field = False

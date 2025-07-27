@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any, Sequence
 
 # from charset_normalizer.md import is_arabic_isolated_form
 
-from zsim.define import BACK_ATTACK_RATE, ELEMENT_TYPE_MAPPING
+from zsim.define import BACK_ATTACK_RATE
 from zsim.sim_progress.Report import report_to_log
 from zsim.sim_progress.anomaly_bar.CopyAnomalyForOutput import NewAnomaly
 
@@ -245,7 +245,6 @@ def __check_special_anomly(buff: "Buff", anomaly_node: "AnomalyBar") -> bool:
         ElectricAnomaly,
         AuricInkAnomaly,
     )
-    from zsim.sim_progress.anomaly_bar.CopyAnomalyForOutput import NewAnomaly
 
     # 定义允许的标签类型
     ALLOW_LABELS = ["only_anomaly"]

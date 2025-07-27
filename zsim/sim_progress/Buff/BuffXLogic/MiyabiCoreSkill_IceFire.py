@@ -4,6 +4,7 @@ from zsim.sim_progress.ScheduledEvent.Calculator import MultiplierData
 
 from .. import Buff, JudgeTools, check_preparation
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from zsim.sim_progress.Preload import SkillNode
 

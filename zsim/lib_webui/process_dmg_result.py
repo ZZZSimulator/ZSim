@@ -596,7 +596,9 @@ def prepare_dmg_data_and_cache(
     char_chart_data = prepare_char_chart_data(uuid_df)
     # st.write(char_chart_data)
     calculate_and_save_anomaly_attribution(
-        int(rid) if isinstance(rid, int) else rid, char_chart_data["char_dmg_df"], char_chart_data["char_element_df"]
+        int(rid) if isinstance(rid, int) else rid,
+        char_chart_data["char_dmg_df"],
+        char_chart_data["char_element_df"],
     )
     return {
         "dmg_result_df": dmg_result_df,

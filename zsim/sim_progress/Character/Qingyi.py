@@ -11,7 +11,7 @@ class Qingyi(Character):
         self.__MAX_VOLTAGE: int = 10000
         self.__QUAN_VOLTAGE: float = self.__MAX_VOLTAGE / 100 * (1.3 if self.cinema >= 1 else 1)
         self.__FLASH_THRESHOLD: float = self.__MAX_VOLTAGE * 0.75
-        self.VOLTAGE_MAP: dict = {
+        self.VOLTAGE_MAP: dict[str, float] = {
             "1300_NA_3_NFC": self.__QUAN_VOLTAGE * 4.6875,
             "1300_NA_3_FC": self.__QUAN_VOLTAGE * 4.6875 * 16,
             "1300_SNA": self.__QUAN_VOLTAGE * 1.94,
@@ -26,7 +26,7 @@ class Qingyi(Character):
             "1300_Q": self.__QUAN_VOLTAGE * 80,
         }
 
-        self.flash_connect_voltage: int = (
+        self.flash_connect_voltage: float = (
             0 if self.cinema == 0 else self.__MAX_VOLTAGE
         )  # 闪络电压，初始化为0
         self.flash_connect: bool = False if self.cinema == 0 else True  # 闪络状态

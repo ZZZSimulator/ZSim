@@ -1,13 +1,17 @@
-from .special_state_class import EnemySpecialState
-from zsim.define import ElementType, YUZUHA_REPORT, ELEMENT_TYPE_MAPPING as ETM
-from zsim.models.event_enums import SpecialStateUpdateSignal as SSUS
 from typing import TYPE_CHECKING
 
+from zsim.define import ELEMENT_TYPE_MAPPING as ETM
+from zsim.define import YUZUHA_REPORT, ElementType
+from zsim.models.event_enums import SpecialStateUpdateSignal as SSUS
+
+from .special_state_class import EnemySpecialState
+
 if TYPE_CHECKING:
-    from zsim.sim_progress.Enemy import Enemy
-    from .special_state_manager_class import SpecialStateManager
-    from zsim.sim_progress.Preload import SkillNode
     from zsim.sim_progress.data_struct import SingleHit
+    from zsim.sim_progress.Enemy import Enemy
+    from zsim.sim_progress.Preload import SkillNode
+
+    from .special_state_manager_class import SpecialStateManager
 
 
 class SweetScare(EnemySpecialState):
@@ -69,7 +73,7 @@ class SweetScare(EnemySpecialState):
     def update(self, update_signal: SSUS, **kwargs):
         """甜蜜惊吓的自更新函数，该函数需要在两个被广播式地调用，所以需要传入更新信号"""
         if update_signal == SSUS.RECEIVE_HIT:
-            self.__update_when_receive_hit(**kwargs)
+            self.__update_when_receive_hit(single_hit=kwargs.get("single_hit"))
         elif update_signal == SSUS.BEFORE_PRELOAD:
             self.__update_when_after_preload()
         elif update_signal == SSUS.CHARACTER:
@@ -112,12 +116,11 @@ class SweetScare(EnemySpecialState):
                 f"【甜蜜惊吓】状态被技能{skill_node.skill_tag}染为 {ETM.get(skill_node.element_type)} 属性！这将在接下来的2400tick内改变所有【彩糖花火】的属性！"
             )
 
-    def __update_when_receive_hit(self, **kwargs):
+    def __update_when_receive_hit(self, single_hit: "SingleHit | None", **kwargs):
         """在受到攻击时执行，主要负责：彩糖花火·极、甜蜜惊吓状态的开启、染色状态的开启"""
-        single_hit: "SingleHit" = kwargs.get("single_hit")
         if single_hit is None:
             self.enemy.sim_instance.schedule_data.change_process_state()
-            print(f"【特殊状态：甜蜜惊吓 警告】在receive_hit的节点没有接收到预期中的SingleHit")
+            print("【特殊状态：甜蜜惊吓 警告】在receive_hit的节点没有接收到预期中的SingleHit")
             return
         """首先要检查的是彩糖花火·极的触发"""
         if single_hit.skill_tag in self.sugarburst_sparkless_max_trigger_origin_skill_tag:
@@ -135,6 +138,7 @@ class SweetScare(EnemySpecialState):
                 )
                 if YUZUHA_REPORT:
                     self.sim_instance.schedule_data.change_process_state()
+                    assert single_hit.skill_node is not None
                     print(
                         f"【甜蜜惊吓触发】由 {single_hit.skill_node.skill.skill_text} 触发了一次【彩糖花火·极】"
                     )
@@ -157,7 +161,7 @@ class SweetScare(EnemySpecialState):
                     if single_hit.skill_node is None:
                         self.sim_instance.schedule_data.change_process_state()
                         print(
-                            f"【特殊状态：甜蜜惊吓警告】在试图更新染色状态时，检测到SingleHit并未关联SkillNode！染色失败！"
+                            "【特殊状态：甜蜜惊吓警告】在试图更新染色状态时，检测到SingleHit并未关联SkillNode！染色失败！"
                         )
                         return
                     self.flavor_match_update(skill_node=single_hit.skill_node)
@@ -182,7 +186,6 @@ class SweetScare(EnemySpecialState):
                 )
                 self.sugarburst_sparkless_update_tick = self.sim_instance.tick
 
-    def __update_when_in_character(self, **kwargs):
+    def __update_when_in_character(self, skill_node: "SkillNode", **kwargs):
         """在Character内部执行，主要负责染色"""
-        skill_node = kwargs.get("skill_node")
         self.try_change_attribute(skill_node=skill_node)
