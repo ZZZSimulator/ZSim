@@ -1,5 +1,4 @@
 from .. import Buff, JudgeTools, check_preparation
-from ....define import YUZUHA_REPORT
 
 
 class YuzuhaAdditionalAbilityAnomalyBuildupBonusRecord:

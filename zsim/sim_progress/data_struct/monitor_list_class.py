@@ -1,5 +1,6 @@
 def monitor_list_operation(func):
     """装饰器：监视列表操作并打印变化信息"""
+
     def wrapper(self, *args, **kwargs):
         # 操作前状态
         # print(f"Before {func.__name__}: {self}")
@@ -8,6 +9,7 @@ def monitor_list_operation(func):
         # 操作后状态
         # print(f"After {func.__name__}: {self}")
         return result
+
     return wrapper
 
 

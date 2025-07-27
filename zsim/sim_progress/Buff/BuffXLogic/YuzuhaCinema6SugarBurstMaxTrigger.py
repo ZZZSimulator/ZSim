@@ -9,6 +9,7 @@ class YuzuhaCinema6SugarBurstMaxTriggerRecord:
 
 class YuzuhaCinema6SugarBurstMaxTrigger(Buff.BuffLogic):
     """炮弹命中甜蜜惊吓状态的敌人时，会触发一次彩糖花火·极"""
+
     def __init__(self, buff_instance):
         super().__init__(buff_instance)
         self.buff_instance: Buff = buff_instance
@@ -18,9 +19,7 @@ class YuzuhaCinema6SugarBurstMaxTrigger(Buff.BuffLogic):
         self.record: YuzuhaCinema6SugarBurstMaxTriggerRecord | None = None
 
     def get_prepared(self, **kwargs):
-        return check_preparation(
-            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
-        )
+        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
 
     def check_record_module(self):
         if self.buff_0 is None:

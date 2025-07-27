@@ -13,9 +13,9 @@ class LoadingMission:
         self.mission_end_tick = mission.end_tick
         self.mission_character = mission.char_name
         self.preload_tick = mission.preload_tick
-        self.mission_node.loading_mission = self
+        self.mission_node.loading_mission = self  # type: ignore
 
-    def mission_start(self, timenow, **kwargs):
+    def mission_start(self, timenow: int, **kwargs) -> None:
         report = kwargs.get("report", True)
         self.mission_active_state = True
         timecost = self.mission_node.skill.ticks
@@ -42,17 +42,17 @@ class LoadingMission:
         else:
             self.mission_dict[timenow] = "hit"
 
-    def mission_end(self):
+    def mission_end(self) -> None:
         self.mission_active_state = False
         self.hitted_count = 0
         self.mission_dict = {}
 
-    def check_myself(self, timenow):
+    def check_myself(self, timenow: int) -> None:
         if self.mission_end_tick < timenow:
             self.mission_end()
             return
 
-    def get_first_hit(self):
+    def get_first_hit(self) -> int | None:
         """返回首次命中的时间"""
         tick_list = list(self.mission_dict.keys())
         while tick_list:
@@ -71,7 +71,7 @@ class LoadingMission:
         else:
             return False
 
-    def get_last_hit(self):
+    def get_last_hit(self) -> int | None:
         """返回最后一次命中的时间"""
         tick_list = list(self.mission_dict.keys())
         while tick_list:
@@ -81,13 +81,19 @@ class LoadingMission:
             else:
                 tick_list.remove(tick)
 
-    def is_first_hit(self, tick: int):
-        return tick - 1 < self.get_first_hit() <= tick
+    def is_first_hit(self, tick: int) -> bool:
+        first_hit = self.get_first_hit()
+        if first_hit is None:
+            return False
+        return tick - 1 < first_hit <= tick
 
-    def is_last_hit(self, tick: int):
-        return tick - 1 < self.get_last_hit() <= tick
+    def is_last_hit(self, tick: int) -> bool:
+        last_hit = self.get_last_hit()
+        if last_hit is None:
+            return False
+        return tick - 1 < last_hit <= tick
 
-    def is_heavy_hit(self, tick: int):
+    def is_heavy_hit(self, tick: int) -> bool:
         if not self.is_last_hit(tick):
             return False
         else:

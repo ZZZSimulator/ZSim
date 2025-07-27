@@ -2,6 +2,7 @@ from typing import TYPE_CHECKING
 
 from .BaseListenerClass import BaseListener
 from zsim.models.event_enums import ListenerBroadcastSignal as LBS
+
 if TYPE_CHECKING:
     from zsim.simulator.simulator_class import Simulator
 
@@ -9,7 +10,7 @@ if TYPE_CHECKING:
 class HeartstringNocturneListener(BaseListener):
     """监听入场事件，并且直接添加心弦夜响Buff"""
 
-    def __init__(self, listener_id: str = None, sim_instance: "Simulator" = None):
+    def __init__(self, listener_id: str | None = None, sim_instance: "Simulator | None" = None):
         super().__init__(listener_id, sim_instance=sim_instance)
         self.active_signal = None
 

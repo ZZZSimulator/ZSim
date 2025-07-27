@@ -23,7 +23,7 @@ class Soldier0_Anby(Character):
         self.c6_answer: bool = False  # 6画的触发响应器
         self.silver_star_basic_cost = 33.333333  # 单E的银星基本消耗
         self.max_silver_star: float = 100.1  # 银星上限
-        self.silver_star_gain_dict: dict[str:float] = {
+        self.silver_star_gain_dict: dict[str, float] = {
             "1381_NA_1": 4.6875,
             "1381_NA_2": 7.53472222,
             "1381_NA_3": 15.12152778,

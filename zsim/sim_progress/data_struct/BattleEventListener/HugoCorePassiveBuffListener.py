@@ -2,6 +2,7 @@ from typing import TYPE_CHECKING
 
 from .BaseListenerClass import BaseListener
 from zsim.models.event_enums import ListenerBroadcastSignal as LBS
+
 if TYPE_CHECKING:
     from zsim.simulator.simulator_class import Simulator
 
@@ -9,7 +10,7 @@ if TYPE_CHECKING:
 class HugoCorePassiveBuffListener(BaseListener):
     """这个监听器的作用是，尝试监听雨果致使怪物失衡的事件，并且触发一次核心被动Buff"""
 
-    def __init__(self, listener_id: str = None, sim_instance: "Simulator" = None):
+    def __init__(self, listener_id: str | None = None, sim_instance: "Simulator | None" = None):
         super().__init__(listener_id, sim_instance=sim_instance)
         self.buff_index = "Buff-角色-雨果-核心被动-暗渊回响"
 
@@ -28,6 +29,8 @@ class HugoCorePassiveBuffListener(BaseListener):
 
         if HUGO_REPORT:
             self.sim_instance.schedule_data.change_process_state()
+            if event.skill_node is None:
+                return
             print(
                 f"雨果的失衡事件监听器监听到了雨果的技能{event.skill_tag}（{event.skill_node.skill.skill_text}）使怪物陷入失衡状态，根据核心被动，触发一次【暗渊回响】Buff"
             )

@@ -144,7 +144,7 @@ class Character:
         self.cinema: int = cinema
         self.baseCRIT_score: float = 60
         self.sp_get_ratio: float = 1  # 能量获得效率
-        self.sp_limit: int = sp_limit
+        self.sp_limit: int = int(sp_limit)
         self.sp: float = 40.0
 
         self.decibel: float = 1000.0
@@ -154,13 +154,14 @@ class Character:
 
         self.crit_balancing: bool = crit_balancing
         self.crit_rate_limit: float = crit_rate_limit
+        self.sheer_attack_conversion_rate: dict[int, float] | None = None
 
         # 初始化角色基础属性    .\data\character.csv
         self._init_base_attribute(name)
         # fmt: off
         # 如果并行配置没有移除套装，就初始化套装效果和主副词条
         if sim_cfg is not None:
-            if sim_cfg.func == "attr_curve":
+            if isinstance(sim_cfg, ExecAttrCurveCfg):
                 if not sim_cfg.remove_equip:
                     self.__init_all_equip_static(drive4, drive5, drive6, 
                                                 equip_set2_a, equip_set2_b, equip_set2_c, equip_set4, equip_style, 
@@ -168,7 +169,7 @@ class Character:
                                                 scCRIT_DMG, scDEF, scDEF_percent, scHP, scHP_percent, scPEN)
                 self.__init_attr_curve_config(sim_cfg)
                 self._init_weapon_primitive(weapon, weapon_level)
-            elif sim_cfg.func == "weapon":
+            elif isinstance(sim_cfg, ExecWeaponCfg):
                 self.__init_all_equip_static(drive4, drive5, drive6, 
                                          equip_set2_a, equip_set2_b, equip_set2_c, equip_set4, equip_style, 
                                          scATK, scATK_percent, scAnomalyProficiency, scCRIT, 
@@ -198,7 +199,7 @@ class Character:
         self.action_list = self.skill_object.action_list 
         self.skills_dict = self.skill_object.skills_dict
         self.dynamic = self.Dynamic(self)
-        self.sim_instance = None        # 模拟器实例
+        self.sim_instance: "Simulator | None" = None        # 模拟器实例
         self.equip_buff_map: dict[int, "Buff"] = {}     # 来自装备的Buff0的指针
 
     # fmt: off
@@ -345,7 +346,7 @@ class Character:
         def __init__(self, char_instantce: Character):
             self.character = char_instantce
             self.lasting_node = LastingNode(self.character)
-            from zsim.sim_progress.data_struct.QuickAssistSystem.QuickAssistManager import (
+            from zsim.sim_progress.data_struct.QuickAssistSystem.quick_assist_manager import (
                 QuickAssistManager,
             )
 

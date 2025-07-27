@@ -1,6 +1,6 @@
 import json
 import aiosqlite
-from typing import Any, List, Optional
+from typing import Any, List
 from zsim.define import SQLITE_PATH
 from zsim.models.enemy.enemy_config import EnemyConfig
 from datetime import datetime

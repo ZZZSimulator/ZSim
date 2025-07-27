@@ -1,6 +1,7 @@
 from .. import Buff, JudgeTools, check_preparation
 from zsim.define import YUZUHA_REPORT
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from zsim.sim_progress.Preload import SkillNode
     from zsim.sim_progress.data_struct.QuickAssistSystem import QuickAssistSystem
@@ -9,7 +10,11 @@ if TYPE_CHECKING:
 class YuzuhaCinema4QuickAssistTriggerRecord:
     def __init__(self):
         self.char = None
-        self.allowed_skill_tag_list = ["1411_Assault_Aid", "1411_Assault_Aid_A", "1411_Assault_Aid_B"]
+        self.allowed_skill_tag_list = [
+            "1411_Assault_Aid",
+            "1411_Assault_Aid_A",
+            "1411_Assault_Aid_B",
+        ]
         self.trigger_skill_node = None
 
 
@@ -23,9 +28,7 @@ class YuzuhaCinema4QuickAssistTrigger(Buff.BuffLogic):
         self.record: YuzuhaCinema4QuickAssistTriggerRecord | None = None
 
     def get_prepared(self, **kwargs):
-        return check_preparation(
-            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
-        )
+        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
 
     def check_record_module(self):
         if self.buff_0 is None:
@@ -41,7 +44,7 @@ class YuzuhaCinema4QuickAssistTrigger(Buff.BuffLogic):
         self.check_record_module()
         self.get_prepared(char_CID=1411)
         if self.record.trigger_skill_node is not None:
-            raise ValueError(f"【柚叶4画触发器】存在尚未处理的快支触发事件！")
+            raise ValueError("【柚叶4画触发器】存在尚未处理的快支触发事件！")
         skill_node: "SkillNode" = kwargs.get("skill_node")
         if skill_node is None:
             return False
@@ -59,8 +62,14 @@ class YuzuhaCinema4QuickAssistTrigger(Buff.BuffLogic):
         sim_instance = self.buff_instance.sim_instance
         QAS: "QuickAssistSystem" = sim_instance.preload.preload_data.quick_assist_system
         target_char_obj = sim_instance.char_data.find_next_char_obj(char_now=1411, direction=1)
-        QAS.force_active_quick_assist(tick_now=sim_instance.tick, skill_node=self.record.trigger_skill_node, char_name=target_char_obj.NAME)
+        QAS.force_active_quick_assist(
+            tick_now=sim_instance.tick,
+            skill_node=self.record.trigger_skill_node,
+            char_name=target_char_obj.NAME,
+        )
         if YUZUHA_REPORT:
             sim_instance.schedule_data.change_process_state()
-            print(f"【柚叶4画】技能 {self.record.trigger_skill_node.skill_tag} 最后一击命中，并且成功激活了 {target_char_obj.NAME} 的快速支援！")
+            print(
+                f"【柚叶4画】技能 {self.record.trigger_skill_node.skill_tag} 最后一击命中，并且成功激活了 {target_char_obj.NAME} 的快速支援！"
+            )
         self.record.trigger_skill_node = None

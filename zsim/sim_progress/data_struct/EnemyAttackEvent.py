@@ -1,5 +1,5 @@
 import math
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 from zsim.define import ENEMY_ATK_PARAMETER_DICT, ENEMY_ATTACK_REPORT
 
@@ -49,7 +49,7 @@ class EnemyAttackEventManager:
         """开始一个进攻事件"""
         self.action = action
         self.last_start_tick = start_tick
-        self.last_end_tick = start_tick + action.duration
+        self.last_end_tick = start_tick + round(action.duration)
         response_window: tuple[int, int] = self.get_response_window()
         self.interaction_window_open_tick = response_window[0]
         self.interaction_window_close_tick = response_window[1]
@@ -59,7 +59,7 @@ class EnemyAttackEventManager:
                 f"敌人（{self.enemy.name}）开始了进攻事件：{action.tag}，持续时间为{action.duration}tick"
             )
 
-    def event_end(self, tick: int = None):
+    def event_end(self, tick: int | None = None):
         """结束一个进攻事件"""
         if self.action is None:
             raise ValueError("没有正在进行的进攻事件，无法结束！")
@@ -72,7 +72,7 @@ class EnemyAttackEventManager:
         self.hitted_count = 0
         self.answered_count = 0
 
-    def interrupted(self, tick: int, reason: str = None):
+    def interrupted(self, tick: int, reason: str | None = None):
         """中断当前进攻事件"""
         if self.action is None:
             raise ValueError("没有正在进行的进攻事件，无法中断！")
@@ -127,7 +127,11 @@ class EnemyAttackEventManager:
         """判断当前tick是否处于首次响应窗口内"""
         if not self.attacking:
             return False
-        if self.interaction_window_open_tick <= tick <= self.interaction_window_close_tick:
+        if (
+            self.interaction_window_open_tick is not None
+            and self.interaction_window_close_tick is not None
+            and self.interaction_window_open_tick <= tick <= self.interaction_window_close_tick
+        ):
             return True
         return False
 
@@ -136,13 +140,14 @@ class EnemyAttackEventManager:
         theta = ENEMY_ATK_PARAMETER_DICT.get("theta", None)
         if theta is None:
             raise ValueError("ENEMY_ATK_PARAMETER_DICT中没有theta参数，请检查配置！")
-        perfect_player: bool = ENEMY_ATK_PARAMETER_DICT.get("perfect_player")
+        perfect_player: bool = bool(ENEMY_ATK_PARAMETER_DICT.get("perfect_player"))
         if perfect_player:
             """若是完美玩家将直接应用最短反应时间"""
             return round(theta / 1000 * 60)
-        Lp = ENEMY_ATK_PARAMETER_DICT.get("PlayerLevel", None)
-        if Lp is None:
+        Lp_val = ENEMY_ATK_PARAMETER_DICT.get("PlayerLevel", None)
+        if Lp_val is None:
             raise ValueError("ENEMY_ATK_PARAMETER_DICT中没有PlayerLevel参数，请检查配置！")
+        Lp = cast(int, Lp_val)
         c = ENEMY_ATK_PARAMETER_DICT.get("c", None)
         if c is None:
             raise ValueError("ENEMY_ATK_PARAMETER_DICT中没有c参数，请检查配置！")
@@ -166,10 +171,16 @@ class EnemyAttackEventManager:
 
     def get_response_window(self) -> tuple[int, int]:
         """获取红黄光亮起的时间点"""
+        if not self.action:
+            raise ValueError("No action in progress")
 
         first_hit_tick = self.action.get_hit_tick() + self.last_start_tick
 
-        Ta = ENEMY_ATK_PARAMETER_DICT.get("Taction")
+        Ta_val = ENEMY_ATK_PARAMETER_DICT.get("Taction")
+        if not isinstance(Ta_val, (int, float)):
+            raise ValueError("Taction not configured in ENEMY_ATK_PARAMETER_DICT")
+        Ta = int(Ta_val)
+
         left_bound = max(
             self.last_start_tick, first_hit_tick - Ta
         )  # 如果怪物前摇很短，动作时间也很短，那么怪物攻击动作开始的时间就是黄光亮起的时间。
@@ -178,6 +189,8 @@ class EnemyAttackEventManager:
 
     def get_uncommon_response_window(self, another_ta: int) -> tuple[int, int]:
         """获取红黄光亮起的时间点，适用于非标准的进攻动作"""
+        if not self.action:
+            raise ValueError("No action in progress")
         first_hit_tick = self.action.get_hit_tick(another_ta=another_ta) + self.last_start_tick
         Ta = another_ta
         left_bonud = max(self.last_start_tick, first_hit_tick - Ta)
@@ -193,7 +206,14 @@ class EnemyAttackEventManager:
                 f"当前动作：{self.action.tag}已经被{[_action.skill_tag for _action in self.answered_action]}响应过了！"
             )
             return False, 0, 0
-        Lp = ENEMY_ATK_PARAMETER_DICT.get("PlayerLevel")
+        Lp_val = ENEMY_ATK_PARAMETER_DICT.get("PlayerLevel")
+        if not isinstance(Lp_val, int):
+            raise ValueError("PlayerLevel not configured in ENEMY_ATK_PARAMETER_DICT")
+        Lp = Lp_val
+
+        if self.interaction_window_close_tick is None or self.interaction_window_open_tick is None:
+            return False, 0, 0
+
         Td = self.interaction_window_close_tick - self.interaction_window_open_tick
         first_hit_tick = self.action.get_hit_tick()
         if Lp <= 2:
@@ -244,6 +264,8 @@ class EnemyAttackEventManager:
 
     def hit_check(self, tick: int) -> bool:
         """检查输入的tick是否存在命中节点"""
+        if not self.action:
+            return False
         if any([_hit_tick + self.last_start_tick == tick for _hit_tick in self.action.hit_list]):
             return True
         return False
@@ -251,30 +273,31 @@ class EnemyAttackEventManager:
     def single_hit_settlement(self, tick: int) -> None:
         """单次命中结算函数，用于结算当前tick的命中结果。"""
         sim_instance = self.enemy.sim_instance
-        char_on_field: int = sim_instance.preload.preload_data.operating_now
+        char_on_field_val = sim_instance.preload.preload_data.operating_now
+        if char_on_field_val is None:
+            return
+        char_on_field = char_on_field_val
         char_stack = sim_instance.preload.preload_data.personal_node_stack[char_on_field]
         self.hitted_count += 1
         if char_stack is None:
             if ENEMY_ATTACK_REPORT:
                 self.enemy.sim_instance.schedule_data.change_process_state()
-                print(
-                    f"当前前台角色{char_on_field}并未进行有效交互（没有技能栈），将被打断！"
-                )
+                print(f"当前前台角色{char_on_field}并未进行有效交互（没有技能栈），将被打断！")
             return
         nodes = char_stack.get_effective_node()
         if nodes is None:
             if ENEMY_ATTACK_REPORT:
                 self.enemy.sim_instance.schedule_data.change_process_state()
-                print(
-                    f"当前前台角色{char_on_field}并未进行有效交互（尚未行动过），将被打断！"
-                )
+                print(f"当前前台角色{char_on_field}并未进行有效交互（尚未行动过），将被打断！")
             return
         if "interrupted" in nodes.skill_tag:
             print(f"角色{char_on_field}正处于被打断后摇中，打断后摇不刷新！")
             return
-        if (
-            nodes.end_tick < tick
-            and not self.enemy.sim_instance.preload.strategy.apl_engine.apl.action_replace_manager.parry_aid_strategy.consecutive_parry_mode
+        if nodes.end_tick < tick and not (
+            (apl := self.enemy.sim_instance.preload.strategy.apl_engine.apl)
+            and (arm := apl.action_replace_manager)
+            and (pas := arm.parry_aid_strategy)
+            and pas.consecutive_parry_mode
         ):
             if ENEMY_ATTACK_REPORT:
                 self.enemy.sim_instance.schedule_data.change_process_state()
@@ -296,10 +319,17 @@ class EnemyAttackEventManager:
                     ActionReplaceManager,
                 )
 
-                action_replace_manager: ActionReplaceManager = (
+                action_replace_manager: ActionReplaceManager | None = (
                     sim_instance.preload.strategy.apl_engine.apl.action_replace_manager
                 )
-                if self.action.hit == 1:
+                if not action_replace_manager:
+                    return
+
+                action = self.action
+                if not action:
+                    return
+
+                if action.hit == 1:
                     self.enemy.sim_instance.schedule_data.change_process_state()
                     print(
                         f"【AtkEventManager】检测到来自角色{char_on_field}的招架技能{nodes.skill_tag}，进攻交互式时间提前结束，角色即将被击退！"
@@ -308,7 +338,7 @@ class EnemyAttackEventManager:
                     action_replace_manager.parry_aid_strategy.final_parry_node = nodes
                     self.event_end(tick=tick)
                 else:
-                    if self.action.hit == self.hitted_count:
+                    if action.hit == self.hitted_count:
                         action_replace_manager.parry_aid_strategy.knock_back_signal = True
                         action_replace_manager.parry_aid_strategy.final_parry_node = nodes
                         self.event_end(tick=tick)
@@ -320,16 +350,12 @@ class EnemyAttackEventManager:
             if nodes.skill.trigger_buff_level in [2, 4, 5, 6, 7, 8, 9]:
                 if ENEMY_ATTACK_REPORT:
                     self.enemy.sim_instance.schedule_data.change_process_state()
-                    print(
-                        f"角色{char_on_field}选择释放{nodes.skill_tag}进行交互，交互成功。"
-                    )
+                    print(f"角色{char_on_field}选择释放{nodes.skill_tag}进行交互，交互成功。")
                 self.answered_count += 1
             else:
                 if ENEMY_ATTACK_REPORT:
                     self.enemy.sim_instance.schedule_data.change_process_state()
-                    print(
-                        f"角色被打断！{nodes.skill_tag}技能被迫取消！"
-                    )
+                    print(f"角色被打断！{nodes.skill_tag}技能被迫取消！")
                 """取消当前正在进行的技能，同时添加一次被打断技能，模拟角色动作被打断。"""
                 sim_instance.preload.preload_data.delete_mission_in_preload_data(
                     node_be_changed=nodes

@@ -10,7 +10,6 @@ def page_character_config():
     if "name_box" in saved_char_config:
         default_chars = saved_char_config["name_box"]
     from zsim.lib_webui.constants import (
-        char_options,
         equip_set2_options,
         equip_set4_options,
         weapon_options,
@@ -97,20 +96,21 @@ def page_character_config():
                     ]
                 else:
                     filtered_weapon_options = list(weapon_options)
-                
+
                 # 根据稀有度筛选
                 filtered_weapon_options = [
-                    w for w in filtered_weapon_options
-                    if (show_rarity_s and weapon_rarity_map.get(w) == "S") or
-                       (show_rarity_a and weapon_rarity_map.get(w) == "A") or
-                       (show_rarity_b and weapon_rarity_map.get(w) == "B")
+                    w
+                    for w in filtered_weapon_options
+                    if (show_rarity_s and weapon_rarity_map.get(w) == "S")
+                    or (show_rarity_a and weapon_rarity_map.get(w) == "A")
+                    or (show_rarity_b and weapon_rarity_map.get(w) == "B")
                 ]
                 rarity_order = {"S": 0, "A": 1, "B": 2}
                 filtered_weapon_options = sorted(
                     filtered_weapon_options,
-                    key=lambda w: (rarity_order.get(weapon_rarity_map.get(w), 3), w)
+                    key=lambda w: (rarity_order.get(weapon_rarity_map.get(w), 3), w),
                 )
-                
+
                 if name in saved_char_config:
                     current_weapon = saved_char_config[name].get("weapon")
                 else:
@@ -135,7 +135,7 @@ def page_character_config():
                             f"{' ' + weapon_char_map.get(x) if weapon_char_map.get(x) else ''}) {x}"
                         ),
                     )
-                
+
                 col_rarity = st.columns(4)
                 with col_rarity[0]:
                     show_adapted_weapon = st.checkbox(

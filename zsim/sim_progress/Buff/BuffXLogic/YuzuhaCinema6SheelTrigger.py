@@ -1,6 +1,7 @@
 from .. import Buff, JudgeTools, check_preparation
 from zsim.define import YUZUHA_REPORT
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from zsim.sim_progress.Character.Yuzuha import Yuzuha
     from zsim.sim_progress.Preload import SkillNode
@@ -17,6 +18,7 @@ class YuzuhaCinema6SheelTriggerRecord:
 
 class YuzuhaCinema6SheelTrigger(Buff.BuffLogic):
     """6画的炮弹触发逻辑"""
+
     def __init__(self, buff_instance):
         super().__init__(buff_instance)
         self.buff_instance: Buff = buff_instance
@@ -26,9 +28,7 @@ class YuzuhaCinema6SheelTrigger(Buff.BuffLogic):
         self.record: YuzuhaCinema6SheelTriggerRecord | None = None
 
     def get_prepared(self, **kwargs):
-        return check_preparation(
-            buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs
-        )
+        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
 
     def check_record_module(self):
         if self.buff_0 is None:
@@ -73,6 +73,7 @@ class YuzuhaCinema6SheelTrigger(Buff.BuffLogic):
         self.check_record_module()
         self.get_prepared(char_CID=1411)
         from zsim.sim_progress.data_struct.SchedulePreload import schedule_preload_event_factory
+
         sim_instance = self.buff_instance.sim_instance
         preload_tick_list = [sim_instance.tick]
         skill_tag_list = ["1411_Cinema_6"]
@@ -81,14 +82,12 @@ class YuzuhaCinema6SheelTrigger(Buff.BuffLogic):
             preload_tick_list=preload_tick_list,
             skill_tag_list=skill_tag_list,
             preload_data=preload_data,
-            sim_instance=sim_instance)
+            sim_instance=sim_instance,
+        )
         self.record.sheel_counter += 1
         self.record.charging_tick = 0
         if YUZUHA_REPORT:
             sim_instance.schedule_data.change_process_state()
-            print(f"【柚叶6画】检测到正在›蓄力支援突击，将发射1枚炮弹，这是本次蓄力的第{self.record.sheel_counter}枚")
-
-
-
-
-
+            print(
+                f"【柚叶6画】检测到正在›蓄力支援突击，将发射1枚炮弹，这是本次蓄力的第{self.record.sheel_counter}枚"
+            )

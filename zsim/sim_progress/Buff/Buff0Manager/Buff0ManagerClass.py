@@ -16,7 +16,6 @@ from ..buff_class import Buff
 
 if TYPE_CHECKING:
     from zsim.simulator.simulator_class import Simulator
-    from zsim.sim_progress.Character.character import Character
 
 
 class Buff0Manager:
@@ -27,7 +26,7 @@ class Buff0Manager:
         weapon_dict: dict[str, list],
         cinema_dict: dict,
         char_obj_dict: dict | None,
-        sim_instance: "Simulator",
+        sim_instance: "Simulator | None",
     ):
         # 加载文件
         self.EXIST_FILE = pd.read_csv(EXIST_FILE_PATH, index_col="BuffName")

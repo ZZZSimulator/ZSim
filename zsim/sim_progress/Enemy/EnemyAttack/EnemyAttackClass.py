@@ -68,13 +68,9 @@ class EnemyAttackMethod:
             enemy_attack_action = EnemyAttackAction(int(action_id))
             self.action_set[action_rate] = enemy_attack_action
             if ENEMY_ATTACK_REPORT:
-                print(
-                    f"【进攻交互系统初始化】：为敌人添加进攻动作：{enemy_attack_action}"
-                )
+                print(f"【进攻交互系统初始化】：为敌人添加进攻动作：{enemy_attack_action}")
         if ENEMY_ATTACK_REPORT:
-            print(
-                "【进攻交互系统初始化】：敌人进攻动作初始化完毕！"
-            )
+            print("【进攻交互系统初始化】：敌人进攻动作初始化完毕！")
             print(
                 f"【进攻交互系统初始化】：敌人（{self.enemy.name}）共拥有{len(self.action_set)}个进攻动作，每次进攻决策的冷却时间为：{self.rest_tick}tick！"
             )

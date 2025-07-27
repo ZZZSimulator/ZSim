@@ -8,7 +8,6 @@ from .BuffAdd import add_debuff_to_enemy
 
 if TYPE_CHECKING:
     from zsim.simulator.simulator_class import Simulator
-    from zsim.sim_progress.Preload import SkillNode
     from zsim.sim_progress.Load import LoadingMission
 
 

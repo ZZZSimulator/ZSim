@@ -2,6 +2,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from zsim.sim_progress.Character import Character
+    from zsim.sim_progress.Preload import SkillNode
 
 
 class QuickAssistManager:
@@ -15,24 +16,21 @@ class QuickAssistManager:
         self.quick_assist_available = False  # 快速支援是否亮起
         self.quick_assist_skill = f"{self.char.CID}_BH_Aid"  # 快速支援技能名
         self.assist_event_update_tick = 0  # 快速支援事件上报给eventlist的tick
-        self.last_update_node = None  # 上一次导致快速支援激活的技能。
+        self.last_update_node: "SkillNode | None" = None  # 上一次导致快速支援激活的技能。
 
-    def assist_waiting_for_anwser(self, tick: int):
+    def assist_waiting_for_anwser(self, tick: int) -> bool:
         """检查当前是否处于“快速支援即将触发但还未触发”的状态"""
         checked_node = self.last_update_node
         if checked_node is None:
-            """如果last_update_node是None，那说明当前根本没有技能尝试触发过快速支援，直接返回False"""
+            # 如果last_update_node是None，那说明当前根本没有技能尝试触发过快速支援，直接返回False
             return False
-        from zsim.sim_progress.Preload import SkillNode
 
-        if not isinstance(checked_node, SkillNode):
-            raise TypeError
         if checked_node.preload_tick + checked_node.skill.aid_lag_ticks > tick:
             return True
         else:
             return False
 
-    def state_change(self, tick: int, **kwargs):
+    def state_change(self, tick: int, **kwargs) -> None:
         """改变自身状态。"""
         operation = kwargs.get("operation", None)
         answer = kwargs.get("answer", False)  # noqa: F841

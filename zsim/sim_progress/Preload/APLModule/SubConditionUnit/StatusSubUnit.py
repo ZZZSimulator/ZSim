@@ -52,7 +52,10 @@ class StatusSubUnit(BaseSubConditionUnit):
             self.element_type_2 = element_type_2
 
         def handler(self, enemy):
-            result = enemy.anomaly_bars_dict[self.element_type_1].get_buildup_pct() - enemy.anomaly_bars_dict[self.element_type_2].get_buildup_pct()
+            result = (
+                enemy.anomaly_bars_dict[self.element_type_1].get_buildup_pct()
+                - enemy.anomaly_bars_dict[self.element_type_2].get_buildup_pct()
+            )
             return result
 
     class StunPctHandler(CheckHandler):
@@ -170,7 +173,7 @@ class StatusSubUnit(BaseSubConditionUnit):
         "is_corruption": CorruptionHandler,
         "quick_assist_available": QuickAssistHandler,
         "assist_waiting_for_anwser": WaitingAssistHandler,
-        "buildup_pct_delta": BuildupPctHandler
+        "buildup_pct_delta": BuildupPctHandler,
     }
 
     def check_myself(

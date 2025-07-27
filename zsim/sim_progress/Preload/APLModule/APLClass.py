@@ -27,11 +27,11 @@ class APLClass:
     def __init__(
         self,
         all_apl_unit_list: list,
-        preload_data: "PreloadData" = None,
-        sim_instance: "Simulator" = None,
+        preload_data: "PreloadData | None" = None,
+        sim_instance: "Simulator | None" = None,
     ):
         self.game_state: dict | None = None
-        self.sim_instance: "Simulator" = sim_instance
+        self.sim_instance: "Simulator | None" = sim_instance
         self.preload_data = preload_data
         self.actions_list = all_apl_unit_list
         self.na_manager_dict: dict[int, BaseNAManager] = {}
@@ -50,12 +50,18 @@ class APLClass:
         if self.game_state is None:
             self.get_game_state()
         if self.apl_operator is None:
+            assert self.preload_data is not None, "Preload_data is not initialized"
+            assert self.sim_instance is not None, "Simulator instance is not initialized"
+            assert self.game_state is not None, "Game state is not initialized"
             self.apl_operator = APLOperator(
                 self.actions_list,
                 self.game_state,
                 simulator_instance=self.sim_instance,
                 preload_data=self.preload_data,
             )
+        assert self.preload_data is not None
+        assert self.apl_operator is not None
+        assert self.preload_data.atk_manager is not None
         cid, skill_tag, apl_priority, apl_unit = (
             self.apl_operator.spawn_next_action_in_common_mode(tick)
             if not self.preload_data.atk_manager.attacking
@@ -75,7 +81,8 @@ class APLClass:
                 # if main_module is None:
                 #     raise ImportError("Main module not found.")
                 # self.game_state = main_module.game_state  # 获取 main 中的 A
-                self.game_state = self.preload_data.sim_instance.game_state
+                if self.preload_data and self.preload_data.sim_instance:
+                    self.game_state = self.preload_data.sim_instance.game_state
             except Exception as e:
                 print(f"Error loading dictionary A: {e}")
         return self.game_state
@@ -85,7 +92,10 @@ class APLClass:
         if self.game_state is None:
             self.game_state = self.get_game_state()
         if self.preload_data is None:
-            self.preload_data = self.game_state.get("preload").preload_data
+            assert self.game_state is not None, "Game state is not initialized"
+            preload_from_game_state = self.game_state.get("preload")
+            assert preload_from_game_state is not None, "Preload object not in game_state"
+            self.preload_data = preload_from_game_state.preload_data
         output = self.action_processor(CID, action, tick)
         return output
 
@@ -103,8 +113,10 @@ class APLClass:
 
     def spawn_action_directly(self, CID, action):
         """在没有被快速支援、或是其他技能拦截的情况下，直接生成动作"""
+        assert self.preload_data is not None
         if action == "auto_NA":
             if CID not in self.na_manager_dict:
+                assert self.preload_data.char_data is not None
                 for _char_obj in self.preload_data.char_data.char_obj_list:
                     if _char_obj.CID == CID:
                         self.na_manager_dict[CID] = na_manager_factory(_char_obj)

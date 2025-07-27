@@ -22,9 +22,15 @@ class AnomalyBar:
     sim_instance: "Simulator"
     element_type: ElementType = 0  # 属性种类编号(1~5)
     is_disorder: bool = False  # 是否是紊乱实例
-    current_ndarray: np.ndarray = field(default_factory=lambda: np.zeros((1, 1), dtype=np.float64))  # 当前快照总和
-    current_anomaly: np.float64 = field(default_factory=lambda: np.float64(0))  # 当前已经累计的积蓄值
-    current_effective_anomaly: np.float64 = field(default_factory=lambda: np.float64(0))  # 有效积蓄值（参与快照的）
+    current_ndarray: np.ndarray = field(
+        default_factory=lambda: np.zeros((1, 1), dtype=np.float64)
+    )  # 当前快照总和
+    current_anomaly: np.float64 = field(
+        default_factory=lambda: np.float64(0)
+    )  # 当前已经累计的积蓄值
+    current_effective_anomaly: np.float64 = field(
+        default_factory=lambda: np.float64(0)
+    )  # 有效积蓄值（参与快照的）
     anomaly_times: int = 0  # 迄今为止触发过的异常次数
     cd: int = 180  # 属性异常的内置CD，
     last_active: int = 0  # 上一次属性异常的时间
@@ -43,6 +49,9 @@ class AnomalyBar:
 
     def __post_init__(self):
         self.UUID = uuid.uuid4()
+
+    def __hash__(self):
+        return hash(self.UUID)
 
     @property
     def is_full(self):

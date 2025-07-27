@@ -1,11 +1,13 @@
 import os
 from collections import defaultdict
 
-import pandas as pd
+import polars as pl
 
 from zsim.define import DEBUG, DEBUG_LEVEL
 
-buffered_data: dict = defaultdict(lambda: defaultdict(lambda: defaultdict(int)))
+buffered_data: dict[str, dict[int, dict[str, int]]] = defaultdict(
+    lambda: defaultdict(lambda: defaultdict(int))
+)
 
 
 def report_buff_to_queue(
@@ -17,14 +19,22 @@ def report_buff_to_queue(
             buffered_data[character_name][time_tick - 1][buff_name] += buff_count
 
 
-# TODO：切换为 polars
 def dump_buff_csv(result_id: str):
-    for char_name in buffered_data:
-        if char_name not in buffered_data:
-            raise ValueError("你tmd函数写错了！")
+    for char_name, char_data in buffered_data.items():
+        if not char_data:
+            continue
+
+        rows = [{"time_tick": tick, **buffs} for tick, buffs in char_data.items()]
+
+        if not rows:
+            continue
+
         buff_report_file_path = f"{result_id}/buff_log/{char_name}.csv"
         os.makedirs(os.path.dirname(buff_report_file_path), exist_ok=True)
-        df = pd.DataFrame.from_dict(buffered_data[char_name], orient="index").reset_index()
-        df.rename(columns={"index": "time_tick"}, inplace=True)
-        df = df.sort_values(by="time_tick")
-        df.to_csv(buff_report_file_path, index=False, encoding="utf-8-sig")
+
+        df = pl.DataFrame(rows)
+        # Sort columns: time_tick first, then buff names alphabetically for deterministic output.
+        buff_columns = sorted([col for col in df.columns if col != "time_tick"])
+        df = df.sort("time_tick").select(["time_tick"] + buff_columns)
+
+        df.write_csv(buff_report_file_path, include_bom=True)

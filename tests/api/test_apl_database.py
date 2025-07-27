@@ -4,7 +4,6 @@ APL数据库测试
 """
 
 import os
-import json
 import pytest
 import tempfile
 import shutil

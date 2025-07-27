@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 import numpy as np
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from zsim.sim_progress.Preload import SkillNode
 
@@ -17,10 +18,12 @@ class SingleHit:
     hitted_count: int
     proactive: bool  # 该动作是否为主动技能（主要依靠检测skill_node的follow_by参数）
     heavy_hit = False  # 重攻击标签——默认重攻击是   heavy_attack为True的技能的最后一个Hit
-    skill_node = None
+    skill_node: "SkillNode | None" = None
 
     def effective_anomlay_buildup(self) -> bool:
         """是否是有效积蓄"""
+        if self.skill_node is None:
+            return False
         return self.skill_node.effective_anomaly_buildup
 
     @property

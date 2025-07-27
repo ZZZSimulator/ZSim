@@ -6,9 +6,7 @@ import aiofiles.os
 from typing import Any
 
 import polars as pl
-import plotly.graph_objects as go
 from zsim.define import results_dir
-from .constants import BUFF_EFFECT_MAPPING
 
 
 def _prepare_buff_timeline_data(df: pl.DataFrame) -> list[dict[str, Any]]:
