@@ -1,5 +1,5 @@
 import aiosqlite
-from typing import Any, List
+from typing import Any
 from zsim.define import SQLITE_PATH
 from zsim.models.character.character_config import CharacterConfig
 from datetime import datetime
@@ -207,7 +207,7 @@ class CharacterDB:
             await db.execute("DELETE FROM character_configs WHERE config_id = ?", (config_id,))
             await db.commit()
 
-    async def list_character_configs(self, name: str) -> List[CharacterConfig]:
+    async def list_character_configs(self, name: str) -> list[CharacterConfig]:
         """从数据库获取指定角色的所有配置列表"""
         await self._init_db()
         configs = []

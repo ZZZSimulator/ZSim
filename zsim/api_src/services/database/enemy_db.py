@@ -1,6 +1,6 @@
 import json
 import aiosqlite
-from typing import Any, List
+from typing import Any
 from zsim.define import SQLITE_PATH
 from zsim.models.enemy.enemy_config import EnemyConfig
 from datetime import datetime
@@ -96,7 +96,7 @@ class EnemyDB:
             await db.execute("DELETE FROM enemy_configs WHERE config_id = ?", (config_id,))
             await db.commit()
 
-    async def list_enemy_configs(self) -> List[EnemyConfig]:
+    async def list_enemy_configs(self) -> list[EnemyConfig]:
         """从数据库获取所有敌人配置列表"""
         await self._init_db()
         configs = []
