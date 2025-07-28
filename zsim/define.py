@@ -104,7 +104,14 @@ ENEMY_ATK_PARAMETER_DICT: dict[str, int | float | bool] = {
 PARRY_BASE_PARAMETERS: dict[str, int | float] = {
     "ChainParryActionTimeCost": 10,  # 连续招架动作的时间消耗
 }
-CHAR_PARRY_STRATEGY_MAP: dict = {1411: "1411_Assault_Aid_A"}
+
+# 招架策略，有些角色的拥有不同的突击支援（比如柚叶），所以在这里用字典进行映射。
+# 该字典的key为CID，value为招架动作的skill_tag
+# 注意，不同的招架策略有时候存在着影画或是其他的限制条件，
+# 所以若是在不满足这些条件的情况下强行使用这些招架策略，那么character中的审查函数会报错而中断程序运行。
+CHAR_PARRY_STRATEGY_MAP: dict = {
+    1411: "1411_Assault_Aid_A"
+}
 
 # debug参数，用于检查APL在窗口期间的想法
 APL_THOUGHT_CHECK: bool = _config["apl_mode"].get("apl_thought_check", False)

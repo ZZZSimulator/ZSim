@@ -171,11 +171,11 @@
 
   "紊乱倍率增加": "all_disorder_basic_mul",
   
-  "强击紊乱伤害提升": "strike_disorder_basic_mul",
-  "灼烧紊乱伤害提升": "burn_disorder_basic_mul",
-  "霜寒紊乱伤害提升": "frostbite_disorder_basic_mul",
-  "感电紊乱伤害提升": "shock_disorder_basic_mul",
-  "侵蚀紊乱伤害提升": "chaos_disorder_basic_mul",
+  "强击紊乱倍率增加": "strike_disorder_basic_mul",
+  "灼烧紊乱倍率增加": "burn_disorder_basic_mul",
+  "霜寒紊乱倍率增加": "frostbite_disorder_basic_mul",
+  "感电紊乱倍率增加": "shock_disorder_basic_mul",
+  "侵蚀紊乱倍率增加": "chaos_disorder_basic_mul",
 
   "贯穿伤害增加": "sheer_dmg_bonus"
 }
