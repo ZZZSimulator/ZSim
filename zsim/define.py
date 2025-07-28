@@ -136,6 +136,8 @@ SKILL_DATA_PATH: str = _config["database"]["SKILL_DATA_PATH"]
 ENEMY_DATA_PATH: str = _config["database"]["ENEMY_DATA_PATH"]
 ENEMY_ADJUSTMENT_PATH: str = _config["database"]["ENEMY_ADJUSTMENT_PATH"]
 DEFAULT_SKILL_PATH: str = _config["database"]["DEFAULT_SKILL_PATH"]
+CHARACTER_IMAGE_PATH: str = _config["database"]["CHARACTER_IMAGE_PATH"]
+STAR_IMAGE_PATH: str = _config["database"]["STAR_IMAGE_PATH"]
 CRIT_BALANCING: bool = _config["character"]["crit_balancing"]
 BACK_ATTACK_RATE: bool = _config["character"]["back_attack_rate"]
 # FIXME：背击暂时用几率控制。
