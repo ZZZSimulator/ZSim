@@ -28,7 +28,8 @@
     "@unocss/preset-wind4": "^66.3.3",
     "@unocss/reset": "^66.3.3",
     "electron-updater": "^6.3.9",
-    "unocss-preset-scrollbar-hide": "^1.0.1"
+    "unocss-preset-scrollbar-hide": "^1.0.1",
+    "vue-i18n": "^11.1.11"
   },
   "devDependencies": {
     "@antfu/eslint-config": "4.17.0",

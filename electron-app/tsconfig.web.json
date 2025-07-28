@@ -8,9 +8,9 @@
     "module": "esnext",
     "moduleResolution": "bundler",
     "paths": {
-      "@renderer/*": [
-        "src/renderer/src/*"
-      ]
+      "@renderer/*": ["src/renderer/src/*"],
+      "@locales/*": ["src/locales/*"],
+      "@/*": ["src/renderer/src/*"]
     },
     "strict": true,
     "noImplicitThis": true,
@@ -24,6 +24,7 @@
     "src/renderer/src/**/*",
     "src/renderer/types/*.d.ts",
     "src/renderer/src/**/*.vue",
-    "src/preload/*.d.ts"
+    "src/preload/*.d.ts",
+    "src/locales/*"
   ]
 }

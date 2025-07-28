@@ -17,6 +17,8 @@ export default defineConfig(() => {
       resolve: {
         alias: {
           '@renderer': path.join(dir, 'src/renderer/src'),
+          '@locales': path.join(dir, 'src/locales'),
+          '@/hooks': path.join(dir, 'src/renderer/src/hooks'),
         },
       },
       plugins: [
