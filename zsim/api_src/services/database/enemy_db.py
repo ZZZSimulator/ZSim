@@ -1,10 +1,11 @@
 import json
+from datetime import datetime
+from typing import Any, Self
+
 import aiosqlite
-from typing import Any
+
 from zsim.define import SQLITE_PATH
 from zsim.models.enemy.enemy_config import EnemyConfig
-from datetime import datetime
-
 
 _enemy_db: "EnemyDB | None" = None
 
@@ -13,6 +14,13 @@ class EnemyDB:
     def __init__(self):
         self._cache: dict[str, Any] = {}
         self._db_init: bool = False
+
+    @classmethod
+    async def creat(cls) -> Self:
+        self = cls()
+        await self._init_db()
+        self._db_init = True
+        return self
 
     async def _init_db(self) -> None:
         """初始化数据库，创建 enemy_configs 表"""
@@ -33,7 +41,6 @@ class EnemyDB:
 
     async def add_enemy_config(self, config: EnemyConfig) -> None:
         """添加一个新的敌人配置到数据库"""
-        await self._init_db()
         # 更新时间戳
         config.update_time = datetime.now()
 
@@ -52,7 +59,6 @@ class EnemyDB:
 
     async def get_enemy_config(self, config_id: str) -> EnemyConfig | None:
         """根据配置ID从数据库获取敌人配置"""
-        await self._init_db()
         async with aiosqlite.connect(SQLITE_PATH) as db:
             cursor = await db.execute(
                 "SELECT config_id, enemy_index, enemy_adjust, create_time, update_time FROM enemy_configs WHERE config_id = ?",
@@ -71,7 +77,6 @@ class EnemyDB:
 
     async def update_enemy_config(self, config: EnemyConfig) -> None:
         """更新数据库中的敌人配置"""
-        await self._init_db()
         # 更新时间戳
         config.update_time = datetime.now()
 
@@ -91,14 +96,12 @@ class EnemyDB:
 
     async def delete_enemy_config(self, config_id: str) -> None:
         """从数据库删除敌人配置"""
-        await self._init_db()
         async with aiosqlite.connect(SQLITE_PATH) as db:
             await db.execute("DELETE FROM enemy_configs WHERE config_id = ?", (config_id,))
             await db.commit()
 
     async def list_enemy_configs(self) -> list[EnemyConfig]:
         """从数据库获取所有敌人配置列表"""
-        await self._init_db()
         configs = []
         async with aiosqlite.connect(SQLITE_PATH) as db:
             cursor = await db.execute(
@@ -122,5 +125,5 @@ async def get_enemy_db() -> EnemyDB:
     """便捷函数：获取 EnemyDB 的单例实例"""
     global _enemy_db
     if _enemy_db is None:
-        _enemy_db = EnemyDB()
+        _enemy_db = await EnemyDB.creat()
     return _enemy_db

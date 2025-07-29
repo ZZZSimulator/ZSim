@@ -4,22 +4,22 @@ APL相关API路由
 """
 
 from fastapi import APIRouter, HTTPException, status
-from ..services.apl_service import APLService
+
 from ..models.apl import (
+    APIResponse,
     APLConfigCreateRequest,
     APLConfigUpdateRequest,
-    APLFileCreateRequest,
-    APLFileUpdateRequest,
-    APLValidateRequest,
-    APLParseRequest,
-    APIResponse,
-    APLTemplateInfo,
-    APLFileInfo,
     APLFileContent,
+    APLFileCreateRequest,
+    APLFileInfo,
+    APLFileUpdateRequest,
+    APLParseRequest,
+    APLTemplateInfo,
+    APLValidateRequest,
 )
+from ..services.apl_service import APLService, get_apl_service
 
 router = APIRouter()
-apl_service = APLService()
 
 
 @router.get(
@@ -32,7 +32,8 @@ async def get_apl_templates():
     获取APL模板列表
     """
     try:
-        templates = apl_service.get_apl_templates()
+        apl_service: APLService = await get_apl_service()
+        templates = await apl_service.get_apl_templates()
         return APIResponse(code=200, message="Success", data=templates)
     except Exception as e:
         raise HTTPException(
@@ -50,7 +51,8 @@ async def create_apl_config(config_data: APLConfigCreateRequest):
     创建APL配置
     """
     try:
-        result = apl_service.create_apl_config(config_data)
+        apl_service: APLService = await get_apl_service()
+        result = await apl_service.create_apl_config(config_data)
         return APIResponse(code=200, message="Success", data=result)
     except ValueError as e:
         raise HTTPException(
@@ -92,7 +94,8 @@ async def get_apl_config(config_id: str):
     获取特定APL配置
     """
     try:
-        config = apl_service.get_apl_config(config_id)
+        apl_service: APLService = await get_apl_service()
+        config = await apl_service.get_apl_config(config_id)
         if config:
             return APIResponse(code=200, message="Success", data=config)
         else:
@@ -115,7 +118,8 @@ async def update_apl_config(config_id: str, config_data: APLConfigUpdateRequest)
     更新APL配置
     """
     try:
-        result = apl_service.update_apl_config(config_id, config_data)
+        apl_service: APLService = await get_apl_service()
+        result = await apl_service.update_apl_config(config_id, config_data)
         return APIResponse(code=200, message="Success", data=result)
     except ValueError as e:
         raise HTTPException(
@@ -137,7 +141,8 @@ async def delete_apl_config(config_id: str):
     删除APL配置
     """
     try:
-        result = apl_service.delete_apl_config(config_id)
+        apl_service: APLService = await get_apl_service()
+        result = await apl_service.delete_apl_config(config_id)
         return APIResponse(code=200, message="Success", data=result)
     except ValueError as e:
         raise HTTPException(
@@ -159,7 +164,8 @@ async def get_apl_files():
     获取所有APL文件列表
     """
     try:
-        files = apl_service.get_apl_files()
+        apl_service: APLService = await get_apl_service()
+        files = await apl_service.get_apl_files()
         return APIResponse(code=200, message="Success", data=files)
     except Exception as e:
         raise HTTPException(
@@ -178,7 +184,8 @@ async def create_apl_file(file_data: APLFileCreateRequest):
     创建新APL文件
     """
     try:
-        result = apl_service.create_apl_file(file_data)
+        apl_service: APLService = await get_apl_service()
+        result = await apl_service.create_apl_file(file_data)
         return APIResponse(code=200, message="Success", data=result)
     except ValueError as e:
         raise HTTPException(
@@ -200,7 +207,8 @@ async def get_apl_file(file_id: str):
     获取APL文件内容
     """
     try:
-        content = apl_service.get_apl_file_content(file_id)
+        apl_service: APLService = await get_apl_service()
+        content = await apl_service.get_apl_file_content(file_id)
         return APIResponse(code=200, message="Success", data=content)
     except ValueError as e:
         raise HTTPException(
@@ -223,7 +231,8 @@ async def update_apl_file(file_id: str, file_data: APLFileUpdateRequest):
     更新APL文件内容
     """
     try:
-        result = apl_service.update_apl_file(file_id, file_data.content)
+        apl_service: APLService = await get_apl_service()
+        result = await apl_service.update_apl_file(file_id, file_data.content)
         return APIResponse(code=200, message="Success", data=result)
     except ValueError as e:
         raise HTTPException(
@@ -245,7 +254,8 @@ async def delete_apl_file(file_id: str):
     删除APL文件
     """
     try:
-        result = apl_service.delete_apl_file(file_id)
+        apl_service: APLService = await get_apl_service()
+        result = await apl_service.delete_apl_file(file_id)
         return APIResponse(code=200, message="Success", data=result)
     except ValueError as e:
         raise HTTPException(
@@ -267,6 +277,7 @@ async def validate_apl(request: APLValidateRequest):
     验证APL语法
     """
     try:
+        apl_service: APLService = await get_apl_service()
         result = apl_service.validate_apl_syntax(request.apl_code)
         return APIResponse(code=200, message="Success", data=result)
     except Exception as e:
@@ -285,6 +296,7 @@ async def parse_apl(request: APLParseRequest):
     解析APL代码
     """
     try:
+        apl_service: APLService = await get_apl_service()
         result = apl_service.parse_apl_code(request.apl_code)
         return APIResponse(code=200, message="Success", data=result)
     except Exception as e:
@@ -303,7 +315,8 @@ async def export_apl_config(config_id: str, file_path: str):
     导出APL配置到TOML文件
     """
     try:
-        success = apl_service.export_apl_config(config_id, file_path)
+        apl_service: APLService = await get_apl_service()
+        success = await apl_service.export_apl_config(config_id, file_path)
         if success:
             return APIResponse(code=200, message="Success", data={"message": "APL配置导出成功"})
         else:
@@ -324,9 +337,14 @@ async def import_apl_config(file_path: str):
     从TOML文件导入APL配置
     """
     try:
-        config_id = apl_service.import_apl_config(file_path)
+        apl_service: APLService = await get_apl_service()
+        config_id = await apl_service.import_apl_config(file_path)
         if config_id:
-            return APIResponse(code=200, message="Success", data={"config_id": config_id, "message": "APL配置导入成功"})
+            return APIResponse(
+                code=200,
+                message="Success",
+                data={"config_id": config_id, "message": "APL配置导入成功"},
+            )
         else:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="APL配置导入失败")
     except Exception as e:

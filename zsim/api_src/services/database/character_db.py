@@ -1,9 +1,10 @@
+from datetime import datetime
+from typing import Any, Self
+
 import aiosqlite
-from typing import Any
+
 from zsim.define import SQLITE_PATH
 from zsim.models.character.character_config import CharacterConfig
-from datetime import datetime
-
 
 _character_db: "CharacterDB | None" = None
 
@@ -12,6 +13,13 @@ class CharacterDB:
     def __init__(self):
         self._cache: dict[str, Any] = {}
         self._db_init: bool = False
+
+    @classmethod
+    async def creat(cls) -> Self:
+        self = cls()
+        await self._init_db()
+        self._db_init = True
+        return self
 
     async def _init_db(self) -> None:
         """初始化数据库，创建 character_configs 表"""
@@ -55,7 +63,6 @@ class CharacterDB:
 
     async def add_character_config(self, config: CharacterConfig) -> None:
         """添加一个新的角色配置到数据库"""
-        await self._init_db()
         # 设置config_id
         if not config.config_id:
             config.config_id = f"{config.name}_{config.config_name}"
@@ -106,7 +113,6 @@ class CharacterDB:
 
     async def get_character_config(self, name: str, config_name: str) -> CharacterConfig | None:
         """根据角色名称和配置名称从数据库获取角色配置"""
-        await self._init_db()
         config_id = f"{name}_{config_name}"
         async with aiosqlite.connect(SQLITE_PATH) as db:
             cursor = await db.execute(
@@ -154,7 +160,6 @@ class CharacterDB:
 
     async def update_character_config(self, config: CharacterConfig) -> None:
         """更新数据库中的角色配置"""
-        await self._init_db()
         # 更新时间戳
         config.update_time = datetime.now()
 
@@ -201,7 +206,6 @@ class CharacterDB:
 
     async def delete_character_config(self, name: str, config_name: str) -> None:
         """从数据库删除角色配置"""
-        await self._init_db()
         config_id = f"{name}_{config_name}"
         async with aiosqlite.connect(SQLITE_PATH) as db:
             await db.execute("DELETE FROM character_configs WHERE config_id = ?", (config_id,))
@@ -209,7 +213,6 @@ class CharacterDB:
 
     async def list_character_configs(self, name: str) -> list[CharacterConfig]:
         """从数据库获取指定角色的所有配置列表"""
-        await self._init_db()
         configs = []
         async with aiosqlite.connect(SQLITE_PATH) as db:
             cursor = await db.execute(
@@ -263,5 +266,5 @@ async def get_character_db() -> CharacterDB:
     """便捷函数：获取 CharacterDB 的单例实例"""
     global _character_db
     if _character_db is None:
-        _character_db = CharacterDB()
+        _character_db = await CharacterDB.creat()
     return _character_db
