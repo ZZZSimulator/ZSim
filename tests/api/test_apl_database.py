@@ -4,11 +4,13 @@ APL数据库测试
 """
 
 import os
-import pytest
-import tempfile
 import shutil
+import tempfile
+
+import pytest
+
 from zsim.api_src.services.database.apl_db import APLDatabase
-from zsim.define import DEFAULT_APL_DIR, COSTOM_APL_DIR
+from zsim.define import COSTOM_APL_DIR, DEFAULT_APL_DIR, SQLITE_PATH
 
 
 class TestAPLDatabase:
@@ -20,7 +22,7 @@ class TestAPLDatabase:
         # 保存原始目录
         original_default_dir = DEFAULT_APL_DIR
         original_custom_dir = COSTOM_APL_DIR
-
+        original_sqlite_path = SQLITE_PATH
         # 创建临时目录
         temp_dir = tempfile.mkdtemp()
         test_default_dir = os.path.join(temp_dir, "default")
@@ -41,8 +43,8 @@ class TestAPLDatabase:
 
         zsim.api_src.services.database.apl_db.DEFAULT_APL_DIR = test_default_dir
         zsim.api_src.services.database.apl_db.COSTOM_APL_DIR = test_custom_dir
-        zsim.api_src.services.database.apl_db.APL_CONFIGS_FILE = os.path.join(
-            test_default_dir, "apl_configs.json"
+        zsim.api_src.services.database.apl_db.SQLITE_PATH = os.path.join(
+            test_default_dir, "test_zsim.db"
         )
 
         yield test_default_dir, test_custom_dir
@@ -51,6 +53,7 @@ class TestAPLDatabase:
         shutil.rmtree(temp_dir)
         zsim.define.DEFAULT_APL_DIR = original_default_dir
         zsim.define.COSTOM_APL_DIR = original_custom_dir
+        zsim.api_src.services.database.apl_db.SQLITE_PATH = original_sqlite_path
 
     def test_create_and_get_apl_config(self, setup_and_teardown):
         """测试创建和获取APL配置"""
@@ -101,6 +104,7 @@ class TestAPLDatabase:
 
         # 验证更新
         retrieved_config = db.get_apl_config(config_id)
+        assert retrieved_config is not None
         assert retrieved_config["title"] == "Updated Title"
         assert retrieved_config["author"] == "Updated Author"
         assert retrieved_config["characters"]["required"] == ["NewCharacter"]

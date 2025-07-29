@@ -6,7 +6,7 @@ APL数据库服务
 import asyncio
 import os
 import uuid
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import aiosqlite
 import toml
@@ -40,7 +40,7 @@ class APLDatabase:
             """)
             await db.commit()
 
-    def get_apl_templates(self) -> List[Dict[str, Any]]:
+    def get_apl_templates(self) -> list[dict[str, Any]]:
         """获取所有APL模板"""
         templates = []
 
@@ -54,7 +54,7 @@ class APLDatabase:
 
         return templates
 
-    def get_apl_config(self, config_id: str) -> Optional[Dict[str, Any]]:
+    def get_apl_config(self, config_id: str) -> dict[str, Any] | None:
         """获取特定APL配置"""
         try:
             return asyncio.get_event_loop().run_until_complete(
@@ -64,7 +64,7 @@ class APLDatabase:
             print(f"Error loading APL config {config_id}: {e}")
             return None
 
-    async def _get_apl_config_async(self, config_id: str) -> Optional[Dict[str, Any]]:
+    async def _get_apl_config_async(self, config_id: str) -> dict[str, Any] | None:
         """异步获取特定APL配置"""
         async with aiosqlite.connect(SQLITE_PATH) as db:
             async with db.execute(
@@ -75,7 +75,7 @@ class APLDatabase:
                 if row:
                     # 解析TOML内容
                     content = toml.loads(row[5])
-                    return {
+                    result = {
                         "title": row[0],
                         "author": row[1],
                         "comment": row[2],
@@ -83,9 +83,10 @@ class APLDatabase:
                         "latest_change_time": row[4],
                         **content,
                     }
+                    return result
                 return None
 
-    def create_apl_config(self, config_data: Dict[str, Any]) -> str:
+    def create_apl_config(self, config_data: dict[str, Any]) -> str:
         """创建新的APL配置"""
         # 生成唯一ID
         config_id = str(uuid.uuid4())
@@ -98,14 +99,19 @@ class APLDatabase:
         except Exception as e:
             raise Exception(f"Failed to create APL config: {e}")
 
-    async def _create_apl_config_async(self, config_id: str, config_data: Dict[str, Any]) -> None:
+    async def _create_apl_config_async(self, config_id: str, config_data: dict[str, Any]) -> None:
         """异步创建新的APL配置"""
+        from datetime import datetime
+        
         # 提取通用信息
         title = config_data.get("title", "")
         author = config_data.get("author", "")
         comment = config_data.get("comment", "")
-        create_time = config_data.get("create_time", "")
-        latest_change_time = config_data.get("latest_change_time", "")
+        
+        # 系统决定创建时间和最后修改时间
+        current_time = datetime.now().isoformat()
+        create_time = current_time
+        latest_change_time = current_time
 
         # 创建要存储的配置数据副本（不包含通用信息）
         content_data = config_data.copy()
@@ -129,7 +135,7 @@ class APLDatabase:
             )
             await db.commit()
 
-    def update_apl_config(self, config_id: str, config_data: Dict[str, Any]) -> bool:
+    def update_apl_config(self, config_id: str, config_data: dict[str, Any]) -> bool:
         """更新APL配置"""
         try:
             return asyncio.get_event_loop().run_until_complete(
@@ -139,14 +145,18 @@ class APLDatabase:
             print(f"Error updating APL config {config_id}: {e}")
             return False
 
-    async def _update_apl_config_async(self, config_id: str, config_data: Dict[str, Any]) -> bool:
+    async def _update_apl_config_async(self, config_id: str, config_data: dict[str, Any]) -> bool:
         """异步更新APL配置"""
+        from datetime import datetime
+        
         # 提取通用信息
         title = config_data.get("title", "")
         author = config_data.get("author", "")
         comment = config_data.get("comment", "")
-        create_time = config_data.get("create_time", "")
-        latest_change_time = config_data.get("latest_change_time", "")
+        
+        # 获取现有的create_time（保持不变）
+        # 系统决定最后修改时间
+        latest_change_time = datetime.now().isoformat()
 
         # 创建要存储的配置数据副本（不包含通用信息）
         content_data = config_data.copy()
@@ -160,6 +170,17 @@ class APLDatabase:
         content = toml.dumps(content_data)
 
         async with aiosqlite.connect(SQLITE_PATH) as db:
+            # 先获取现有的create_time
+            async with db.execute(
+                "SELECT create_time FROM apl_configs WHERE id = ?", (config_id,)
+            ) as cursor:
+                row = await cursor.fetchone()
+                if row:
+                    create_time = row[0]
+                else:
+                    # 如果记录不存在，使用当前时间作为create_time
+                    create_time = latest_change_time
+
             cursor = await db.execute(
                 """
                 UPDATE apl_configs 
@@ -193,9 +214,14 @@ class APLDatabase:
         try:
             config = self.get_apl_config(config_id)
             if config:
+                # 创建要导出的配置数据副本（不包含数据库特定字段）
+                export_data = config.copy()
+                export_data.pop("create_time", None)
+                export_data.pop("latest_change_time", None)
+                
                 # 将配置数据转换为TOML格式并保存到文件
                 with open(file_path, "w", encoding="utf-8") as f:
-                    toml.dump(config, f)
+                    toml.dump(export_data, f)
                 return True
             else:
                 return False
@@ -203,7 +229,7 @@ class APLDatabase:
             print(f"Error exporting APL config {config_id}: {e}")
             return False
 
-    def import_apl_config(self, file_path: str) -> Optional[str]:
+    def import_apl_config(self, file_path: str) -> str | None:
         """从TOML文件导入APL配置"""
         try:
             # 读取TOML文件
@@ -213,7 +239,7 @@ class APLDatabase:
             # 生成唯一ID
             config_id = str(uuid.uuid4())
 
-            # 保存到数据库
+            # 保存到数据库（create_time和latest_change_time将由系统决定）
             asyncio.get_event_loop().run_until_complete(
                 self._create_apl_config_async(config_id, config_data)
             )
@@ -222,7 +248,7 @@ class APLDatabase:
             print(f"Error importing APL config from {file_path}: {e}")
             return None
 
-    def get_apl_files(self) -> List[Dict[str, Any]]:
+    def get_apl_files(self) -> list[dict[str, Any]]:
         """获取所有APL文件列表"""
         files = []
 
@@ -236,7 +262,7 @@ class APLDatabase:
 
         return files
 
-    def get_apl_file_content(self, file_id: str) -> Optional[Dict[str, Any]]:
+    def get_apl_file_content(self, file_id: str) -> dict[str, Any] | None:
         """获取APL文件内容"""
         # 根据file_id获取对应的APL文件内容
         # 解析file_id获取source和相对路径
@@ -263,7 +289,7 @@ class APLDatabase:
             print(f"Error reading APL file {file_id}: {e}")
             return None
 
-    def create_apl_file(self, file_data: Dict[str, Any]) -> str:
+    def create_apl_file(self, file_data: dict[str, Any]) -> str:
         """创建新的APL文件"""
         # 实现创建APL文件的逻辑
         try:
@@ -341,7 +367,7 @@ class APLDatabase:
             print(f"Error deleting APL file {file_id}: {e}")
             return False
 
-    def _get_apl_from_dir(self, apl_dir: str, source_type: str) -> List[Dict[str, Any]]:
+    def _get_apl_from_dir(self, apl_dir: str, source_type: str) -> list[dict[str, Any]]:
         """从指定目录获取APL模板"""
         apl_list = []
 
@@ -375,7 +401,7 @@ class APLDatabase:
 
         return apl_list
 
-    def _get_apl_files_from_dir(self, apl_dir: str, source_type: str) -> List[Dict[str, Any]]:
+    def _get_apl_files_from_dir(self, apl_dir: str, source_type: str) -> list[dict[str, Any]]:
         """从指定目录获取APL文件列表"""
         file_list = []
 
