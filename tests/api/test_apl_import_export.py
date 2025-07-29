@@ -4,14 +4,18 @@ APL导入导出测试
 """
 
 import os
-import toml
-import pytest
-import tempfile
 import shutil
+import tempfile
+
+import aiofiles
+import pytest
+import toml
+
 from zsim.api_src.services.database.apl_db import APLDatabase
-from zsim.define import DEFAULT_APL_DIR, COSTOM_APL_DIR
+from zsim.define import COSTOM_APL_DIR, DEFAULT_APL_DIR
 
 
+@pytest.mark.asyncio
 class TestAPLImportExport:
     """APL导入导出测试类"""
 
@@ -42,7 +46,7 @@ class TestAPLImportExport:
 
         zsim.api_src.services.database.apl_db.DEFAULT_APL_DIR = test_default_dir
         zsim.api_src.services.database.apl_db.COSTOM_APL_DIR = test_custom_dir
-        zsim.api_src.services.database.apl_db.APL_DATABASE_FILE = os.path.join(
+        zsim.api_src.services.database.apl_db.SQLITE_PATH = os.path.join(
             test_default_dir, "apl_configs.db"
         )
 
@@ -53,10 +57,10 @@ class TestAPLImportExport:
         zsim.define.DEFAULT_APL_DIR = original_default_dir
         zsim.define.COSTOM_APL_DIR = original_custom_dir
 
-    def test_export_apl_config(self, setup_and_teardown):
+    async def test_export_apl_config(self, setup_and_teardown):
         """测试导出APL配置"""
         test_default_dir, test_custom_dir = setup_and_teardown
-        db = APLDatabase()
+        db = await APLDatabase.creat()
 
         # 创建测试配置数据
         config_data = {
@@ -72,29 +76,29 @@ class TestAPLImportExport:
         }
 
         # 创建APL配置
-        config_id = db.create_apl_config(config_data)
+        config_id = await db.create_apl_config(config_data)
 
         # 导出配置到文件
         export_file_path = os.path.join(test_custom_dir, "exported_config.toml")
-        success = db.export_apl_config(config_id, export_file_path)
+        success = await db.export_apl_config(config_id, export_file_path)
 
         # 验证导出成功
         assert success is True
         assert os.path.exists(export_file_path)
 
         # 验证导出的文件内容
-        with open(export_file_path, "r", encoding="utf-8") as f:
-            exported_data = toml.load(f)
+        async with aiofiles.open(export_file_path, "r", encoding="utf-8") as f:
+            exported_data = toml.loads(await f.read())
 
         assert exported_data["title"] == "Test Export Config"
         assert exported_data["author"] == "Test Author"
         assert exported_data["comment"] == "Test Comment"
         assert exported_data["characters"]["required"] == ["Character1"]
 
-    def test_import_apl_config(self, setup_and_teardown):
+    async def test_import_apl_config(self, setup_and_teardown):
         """测试导入APL配置"""
         test_default_dir, test_custom_dir = setup_and_teardown
-        db = APLDatabase()
+        db = await APLDatabase.creat()
 
         # 创建TOML文件用于导入
         import_data = {
@@ -110,11 +114,11 @@ class TestAPLImportExport:
         }
 
         import_file_path = os.path.join(test_custom_dir, "import_config.toml")
-        with open(import_file_path, "w", encoding="utf-8") as f:
-            toml.dump(import_data, f)
+        async with aiofiles.open(import_file_path, "w", encoding="utf-8") as f:
+            await f.write(toml.dumps(import_data))
 
         # 导入配置
-        config_id = db.import_apl_config(import_file_path)
+        config_id = await db.import_apl_config(import_file_path)
 
         # 验证导入成功
         assert config_id is not None
@@ -122,16 +126,16 @@ class TestAPLImportExport:
         assert len(config_id) > 0
 
         # 验证导入的配置内容
-        imported_config = db.get_apl_config(config_id)
+        imported_config = await db.get_apl_config(config_id)
         assert imported_config is not None
         assert imported_config["title"] == "Test Import Config"
         assert imported_config["author"] == "Import Author"
         assert imported_config["characters"]["required"] == ["ImportChar1"]
 
-    def test_import_export_roundtrip(self, setup_and_teardown):
+    async def test_import_export_roundtrip(self, setup_and_teardown):
         """测试导入导出往返一致性"""
         test_default_dir, test_custom_dir = setup_and_teardown
-        db = APLDatabase()
+        db = await APLDatabase.creat()
 
         # 创建原始配置
         original_data = {
@@ -151,19 +155,19 @@ class TestAPLImportExport:
         }
 
         # 创建配置
-        config_id = db.create_apl_config(original_data)
+        config_id = await db.create_apl_config(original_data)
 
         # 导出配置
         export_file_path = os.path.join(test_custom_dir, "roundtrip_test.toml")
-        success = db.export_apl_config(config_id, export_file_path)
+        success = await db.export_apl_config(config_id, export_file_path)
         assert success is True
 
         # 从导出的文件重新导入
-        new_config_id = db.import_apl_config(export_file_path)
+        new_config_id = await db.import_apl_config(export_file_path)
         assert new_config_id is not None
 
         # 验证导入的配置与原始配置一致
-        imported_data = db.get_apl_config(new_config_id)
+        imported_data = await db.get_apl_config(new_config_id)
         assert imported_data is not None
 
         # 比较关键字段

@@ -3,7 +3,7 @@ APL业务逻辑服务
 负责APL相关业务逻辑处理
 """
 
-from typing import Any
+from typing import Any, Self
 
 from ..models.apl import (
     APLConfigCreateRequest,
@@ -16,36 +16,42 @@ from ..models.apl import (
     APLTemplateInfo,
     APLValidateResponse,
 )
-from .database.apl_db import APLDatabase
+from .database.apl_db import APLDatabase, get_apl_db
 
 
 class APLService:
     """APL业务逻辑服务类"""
 
-    def __init__(self):
+    def __init__(self, db: APLDatabase):
         """初始化APL服务"""
-        self.db = APLDatabase()
+        self.db: APLDatabase = db
 
-    def get_apl_templates(self) -> list[APLTemplateInfo]:
+    @classmethod
+    async def create(cls) -> Self:
+        """创建APLService实例"""
+        db = await get_apl_db()
+        return cls(db)
+
+    async def get_apl_templates(self) -> list[APLTemplateInfo]:
         """获取APL模板列表"""
-        templates = self.db.get_apl_templates()
+        templates = await self.db.get_apl_templates()
         return [APLTemplateInfo(**template) for template in templates]
 
-    def get_apl_config(self, config_id: str) -> dict[str, Any] | None:
+    async def get_apl_config(self, config_id: str) -> dict[str, Any] | None:
         """获取特定APL配置"""
-        return self.db.get_apl_config(config_id)
+        return await self.db.get_apl_config(config_id)
 
-    def create_apl_config(self, config_data: APLConfigCreateRequest) -> dict[str, Any]:
+    async def create_apl_config(self, config_data: APLConfigCreateRequest) -> dict[str, Any]:
         """创建新的APL配置"""
         config_dict = config_data.model_dump()
         # 验证配置数据
         if not self._validate_apl_config(config_dict):
             raise ValueError("Invalid APL configuration data")
 
-        config_id = self.db.create_apl_config(config_dict)
+        config_id = await self.db.create_apl_config(config_dict)
         return {"config_id": config_id, "message": "APL configuration created successfully"}
 
-    def update_apl_config(
+    async def update_apl_config(
         self, config_id: str, config_data: APLConfigUpdateRequest
     ) -> dict[str, Any]:
         """更新APL配置"""
@@ -54,51 +60,51 @@ class APLService:
         if not self._validate_apl_config(config_dict):
             raise ValueError("Invalid APL configuration data")
 
-        success = self.db.update_apl_config(config_id, config_dict)
+        success = await self.db.update_apl_config(config_id, config_dict)
         if success:
             return {"config_id": config_id, "message": "APL configuration updated successfully"}
         else:
             raise ValueError("Failed to update APL configuration")
 
-    def delete_apl_config(self, config_id: str) -> dict[str, Any]:
+    async def delete_apl_config(self, config_id: str) -> dict[str, Any]:
         """删除APL配置"""
-        success = self.db.delete_apl_config(config_id)
+        success = await self.db.delete_apl_config(config_id)
         if success:
             return {"config_id": config_id, "message": "APL configuration deleted successfully"}
         else:
             raise ValueError("Failed to delete APL configuration")
 
-    def get_apl_files(self) -> list[APLFileInfo]:
+    async def get_apl_files(self) -> list[APLFileInfo]:
         """获取所有APL文件列表"""
-        files = self.db.get_apl_files()
+        files = await self.db.get_apl_files()
         return [APLFileInfo(**file) for file in files]
 
-    def get_apl_file_content(self, file_id: str) -> APLFileContent:
+    async def get_apl_file_content(self, file_id: str) -> APLFileContent:
         """获取APL文件内容"""
-        content = self.db.get_apl_file_content(file_id)
+        content = await self.db.get_apl_file_content(file_id)
         if content is not None:
             return APLFileContent(**content)
         else:
             raise ValueError("APL file not found")
 
-    def create_apl_file(self, file_data: APLFileCreateRequest) -> dict[str, Any]:
+    async def create_apl_file(self, file_data: APLFileCreateRequest) -> dict[str, Any]:
         """创建新的APL文件"""
         # APL文件创建不需要验证APL配置数据，因为这是创建文件而不是配置
-        file_id = self.db.create_apl_file(file_data.model_dump())
+        file_id = await self.db.create_apl_file(file_data.model_dump())
         return {"file_id": file_id, "message": "APL file created successfully"}
 
-    def update_apl_file(self, file_id: str, content: str) -> dict[str, Any]:
+    async def update_apl_file(self, file_id: str, content: str) -> dict[str, Any]:
         """更新APL文件内容"""
         file_data = APLFileUpdateRequest(content=content)
-        success = self.db.update_apl_file(file_id, file_data.content)
+        success = await self.db.update_apl_file(file_id, file_data.content)
         if success:
             return {"file_id": file_id, "message": "APL file updated successfully"}
         else:
             raise ValueError("Failed to update APL file")
 
-    def delete_apl_file(self, file_id: str) -> dict[str, Any]:
+    async def delete_apl_file(self, file_id: str) -> dict[str, Any]:
         """删除APL文件"""
-        success = self.db.delete_apl_file(file_id)
+        success = await self.db.delete_apl_file(file_id)
         if success:
             return {"file_id": file_id, "message": "APL file deleted successfully"}
         else:
@@ -165,7 +171,9 @@ class APLService:
                         "character": parts[0].strip(),
                         "action_type": parts[1].strip(),
                         "action_id": parts[2].strip(),
-                        "conditions": [part.strip() for part in parts[3:]] if len(parts) > 3 else [],
+                        "conditions": [part.strip() for part in parts[3:]]
+                        if len(parts) > 3
+                        else [],
                     }
                     parsed_actions.append(action)
 
@@ -224,10 +232,20 @@ class APLService:
 
         return True
 
-    def export_apl_config(self, config_id: str, file_path: str) -> bool:
+    async def export_apl_config(self, config_id: str, file_path: str) -> bool:
         """导出APL配置到TOML文件"""
-        return self.db.export_apl_config(config_id, file_path)
+        return await self.db.export_apl_config(config_id, file_path)
 
-    def import_apl_config(self, file_path: str) -> str | None:
+    async def import_apl_config(self, file_path: str) -> str | None:
         """从TOML文件导入APL配置"""
-        return self.db.import_apl_config(file_path)
+        return await self.db.import_apl_config(file_path)
+
+
+_apl_service: APLService | None = None
+
+
+async def get_apl_service() -> APLService:
+    global _apl_service
+    if _apl_service is None:
+        _apl_service = await APLService.create()
+    return _apl_service

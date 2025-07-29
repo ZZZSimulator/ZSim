@@ -1,5 +1,5 @@
 import json
-from typing import Any
+from typing import Any, Self
 
 import aiosqlite
 
@@ -13,6 +13,13 @@ class SessionDB:
     def __init__(self):
         self._cache: dict[str, Any] = {}
         self._db_init: bool = False
+
+    @classmethod
+    async def creat(cls) -> Self:
+        self = cls()
+        await self._init_db()
+        self._db_init = True
+        return self
 
     async def _init_db(self) -> None:
         """初始化数据库，创建 sessions 表"""
@@ -47,7 +54,6 @@ class SessionDB:
 
     async def add_session(self, session: Session) -> None:
         """添加一个新的会话到数据库"""
-        await self._init_db()
         async with aiosqlite.connect(SQLITE_PATH) as db:
             await db.execute(
                 "INSERT INTO sessions (session_id, session_name, create_time, status, session_run, session_result) VALUES (?, ?, ?, ?, ?, ?)",
@@ -66,7 +72,6 @@ class SessionDB:
 
     async def get_session(self, session_id: str) -> Session | None:
         """根据 session_id 从数据库获取会话"""
-        await self._init_db()
         async with aiosqlite.connect(SQLITE_PATH) as db:
             cursor = await db.execute("SELECT * FROM sessions WHERE session_id = ?", (session_id,))
             row = await cursor.fetchone()
@@ -91,7 +96,6 @@ class SessionDB:
 
     async def update_session(self, session: Session) -> None:
         """更新数据库中的会话"""
-        await self._init_db()
         async with aiosqlite.connect(SQLITE_PATH) as db:
             await db.execute(
                 """UPDATE sessions
@@ -112,14 +116,12 @@ class SessionDB:
 
     async def delete_session(self, session_id: str) -> None:
         """从数据库删除会话"""
-        await self._init_db()
         async with aiosqlite.connect(SQLITE_PATH) as db:
             await db.execute("DELETE FROM sessions WHERE session_id = ?", (session_id,))
             await db.commit()
 
     async def list_sessions(self) -> list[Session]:
         """从数据库获取所有会话列表"""
-        await self._init_db()
         sessions = []
         async with aiosqlite.connect(SQLITE_PATH) as db:
             cursor = await db.execute("SELECT * FROM sessions ORDER BY create_time DESC")
@@ -148,5 +150,5 @@ async def get_session_db() -> SessionDB:
     """便捷函数：获取 SessionDB 的单例实例"""
     global _session_db
     if _session_db is None:
-        _session_db = SessionDB()
+        _session_db = await SessionDB.creat()
     return _session_db
