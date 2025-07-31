@@ -27,6 +27,10 @@
 ### 安装UV（如未安装）
 
 在任意终端中执行：
+```bash
+# 使用pip安装：
+pip install uv
+```
 
 ```bash
 # macOS/Linux：
@@ -43,39 +47,54 @@ winget install --id=astral-sh.uv -e
 powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
 ```
 
-```bash
-# 使用pip安装：
-pip install uv
-```
-
 或参考官方安装指南：[https://docs.astral.sh/uv/getting-started/installation/](https://docs.astral.sh/uv/getting-started/installation/)
 
-### 安装ZZZ模拟器
+### 安装并运行ZZZ模拟器
 
 在项目目录中执行：
 
 ```bash
-uv venv
-uv pip install .  # 这里有个 '.' 代表相对路径
-```
+uv sync
 
-## 运行说明
-
-在任意终端中执行：
-
-```bash
-zsim run
-```
-
-若你不想安装此工具，可直接运行：
-
-```bash
-uv run ./zsim/run.py run
-```
-
-```bash
-# 或使用：
 uv run zsim run
+```
+
+## 开发
+
+### 主要组件
+1. **模拟引擎** - `zsim/simulator/` 中的核心逻辑处理战斗模拟
+2. **Web API** - `zsim/api_src/` 中基于FastAPI的REST API，提供程序化访问
+3. **Web UI** - `zsim/webui.py` 中基于Streamlit的界面以及 `electron-app/` 中的Vue.js + Electron桌面应用
+4. **CLI** - 通过 `zsim/run.py` 的命令行接口
+5. **数据库** - 基于SQLite的角色/敌人配置存储
+6. **Electron应用** - 使用Vue.js和Electron构建的桌面应用，与FastAPI后端通信
+
+### 设置和安装
+```bash
+# 首先安装UV包管理器
+uv sync
+# WebUI开发
+uv run zsim run 
+# FastAPI后端
+uv run zsim api
+
+# Electron应用开发，还需安装Node.js依赖
+cd electron-app
+corepack install
+pnpm install
+```
+
+### 测试结构
+- 单元测试位于 `tests/` 目录
+- API测试位于 `tests/api/`
+- 测试固件在 `tests/conftest.py` 中定义
+- 使用pytest并支持asyncio
+
+```bash
+# 运行测试
+uv run pytest
+# 运行测试并生成覆盖率报告
+uv run pytest -v --cov=zsim --cov-report=html
 ```
 
 ## 待办事项

@@ -2,13 +2,11 @@
 
 English | [中文](./docs/README_CN.md)
 
-![zsim](./docs/img/zsim成图.svg)
-
 ![zsim项目组](./docs/img/横板logo成图.png)
 
 ## Introduction
 
-`ZZZ_Calculator` is a damage calculator for Zenless Zone Zero.
+`ZSim` is a battle simulator and damage calculator for Zenless Zone Zero (An ACT game from Hoyoverse).
 
 It is **fully automatically**, no need to manually set skill sequence (if sequence mode needed, let us know)
 
@@ -33,6 +31,11 @@ Download the latest source code in release page or use `git clone`
 Open terminal anywhere in your device:
 
 ```bash
+# Using pip if you have python installed:
+pip install uv
+```
+
+```bash
 # On macOS or Linux:
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
@@ -47,39 +50,56 @@ winget install --id=astral-sh.uv  -e
 powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
 ```
 
-```bash
-# Using pip:
-pip install uv
-```
+
 
 Or check the official installation guide: [https://docs.astral.sh/uv/getting-started/installation/](https://docs.astral.sh/uv/getting-started/installation/)
 
-### Install ZZZ-Simulator
+### Install and run ZZZ-Simulator
 
 Open terminal in the directory of this project, then:
 
 ```bash
-uv venv
-uv pip install .  # there is a '.' refer to relative path
-```
+uv sync
 
-## Run
-
-Open terminal anywhere in your device:
-
-```bash
-zsim run
-```
-
-If you don't want to install `ZZZ-Simulator`, you can also run it directly:
-
-```bash
-uv run ./zsim/run.py run
-```
-
-```bash
-# or also:
 uv run zsim run
+```
+
+## Development
+
+### Key Components
+1. **Simulation Engine** - Core logic in `zsim/simulator/` handles the battle simulation
+2. **Web API** - FastAPI-based REST API in `zsim/api_src/` for programmatic access
+3. **Web UI** - Streamlit-based interface in `zsim/webui.py` and new Vue.js + Electron desktop application in `electron-app/`
+4. **CLI** - Command-line interface via `zsim/run.py`
+5. **Database** - SQLite-based storage for character/enemy configurations
+6. **Electron App** - Desktop application built with Vue.js and Electron that communicates with the FastAPI backend
+
+### Setup and Installation
+```bash
+# Install UV package manager first
+uv sync
+# For WebUI develop
+uv run zsim run 
+# For FastAPI backend
+uv run zsim api
+
+# For Electron App development, also install Node.js dependencies
+cd electron-app
+corepack install
+pnpm install
+```
+
+### Testing Structure
+- Unit tests in `tests/` directory
+- API tests in `tests/api/`
+- Fixtures defined in `tests/conftest.py`
+- Uses pytest with asyncio support
+
+```bash
+# Run the tests
+uv run pytest
+# Run the tests with coverage report
+uv run pytest -v --cov=zsim --cov-report=html
 ```
 
 ## TODO LIST
