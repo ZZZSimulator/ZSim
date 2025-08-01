@@ -50,7 +50,7 @@ class YuzuhaCinema6SheelTrigger(Buff.BuffLogic):
             return False
         tick = self.buff_instance.sim_instance.tick
         lasting_tick = tick - skill_node.preload_tick
-        if 0 <= lasting_tick < 51:
+        if 0 <= lasting_tick < 24:
             return False
         else:
             self.record.charging_start = True

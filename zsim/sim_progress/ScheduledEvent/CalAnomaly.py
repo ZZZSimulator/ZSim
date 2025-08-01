@@ -6,11 +6,10 @@ from zsim.define import ElementType
 from zsim.sim_progress.anomaly_bar import AnomalyBar
 from zsim.sim_progress.anomaly_bar.CopyAnomalyForOutput import (
     DirgeOfDestinyAnomaly as Abloom,
-)
-from zsim.sim_progress.anomaly_bar.CopyAnomalyForOutput import (
     Disorder,
     PolarityDisorder,
 )
+from zsim.sim_progress.Character.character import Character
 from zsim.sim_progress.Character.Yanagi import Yanagi
 from zsim.sim_progress.Enemy import Enemy
 from zsim.sim_progress.Report import report_to_log
@@ -105,7 +104,7 @@ class CalAnomaly:
             stun_vulnerability,
             special_mul,
             imp_mul,
-            stun_mul,
+            stun_mul
         )
 
     @staticmethod
@@ -150,7 +149,9 @@ class CalAnomaly:
         # 计算属性/类型的穿透
         if self.element_type == 0:
             # 穿透率
-            addon_pen_ratio = float(self.dmg_sp[0, 6]) + self.data.dynamic.strike_ignore_defense
+            addon_pen_ratio = (
+                float(self.dmg_sp[0, 6]) + self.data.dynamic.strike_ignore_defense
+            )
             # 受击方有效防御
         else:
             addon_pen_ratio = float(self.dmg_sp[0, 6])
@@ -208,9 +209,7 @@ class CalAnomaly:
     def cal_anomaly_dmg(self) -> np.float64:
         """计算异常伤害期望"""
 
-        return np.float64(
-            np.prod(self.final_multipliers) / (self.dmg_sp[0, 9] * self.dmg_sp[0, 10])
-        )
+        return np.float64(np.prod(self.final_multipliers)/(self.dmg_sp[0,9] * self.dmg_sp[0,10]))
 
 
 class CalDisorder(CalAnomaly):
@@ -225,7 +224,9 @@ class CalDisorder(CalAnomaly):
         异常伤害快照以 array 形式储存，顺序为：
         [基础伤害区、增伤区、异常精通区、等级、异常增伤区、异常暴击区、穿透率、穿透值、抗性穿透]
         """
-        super().__init__(disorder_obj, enemy_obj, dynamic_buff, sim_instance=sim_instance)
+        super().__init__(
+            disorder_obj, enemy_obj, dynamic_buff, sim_instance=sim_instance
+        )
         self.final_multipliers[0] = self.cal_disorder_base_dmg(
             np.float64(self.final_multipliers[0])
         )
@@ -239,38 +240,45 @@ class CalDisorder(CalAnomaly):
         """
         t_s = np.float64(self.anomaly_obj.remaining_tick() / 60)
         disorder_base_dmg: np.float64
+        # 计算紊乱基础倍率增幅
+        disorder_basic_mul_map = self.data.dynamic.disorder_basic_mul_map
+        disorder_base_ratio_increase = disorder_basic_mul_map[self.element_type] + disorder_basic_mul_map["all"]
         # 计算紊乱基础伤害
         match self.element_type:
             case 0:  # 强击紊乱
-                disorder_base_dmg = (base_mul / 7.13) * (np.floor(t_s) * 0.075 + 4.5)
+                _atk = base_mul / 7.13
+                _ratio = np.floor(t_s) * 0.075 + 4.5 + disorder_base_ratio_increase
             case 1:  # 灼烧紊乱
-                disorder_base_dmg = (base_mul / 0.5) * (np.floor(t_s / 0.5) * 0.5 + 4.5)
+                _atk = base_mul / 0.5
+                _ratio = np.floor(t_s / 0.5) * 0.5 + 4.5 + disorder_base_ratio_increase
             case 2:  # 霜寒紊乱
-                disorder_base_dmg = (base_mul / 5) * (np.floor(t_s) * 0.075 + 4.5)
+                _atk = base_mul / 5
+                _ratio = np.floor(t_s) * 0.075 + 4.5 + disorder_base_ratio_increase
             case 3:  # 感电紊乱
-                disorder_base_dmg = (base_mul / 1.25) * (np.floor(t_s) * 1.25 + 4.5)
+                _atk = base_mul / 1.25
+                _ratio = np.floor(t_s) * 1.25 + 4.5 + disorder_base_ratio_increase
             case 4:  # 侵蚀紊乱
-                disorder_base_dmg = (base_mul / 0.625) * (np.floor(t_s / 0.5) * 0.625 + 4.5)
+                _atk = base_mul / 0.625
+                _ratio = np.floor(t_s / 0.5) * 0.625 + 4.5 + disorder_base_ratio_increase
             case 5:  # 烈霜紊乱
-                disorder_base_dmg = (base_mul / 5) * (np.floor(t_s) * 0.75 + 6)
+                _atk = base_mul / 5
+                _ratio = np.floor(t_s) * 0.75 + 6 + disorder_base_ratio_increase
             case 6:  # 玄墨侵蚀紊乱
-                disorder_base_dmg = (base_mul / 0.625) * (np.floor(t_s / 0.5) * 0.625 + 4.5)
+                _atk = base_mul / 0.625
+                _ratio = np.floor(t_s / 0.5) * 0.625 + 4.5 + disorder_base_ratio_increase
             case _:
                 assert False, f"Invalid Element Type {self.element_type}"
-        # 计算紊乱基础倍率增幅
-        disorder_basic_mul_map: dict[ElementType | Literal["all"], float] = (
-            self.data.dynamic.disorder_basic_mul_map
-        )
-        disorder_base_dmg *= 1 + (
-            disorder_basic_mul_map[self.element_type] + disorder_basic_mul_map["all"]
-        )
-        # print(f"111111，计算紊乱！{disorder_basic_mul_map}")
+        disorder_base_dmg = _atk * _ratio
+        # from zsim.define import ELEMENT_TYPE_MAPPING as ETM
+        # print(f"111111，计算紊乱！{ETM[self.element_type]}属性的紊乱，攻击力为：{_atk:.2f}，倍率为：{_ratio:.2f}, 紊乱倍率加成为：{disorder_base_ratio_increase}")
         return np.float64(disorder_base_dmg)
 
     def cal_disorder_extra_mul(self) -> np.float64:
-        """计算紊乱的异常额外增伤区
-
+        """
+        计算紊乱的异常额外增伤区，即紊乱的异常增伤区。
         异常额外增伤区 = 1 + 对应属性异常额外增伤
+        紊乱的额外增伤本身只有一个词条：紊乱额外伤害增幅（disorder_dmg_mul），该词条本身是对所有紊乱通用的，
+        所以若是要实现“X属性紊乱伤害增幅”，则必须通过buff label的"specified_disorder_element_type"加以限制。
         """
         map: dict[ElementType | Literal["all", -1], float] = self.data.dynamic.ano_extra_bonus
         return np.float64(1 + map[-1])

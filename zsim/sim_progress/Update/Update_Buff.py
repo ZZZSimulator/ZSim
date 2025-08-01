@@ -32,8 +32,8 @@ def update_dynamic_bufflist(DYNAMIC_BUFF_DICT: dict, timetick, exist_buff_dict: 
                     report_buff_to_queue(charname, timetick, _.ft.index, _.dy.count, True, level=4)
                     continue
                 if _.ft.individual_settled:
-                    if len(_.dy.built_in_buff_box) <= 0 or timetick >= _.dy.endticks:
-                        # 层数为0或是到点了，都会导致buff结束，
+                    if len(_.dy.built_in_buff_box) <= 0:
+                        # 层数为0时候结束
                         remove_buff_list.append(_)
                         continue
                     else:
@@ -72,10 +72,14 @@ def process_individual_buff(_, timetick):
     """
     针对层数独立结算的buff的tuple的独立结算。去除过期的tuple
     """
-    for tuples in _.dy.built_in_buff_box[:]:
-        if tuples[1] <= timetick:
-            _.dy.built_in_buff_box.remove(tuples)
-            _.dy.count = len(_.dy.built_in_buff_box)
+    end_tuples_list = []
+    for tuples in _.dy.built_in_buff_box:
+        if tuples[1] < timetick:
+            end_tuples_list.append(tuples)
+    else:
+        for _end_tuples in end_tuples_list:
+            _.dy.built_in_buff_box.remove(_end_tuples)
+    _.dy.count = len(_.dy.built_in_buff_box)
 
 
 def KickOutBuff(
