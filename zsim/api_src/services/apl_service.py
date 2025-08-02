@@ -165,7 +165,9 @@ class APLService:
                         "character": parts[0].strip(),
                         "action_type": parts[1].strip(),
                         "action_id": parts[2].strip(),
-                        "conditions": [part.strip() for part in parts[3:]] if len(parts) > 3 else [],
+                        "conditions": [part.strip() for part in parts[3:]]
+                        if len(parts) > 3
+                        else [],
                     }
                     parsed_actions.append(action)
 
