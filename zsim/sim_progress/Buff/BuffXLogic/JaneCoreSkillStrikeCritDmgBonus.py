@@ -36,7 +36,7 @@ class JaneCoreSkillStrikeCritDmgBonus(Buff.BuffLogic):
         """强击的暴伤Debuff情况是和啮咬绑定的。"""
         self.check_record_module()
         self.get_prepared(
-            char_CID=1301, trigger_buff_0=("enemy", "Buff-角色-简-核心被动-啮咬触发器")
+            char_CID=1261, trigger_buff_0=("enemy", "Buff-角色-简-核心被动-啮咬触发器")
         )
         if self.record.trigger_buff_0.dy.active:
             return True

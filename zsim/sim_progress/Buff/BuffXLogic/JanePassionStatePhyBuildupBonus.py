@@ -32,7 +32,8 @@ class JanePassionStatePhyBuildupBonus(Buff.BuffLogic):
     def special_judge_logic(self, **kwargs):
         """积蓄效率Buff的判定和触发器有关，其状态和触发器相同"""
         self.check_record_module()
-        self.get_prepared(char_CID=1301, trigger_buff_0=("简", "Buff-角色-简-狂热状态触发器"))
+        self.get_prepared(char_CID=1261, trigger_buff_0=("简", "Buff-角色-简-狂热状态触发器"))
+
         if self.record.trigger_buff_0.dy.active:
             return True
         else:

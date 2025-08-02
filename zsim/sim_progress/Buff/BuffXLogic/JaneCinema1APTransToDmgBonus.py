@@ -40,7 +40,7 @@ class JaneCinema1APTransToDmgBonus(Buff.BuffLogic):
     def special_judge_logic(self, **kwargs):
         """简的1画精通转增伤部分，触发逻辑和狂热触发器挂钩；"""
         self.check_record_module()
-        self.get_prepared(char_CID=1301, trigger_buff_0=("简", "Buff-角色-简-狂热状态触发器"))
+        self.get_prepared(char_CID=1261, trigger_buff_0=("简", "Buff-角色-简-狂热状态触发器"))
         if self.record.trigger_buff_0.dy.active:
             return True
         else:
@@ -50,7 +50,7 @@ class JaneCinema1APTransToDmgBonus(Buff.BuffLogic):
         """当触发器激活时，执行self.xhit，计算实时精通，转化为增伤层数。"""
         self.check_record_module()
         self.get_prepared(
-            char_CID=1301,
+            char_CID=1261,
             trigger_buff_0=("简", "Buff-角色-简-狂热状态触发器"),
             dynamic_buff_list=1,
             enemy=1,

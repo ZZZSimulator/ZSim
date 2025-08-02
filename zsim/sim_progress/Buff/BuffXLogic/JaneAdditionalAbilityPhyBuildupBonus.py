@@ -35,7 +35,7 @@ class JaneAdditionalAbilityPhyBuildupBonus(Buff.BuffLogic):
     def special_judge_logic(self, **kwargs):
         """简组队被动的第二特效是：只要有敌人处于异常状态即可触发，所以只要有任意一种异常处于激活状态，就可以放行。"""
         self.check_record_module()
-        self.get_prepared(char_CID=1301, enemy=1)
+        self.get_prepared(char_CID=1261, enemy=1)
         return self.record.enemy.dynamic.is_under_anomaly()
 
     def special_exit_logic(self, **kwargs):

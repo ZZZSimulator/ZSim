@@ -55,7 +55,7 @@ class Jane(Character):
         for node in skill_nodes:
             if node.char_name != "简":
                 continue
-            if node.skill_tag == "1301_SNA_1":
+            if node.skill_tag == "1261_SNA_1":
                 self.salchow_jump -= 1
                 self.__check_salchow_jump()
 
@@ -67,7 +67,7 @@ class Jane(Character):
             passion_direct_add: float = float(labels.get("passion_direct_add", 0))  # type: ignore
             self.__passion_core(passion_get, passion_consume, passion_direct_add)
 
-        # TODO 关于萨霍夫跳的第一段（1301_SNA_1）的拆分问题：
+        # TODO 关于萨霍夫跳的第一段（1261_SNA_1）的拆分问题：
         #  这一段攻击动作是可以提前停止的，
         #  所以我在考虑要不要在数据库中对该动作进行拆分——就像青衣的 NA_3 一样，只记录最小单位。
         #  因为开大抢队、或是即将到来的怪物进攻以及角色交互模块（估计在5月份我就一定会写），一定会涉及到各种动作的提前终止，
@@ -76,7 +76,7 @@ class Jane(Character):
         #  当然，现阶段可以不做这个，让简每次都打完完整的萨霍夫跳
         #  但是，类似于这种可重复的蓄力类动作的拆分，可以说是通用需求。在简这里碰到的问题，在其他角色那里一样会碰到，
         #   ---分割线---
-        #   如果要拆的话，显然就要涉及一个判断“1301_SNA_1的首次传入”的需求，
+        #   如果要拆的话，显然就要涉及一个判断“1261_SNA_1的首次传入”的需求，
         #   那可以看看char下面的lasting_node，那里的数据结构可以帮助你快速判断这个“首次传入”，就不需要在本地写一堆轮子了。
 
         # if self.cinema == 6:
