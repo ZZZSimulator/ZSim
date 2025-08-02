@@ -102,12 +102,12 @@ class APLDatabase:
     async def _create_apl_config_async(self, config_id: str, config_data: dict[str, Any]) -> None:
         """异步创建新的APL配置"""
         from datetime import datetime
-        
+
         # 提取通用信息
         title = config_data.get("title", "")
         author = config_data.get("author", "")
         comment = config_data.get("comment", "")
-        
+
         # 系统决定创建时间和最后修改时间
         current_time = datetime.now().isoformat()
         create_time = current_time
@@ -148,12 +148,12 @@ class APLDatabase:
     async def _update_apl_config_async(self, config_id: str, config_data: dict[str, Any]) -> bool:
         """异步更新APL配置"""
         from datetime import datetime
-        
+
         # 提取通用信息
         title = config_data.get("title", "")
         author = config_data.get("author", "")
         comment = config_data.get("comment", "")
-        
+
         # 获取现有的create_time（保持不变）
         # 系统决定最后修改时间
         latest_change_time = datetime.now().isoformat()
@@ -218,7 +218,7 @@ class APLDatabase:
                 export_data = config.copy()
                 export_data.pop("create_time", None)
                 export_data.pop("latest_change_time", None)
-                
+
                 # 将配置数据转换为TOML格式并保存到文件
                 with open(file_path, "w", encoding="utf-8") as f:
                     toml.dump(export_data, f)
