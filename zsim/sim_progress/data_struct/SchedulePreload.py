@@ -1,5 +1,7 @@
 from typing import TYPE_CHECKING
 
+from .schedule_dispatch import ScheduledEventEmitterProvider
+
 if TYPE_CHECKING:
     from zsim.sim_progress.Preload.PreloadDataClass import PreloadData
     from zsim.simulator.simulator_class import Simulator
@@ -47,6 +49,7 @@ def schedule_preload_event_factory(
     sim_instance: "Simulator",
     apl_priority_list: list[int] | None = None,
     active_generation_list: list[bool] | None = None,
+    scheduled_event_emitter_provider: ScheduledEventEmitterProvider | None = None,
 ) -> None:
     """根据传入的参数，生成SchedulePreload事件；通常情况下我们不通过构造函数直接创建SchedulePreload事件，而是通过调用此工厂函数来创建事件。
     Args:
@@ -61,13 +64,17 @@ def schedule_preload_event_factory(
     from zsim.sim_progress.Buff import JudgeTools
 
     tick_now = JudgeTools.find_tick(sim_instance=sim_instance)
-    event_list = JudgeTools.find_event_list(sim_instance=sim_instance)
     if len(preload_tick_list) != event_count:
         raise ValueError("preload_tick_list和skill_tag_list的长度不一致")
     if apl_priority_list is not None and len(apl_priority_list) != event_count:
         raise ValueError("apl_priority_list和skill_tag_list的长度不一致")
     if active_generation_list is not None and len(active_generation_list) != event_count:
         raise ValueError("active_generation_list和skill_tag_list的长度不一致")
+    emitter_provider = (
+        scheduled_event_emitter_provider
+        or ScheduledEventEmitterProvider.from_sim_instance(sim_instance)
+    )
+    emitter = emitter_provider.create_emitter()
     for i in range(event_count):
         preload_tick = preload_tick_list[i]
         if preload_tick < tick_now:
@@ -78,6 +85,11 @@ def schedule_preload_event_factory(
             active_generation_list[i] if active_generation_list is not None else False
         )
         schedule_event = SchedulePreload(
-            preload_tick, skill_tag, preload_data, apl_priority, active_generation
+            preload_tick,
+            skill_tag,
+            preload_data,
+            apl_priority,
+            active_generation,
+            sim_instance=sim_instance,
         )
-        event_list.append(schedule_event)
+        emitter.emit_scheduled(schedule_event)

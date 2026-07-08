@@ -1,7 +1,16 @@
+from typing import Any
+
 from zsim.define import HUGO_REPORT
+from zsim.sim_progress.data_struct.schedule_dispatch import (
+    ScheduledEventEmitter,
+    ScheduledEventEmitterProvider,
+)
 from zsim.sim_progress.Enemy import Enemy
 
-from .. import Buff, JudgeTools, check_preparation, find_tick
+from .. import Buff, check_preparation, find_tick
+from ..JudgeTools import build_preparation_context_from_buff
+from ._preparation_helpers import ensure_owner_template_record, prepare_with_context
+from .enemy_state_read import read_enemy_stun_active, read_enemy_stun_rest_tick
 
 
 class HugoCorePassiveTotalizeTriggerRecord:
@@ -36,26 +45,43 @@ class HugoCorePassiveTotalizeTriggerRecord:
 
 
 class HugoCorePassiveTotalizeTrigger(Buff.BuffLogic):
-    def __init__(self, buff_instance):
+    def __init__(
+        self,
+        buff_instance,
+        scheduled_event_emitter_provider: ScheduledEventEmitterProvider | None = None,
+    ):
         """雨果核心被动，决算触发器"""
         super().__init__(buff_instance)
         self.buff_instance: Buff = buff_instance
-        self.buff_0: Buff | None = None
-        self.record: HugoCorePassiveTotalizeTriggerRecord | None = None
+        self._scheduled_event_emitter_provider = (
+            scheduled_event_emitter_provider
+            or ScheduledEventEmitterProvider.from_sim_instance_getter(
+                lambda: self.buff_instance.sim_instance
+            )
+        )
+        self.buff_0: Any = None
+        self.record: Any = None
         self.xjudge = self.special_judge_logic
         self.xhit = self.special_hit_logic
 
     def get_prepared(self, **kwargs):
-        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
+        return prepare_with_context(
+            self,
+            check_preparation_func=check_preparation,
+            context_builder=build_preparation_context_from_buff,
+            **kwargs,
+        )
+
+    def _scheduled_event_emitter(self) -> ScheduledEventEmitter:
+        return self._scheduled_event_emitter_provider.create_emitter()
 
     def check_record_module(self):
-        if self.buff_0 is None:
-            self.buff_0 = JudgeTools.find_exist_buff_dict(
-                sim_instance=self.buff_instance.sim_instance
-            )["雨果"][self.buff_instance.ft.index]
-        if self.buff_0.history.record is None:
-            self.buff_0.history.record = HugoCorePassiveTotalizeTriggerRecord()
-        self.record = self.buff_0.history.record
+        ensure_owner_template_record(
+            self,
+            owner_name="雨果",
+            record_factory=HugoCorePassiveTotalizeTriggerRecord,
+            context_builder=build_preparation_context_from_buff,
+        )
 
     def special_judge_logic(self, **kwargs):
         """敌人处于失衡状态时，强化E、大招触发"""
@@ -121,7 +147,7 @@ class HugoCorePassiveTotalizeTrigger(Buff.BuffLogic):
             return True
         else:
             # 否则，检测敌人是否处于失衡状态
-            if self.record.enemy.dynamic.stun:
+            if read_enemy_stun_active(self.record.enemy):
                 self.record.active_signal = skill_node.skill.trigger_buff_level
                 return True
             else:
@@ -140,8 +166,7 @@ class HugoCorePassiveTotalizeTrigger(Buff.BuffLogic):
         elif self.record.active_signal == 0 and self.record.char.cinema != 6:
             raise ValueError(f"在非6画的情况下检测到了非法的触发信号：{self.record.active_signal}")
         """准备数据"""
-        event_list = JudgeTools.find_event_list(sim_instance=self.buff_instance.sim_instance)
-        rest_tick = self.record.enemy.get_stun_rest_tick()
+        rest_tick = read_enemy_stun_rest_tick(self.record.enemy)
         ratio = 1000 + min(300, rest_tick) / 60 * 280 + min(600, max(rest_tick - 300, 0)) / 60 * 100
         if self.record.active_signal in [2, 6]:
             if HUGO_REPORT:
@@ -218,12 +243,13 @@ class HugoCorePassiveTotalizeTrigger(Buff.BuffLogic):
         totalize_node.loading_mission.mission_start(
             find_tick(sim_instance=self.buff_instance.sim_instance)
         )
-        event_list.append(totalize_node)
+        scheduled_event_emitter = self._scheduled_event_emitter()
+        scheduled_event_emitter.emit_scheduled(totalize_node)
 
         """失衡状态强制结算事件"""
         from zsim.sim_progress.data_struct import StunForcedTerminationEvent
 
-        if self.record.enemy.dynamic.stun:
+        if read_enemy_stun_active(self.record.enemy):
             if self.record.char.cinema >= 2 and self.record.active_signal == 6:
                 if HUGO_REPORT:
                     self.buff_instance.sim_instance.schedule_data.change_process_state()
@@ -250,7 +276,7 @@ class HugoCorePassiveTotalizeTrigger(Buff.BuffLogic):
 
         """2画以上的大招触发决算时，不结算失衡状态。"""
         if stun_event is not None:
-            event_list.append(stun_event)
+            scheduled_event_emitter.emit_scheduled(stun_event)
 
         """重置信号"""
         self.record.active_signal = None

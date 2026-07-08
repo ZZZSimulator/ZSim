@@ -6,7 +6,7 @@ class LoadingMission:
     def __init__(self, mission: SkillNode):
         self.mission_active_state = False
         self.mission_node = mission
-        self.mission_dict = {}
+        self.mission_dict: dict[float | int, str] = {}
         self.mission_start_tick = mission.preload_tick
         self.hitted_count = 0  # 已经结算的hit数量
         self.mission_tag = mission.skill_tag
@@ -36,9 +36,13 @@ class LoadingMission:
                     # 这里的键值也要向上取整，注意，这里产生的是一个int，所以要转化为float
                     self.mission_dict[tick_key] = "hit"
             self.mission_dict[float(self.mission_node.preload_tick + timecost)] = "end"
-            report_to_log(
-                f"[Skill LOAD]:{timenow}:{self.mission_tag}开始并拆分子任务。", level=4
-            ) if report else None
+            (
+                report_to_log(
+                    f"[Skill LOAD]:{timenow}:{self.mission_tag}开始并拆分子任务。", level=4
+                )
+                if report
+                else None
+            )
         else:
             self.mission_dict[timenow] = "hit"
 
@@ -52,7 +56,7 @@ class LoadingMission:
             self.mission_end()
             return
 
-    def get_first_hit(self) -> int | None:
+    def get_first_hit(self) -> float | int | None:
         """返回首次命中的时间"""
         tick_list = list(self.mission_dict.keys())
         while tick_list:
@@ -61,6 +65,7 @@ class LoadingMission:
                 return tick
             else:
                 tick_list.remove(tick)
+        return None
 
     def is_hit_now(self, tick_now: int) -> bool:
         """检测当前tick是否有hit事件。"""
@@ -71,7 +76,7 @@ class LoadingMission:
         else:
             return False
 
-    def get_last_hit(self) -> int | None:
+    def get_last_hit(self) -> float | int | None:
         """返回最后一次命中的时间"""
         tick_list = list(self.mission_dict.keys())
         while tick_list:
@@ -80,6 +85,7 @@ class LoadingMission:
                 return tick
             else:
                 tick_list.remove(tick)
+        return None
 
     def is_first_hit(self, tick: int) -> bool:
         first_hit = self.get_first_hit()

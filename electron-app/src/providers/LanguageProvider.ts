@@ -37,6 +37,7 @@ export const LanguageProvider: FC<PropsWithChildren> = ({ children }) => {
   const setLanguage = (lang: Language) => {
     i18n.changeLanguage(lang);
     localStorage.setItem('language', lang);
+    localStorage.setItem('i18nextLng', lang);
   };
 
   const setLocale = (newLocale: LocaleKeys) => {
@@ -50,6 +51,10 @@ export const LanguageProvider: FC<PropsWithChildren> = ({ children }) => {
       i18n.changeLanguage(savedLanguage);
     }
   }, [i18n]);
+
+  useEffect(() => {
+    document.documentElement.lang = locale;
+  }, [locale]);
 
   return createElement(
     LanguageContext.Provider,

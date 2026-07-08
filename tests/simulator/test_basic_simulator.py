@@ -4,7 +4,7 @@
 from zsim.simulator.simulator_class import Simulator
 
 # 使用标准的相对导入，IDE 可以识别
-from ..test_simulator import TestSimulator
+from ..test_simulator import TestSimulator as _SimulatorTestHelper
 
 
 class TestBasicSimulator:
@@ -20,7 +20,7 @@ class TestBasicSimulator:
     def test_simulator_reset(self):
         """Test that simulator can be reset to initial state."""
 
-        test_sim = TestSimulator()
+        test_sim = _SimulatorTestHelper()
 
         # 使用原有的测试方法创建配置
         common_cfg = test_sim.create_test_common_config()

@@ -7,6 +7,7 @@ from zsim.sim_progress.Buff import Buff
 from zsim.sim_progress.Buff.Buff0Manager import Buff0ManagerClass, change_name_box
 from zsim.sim_progress.Character import Character, character_factory
 from zsim.sim_progress.data_struct import ActionStack
+from zsim.sim_progress.data_struct.planned_queue import PlannedEventQueue
 from zsim.sim_progress.Enemy import Enemy
 
 from .config_classes import SimulationConfig as SimCfg
@@ -17,6 +18,13 @@ if TYPE_CHECKING:
 
 @dataclass
 class InitData:
+    name_box: list[str]
+    Judge_list_set: list[list[str | None]]
+    weapon_dict: dict[str, list[str | Literal[1, 2, 3, 4, 5] | None]]
+    cinema_dict: dict[str, Literal[0, 1, 2, 3, 4, 5, 6]]
+    sim_cfg: SimCfg | None
+    sim_instance: "Simulator | None"
+
     def __init__(
         self,
         *,
@@ -38,24 +46,22 @@ class InitData:
         elif isinstance(common_cfg, CommonCfg):
             self.__api_init(common_cfg)
         else:
-            raise ValueError("Invalid configuration type.")
+            raise ValueError("无效的配置类型。")
         self.sim_instance = sim_instance
 
     def __direct_read_init(self):
         """CLI/WebUI方法不传入常规配置，直接读取文件"""
         config: dict = saved_char_config
         if not config:
-            raise AssertionError("No character init configuration found.")
+            raise AssertionError("未找到角色初始化配置。")
         try:
-            self.name_box: list[str] = config["name_box"]
-            self.Judge_list_set: list[
-                list[str | None]
-            ] = []  # [[角色名, 武器名, 四件套, 二件套], ...]
+            self.name_box = config["name_box"]
+            self.Judge_list_set = []  # [[瑙掕壊鍚? 姝﹀櫒鍚? 鍥涗欢濂? 浜屼欢濂梋, ...]
             self.char_0 = config[self.name_box[0]]
             self.char_1 = config[self.name_box[1]]
             self.char_2 = config[self.name_box[2]]
         except KeyError as e:
-            raise AssertionError(f"Missing key in character init configuration: {e}") from e
+            raise AssertionError(f"角色初始化配置缺少必要字段：{e}") from e
         self.__adjust_weapon_with_sim_cfg()
         for name in self.name_box:
             char = getattr(self, f"char_{self.name_box.index(name)}")
@@ -67,7 +73,7 @@ class InitData:
                     char.get("equip_set2_a", ""),
                 ]
             )
-        self.weapon_dict: dict[str, list[str | Literal[1, 2, 3, 4, 5] | None]] = {
+        self.weapon_dict = {
             name: [
                 getattr(self, f"char_{self.name_box.index(name)}")["weapon"],
                 getattr(self, f"char_{self.name_box.index(name)}")["weapon_level"],
@@ -81,24 +87,22 @@ class InitData:
 
     def __api_init(self, common_cfg: CommonCfg):
         """API方法传入常规配置"""
-        self.name_box: list[str] = [char.name for char in common_cfg.char_config]
-        assert len(self.name_box) == 3, "Character configuration must be 3."
+        self.name_box = [char.name for char in common_cfg.char_config]
+        assert len(self.name_box) == 3, "角色配置数量必须为 3。"
 
         # 创建 char_0, char_1, char_2 属性，将 CharConfig 对象转换为字典
         for i, char_config in enumerate(common_cfg.char_config):
             char_dict = char_config.model_dump()
             setattr(self, f"char_{i}", char_dict)
 
-        self.Judge_list_set: list[list[str | None]] = [
+        self.Judge_list_set = [
             [char.name, char.weapon, char.equip_set4, char.equip_set2_a]
             for char in common_cfg.char_config
         ]
-        self.weapon_dict: dict[str, list[str | Literal[1, 2, 3, 4, 5] | None]] = {
+        self.weapon_dict = {
             char.name: [char.weapon, char.weapon_level] for char in common_cfg.char_config
         }
-        self.cinema_dict: dict[str, Literal[0, 1, 2, 3, 4, 5, 6]] = {
-            char.name: char.cinema for char in common_cfg.char_config
-        }
+        self.cinema_dict = {char.name: char.cinema for char in common_cfg.char_config}
         self.__adjust_weapon_with_sim_cfg()
 
     def __adjust_weapon_with_sim_cfg(self):
@@ -182,16 +186,17 @@ class CharacterData:
     def find_char_obj(
         self, CID: int | None = None, char_name: str | None = None
     ) -> Character | None:
-        if not CID and not char_name:
+        if CID is None and char_name is None:
             raise ValueError("查找角色时，必须提供CID或是char_name中的一个！")
         for char_obj in self.char_obj_list:
             if CID == char_obj.CID or char_name == char_obj.NAME:
                 return char_obj
         else:
-            if CID:
+            if CID is not None:
                 raise ValueError(f"未找到CID为{CID}的角色！")
-            elif char_name:
+            if char_name is not None:
                 raise ValueError(f"未找到名称为{char_name}的角色！")
+        return None
 
 
 @dataclass
@@ -247,7 +252,8 @@ class LoadData:
 class ScheduleData:
     enemy: Enemy
     char_obj_list: list[Character]
-    event_list: list[Any] = field(default_factory=list)
+    _planned_events: list[Any] = field(default_factory=list, init=False, repr=False)
+    planned_event_queue: PlannedEventQueue = field(init=False, repr=False)
     # judge_required_info_dict = {"skill_node": None}
     loading_buff: dict[str, list[Buff]] = field(default_factory=dict)
     dynamic_buff: dict[str, list[Buff]] = field(default_factory=dict)
@@ -259,10 +265,19 @@ class ScheduleData:
     processed_times: int = field(default=0)
     processe_state_update_tick: int = field(default=0)  # process_state的更新时间
 
+    def __post_init__(self) -> None:
+        self.planned_event_queue = PlannedEventQueue(
+            get_events=lambda: self._planned_events,
+            set_events=self._replace_planned_events,
+        )
+
+    def _replace_planned_events(self, events: list[Any]) -> None:
+        self._planned_events = events
+
     def reset_myself(self):
         """重置ScheduleData的动态数据！"""
         self.enemy.reset_myself()
-        self.event_list = []
+        self.planned_event_queue.reset()
         # self.judge_required_info_dict = {"skill_node": None}
         for char_name in self.loading_buff:
             self.loading_buff[char_name] = []

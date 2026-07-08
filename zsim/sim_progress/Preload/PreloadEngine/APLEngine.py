@@ -19,7 +19,7 @@ class APLEngine(BasePreloadEngine):
         self.preload_data = data
         self.sim_instance = self.preload_data.sim_instance
         if self.sim_instance is None:
-            raise ValueError("APLEngine requires a sim_instance to be provided.")
+            raise ValueError("APLEngine 初始化时必须传入 sim_instance。")
         self.apl_manager = APLManager(sim_instance=self.sim_instance)
 
         if apl_path is None:
@@ -45,10 +45,12 @@ class APLEngine(BasePreloadEngine):
             tick = self.sim_instance.tick
             if tick in range(ATCW[0], ATCW[1]):
                 if value != self.apl_want:
-                    print(
-                        f"{tick}tick：APL引擎的想法变化，{self.apl_want[0] if self.apl_want else None} → {skill_tag}，来自于优先级 {apl_priority} 的单元，详细内容：{apl_unit.whole_line}"
-                    ) if self.apl_want is not None else print(
-                        f"{tick}tick：APL引擎产生了第一个想法：{skill_tag}"
+                    (
+                        print(
+                            f"{tick}tick：APL引擎的想法变化，{self.apl_want[0] if self.apl_want else None} → {skill_tag}，来自于优先级 {apl_priority} 的单元，详细内容：{apl_unit.whole_line}"
+                        )
+                        if self.apl_want is not None
+                        else print(f"{tick}tick：APL引擎产生了第一个想法：{skill_tag}")
                     )
         self._apl_want = value
 

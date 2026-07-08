@@ -1,4 +1,6 @@
-from .. import Buff, JudgeTools, check_preparation, find_tick
+from .. import Buff, check_preparation, find_tick
+from ..JudgeTools import build_preparation_context_from_buff
+from ._preparation_helpers import ensure_equipper_template_record, prepare_with_context
 
 
 class SpectralGazeSpiritLockRecord:
@@ -21,23 +23,20 @@ class SpectralGazeSpiritLock(Buff.BuffLogic):
         self.record = None
 
     def get_prepared(self, **kwargs):
-        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
+        return prepare_with_context(
+            self,
+            check_preparation_func=check_preparation,
+            context_builder=build_preparation_context_from_buff,
+            **kwargs,
+        )
 
     def check_record_module(self):
-        if self.equipper is None:
-            self.equipper = JudgeTools.find_equipper(
-                "索魂影眸", sim_instance=self.buff_instance.sim_instance
-            )
-        if self.buff_0 is None:
-            """
-            这里的初始化，找到的buff_0实际上是佩戴者的buff_0
-            """
-            self.buff_0 = JudgeTools.find_exist_buff_dict(
-                sim_instance=self.buff_instance.sim_instance
-            )[self.equipper][self.buff_instance.ft.index]
-        if self.buff_0.history.record is None:
-            self.buff_0.history.record = SpectralGazeSpiritLockRecord()
-        self.record = self.buff_0.history.record
+        ensure_equipper_template_record(
+            self,
+            item_name="索魂影眸",
+            record_factory=SpectralGazeSpiritLockRecord,
+            context_builder=build_preparation_context_from_buff,
+        )
 
     def special_judge_logic(self, **kwargs):
         """

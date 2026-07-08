@@ -1,5 +1,7 @@
-from .. import Buff, JudgeTools, check_preparation
+from .. import Buff, check_preparation
+from ..JudgeTools import build_preparation_context_from_buff
 from ._buff_record_base_class import BuffRecordBaseClass as Brbc
+from ._preparation_helpers import ensure_equipper_template_record, prepare_with_context
 
 
 class DawnsBloom4SetTriggerNADmgBonusRecord(Brbc):
@@ -18,20 +20,20 @@ class DawnsBloom4SetTriggerNADmgBonus(Buff.BuffLogic):
         self.record: DawnsBloom4SetTriggerNADmgBonusRecord | None = None
 
     def get_prepared(self, **kwargs):
-        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
+        return prepare_with_context(
+            self,
+            check_preparation_func=check_preparation,
+            context_builder=build_preparation_context_from_buff,
+            **kwargs,
+        )
 
     def check_record_module(self):
-        if self.equipper is None:
-            self.equipper = JudgeTools.find_equipper(
-                "拂晓生花", sim_instance=self.buff_instance.sim_instance
-            )
-        if self.buff_0 is None:
-            self.buff_0 = JudgeTools.find_exist_buff_dict(
-                sim_instance=self.buff_instance.sim_instance
-            )[self.equipper][self.buff_instance.ft.index]
-        if self.buff_0.history.record is None:
-            self.buff_0.history.record = DawnsBloom4SetTriggerNADmgBonusRecord()
-        self.record = self.buff_0.history.record
+        ensure_equipper_template_record(
+            self,
+            item_name="拂晓生花",
+            record_factory=DawnsBloom4SetTriggerNADmgBonusRecord,
+            context_builder=build_preparation_context_from_buff,
+        )
 
     def special_judge_logic(self, **kwargs):
         """拂晓生花4件套触发普攻增伤，仅对强攻角色生效"""

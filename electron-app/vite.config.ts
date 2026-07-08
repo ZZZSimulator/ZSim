@@ -7,7 +7,7 @@ import SemiPlugin from 'vite-plugin-semi-theme';
 import tailwindcss from '@tailwindcss/vite';
 import { URL, fileURLToPath } from 'url';
 import Icons from 'unplugin-icons/vite';
-import { FileSystemIconLoader } from 'unplugin-icons/loaders'
+import { FileSystemIconLoader } from 'unplugin-icons/loaders';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -19,9 +19,14 @@ export default defineConfig({
         // 主进程配置为CJS格式
         vite: {
           build: {
+            lib: {
+              formats: ['cjs'],
+              fileName: () => 'main.cjs',
+            },
             rollupOptions: {
               output: {
-                entryFileNames: 'main.js', // 主进程输出文件名
+                format: 'cjs',
+                entryFileNames: 'main.cjs', // 主进程输出文件名
               },
             },
           },
@@ -58,8 +63,8 @@ export default defineConfig({
       compiler: 'jsx',
       jsx: 'react',
       customCollections: {
-        'zsim': FileSystemIconLoader("./src/assets/svgs")
-      }
+        zsim: FileSystemIconLoader('./src/assets/svgs'),
+      },
     }),
   ],
   build: {

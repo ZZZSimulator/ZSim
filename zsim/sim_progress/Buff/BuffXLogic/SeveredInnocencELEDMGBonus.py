@@ -1,4 +1,10 @@
-from .. import Buff, JudgeTools, check_preparation
+from .. import Buff, check_preparation
+from ..JudgeTools import (
+    TriggerBuffRef,
+    build_preparation_context_from_buff,
+    read_trigger_buff_state,
+)
+from ._preparation_helpers import ensure_equipper_template_record, prepare_with_context
 
 
 class SeveredInnocencELEDMGBonusRecord:
@@ -23,20 +29,20 @@ class SeveredInnocencELEDMGBonus(Buff.BuffLogic):
         self.xexit = self.special_exit_logic
 
     def get_prepared(self, **kwargs):
-        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
+        return prepare_with_context(
+            self,
+            check_preparation_func=check_preparation,
+            context_builder=build_preparation_context_from_buff,
+            **kwargs,
+        )
 
     def check_record_module(self):
-        if self.equipper is None:
-            self.equipper = JudgeTools.find_equipper(
-                "牺牲洁纯", sim_instance=self.buff_instance.sim_instance
-            )
-        if self.buff_0 is None:
-            self.buff_0 = JudgeTools.find_exist_buff_dict(
-                sim_instance=self.buff_instance.sim_instance
-            )[self.equipper][self.buff_instance.ft.index]
-        if self.buff_0.history.record is None:
-            self.buff_0.history.record = SeveredInnocencELEDMGBonusRecord()
-        self.record = self.buff_0.history.record
+        ensure_equipper_template_record(
+            self,
+            item_name="牺牲洁纯",
+            record_factory=SeveredInnocencELEDMGBonusRecord,
+            context_builder=build_preparation_context_from_buff,
+        )
 
     def special_judge_logic(self, **kwargs):
         """查装备者身上的触发暴伤的Buff是否为3层"""
@@ -44,10 +50,11 @@ class SeveredInnocencELEDMGBonus(Buff.BuffLogic):
         self.get_prepared(
             char_CID=1381,
             equipper="牺牲洁纯",
-            trigger_buff_0=("equipper", "牺牲洁纯-触发暴伤"),
+            trigger_buff_0=TriggerBuffRef.equipper("牺牲洁纯-触发暴伤"),
         )
-        if self.record.trigger_buff_0.dy.count == 3:
-            if not self.record.trigger_buff_0.dy.active:
+        trigger_state = read_trigger_buff_state(self.record)
+        if trigger_state.count == 3:
+            if not trigger_state.active:
                 raise ValueError(f"{self.record.trigger_buff_0.ft.index}有层数但是未激活！")
             return True
         return False

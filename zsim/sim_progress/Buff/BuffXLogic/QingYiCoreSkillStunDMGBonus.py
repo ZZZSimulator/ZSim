@@ -1,4 +1,7 @@
 from .. import Buff, JudgeTools, check_preparation
+from ..JudgeTools import build_preparation_context_from_buff
+from ._preparation_helpers import ensure_owner_template_record, prepare_with_context
+from .enemy_edge_state_read import read_enemy_stun_edge_state
 
 
 class QintYiCoreSkillRecord:
@@ -32,16 +35,20 @@ class QingYiCoreSkillStunDMGBonus(Buff.BuffLogic):
         self.record = None
 
     def get_prepared(self, **kwargs):
-        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
+        return prepare_with_context(
+            self,
+            check_preparation_func=check_preparation,
+            context_builder=build_preparation_context_from_buff,
+            **kwargs,
+        )
 
     def check_record_module(self):
-        if self.buff_0 is None:
-            self.buff_0 = JudgeTools.find_exist_buff_dict(
-                sim_instance=self.buff_instance.sim_instance
-            )["青衣"][self.buff_instance.ft.index]
-        if self.buff_0.history.record is None:
-            self.buff_0.history.record = QintYiCoreSkillRecord()
-        self.record = self.buff_0.history.record
+        ensure_owner_template_record(
+            self,
+            owner_name="青衣",
+            record_factory=QintYiCoreSkillRecord,
+            context_builder=build_preparation_context_from_buff,
+        )
 
     def special_start_logic(self, **kwargs):
         """
@@ -87,12 +94,13 @@ class QingYiCoreSkillStunDMGBonus(Buff.BuffLogic):
         def mode_func(a, b):
             return a is True and b is False
 
+        current_stun = read_enemy_stun_edge_state(self.record.enemy)
         stun_statement_tuple = (
             self.record.last_update_stun,
-            self.record.enemy.dynamic.stun,
+            current_stun,
         )
         if JudgeTools.detect_edge(stun_statement_tuple, mode_func):
-            self.record.last_update_stun = self.record.enemy.dynamic.stun
+            self.record.last_update_stun = current_stun
             return True
-        self.record.last_update_stun = self.record.enemy.dynamic.stun
+        self.record.last_update_stun = current_stun
         return False

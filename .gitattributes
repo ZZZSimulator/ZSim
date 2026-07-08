@@ -1,0 +1,4 @@
+/.gitattributes text eol=lf
+zsim/data/APLData/*.toml text eol=lf
+zsim/data/character_config_example.toml text eol=lf
+zsim/data/character_config.toml text eol=lf

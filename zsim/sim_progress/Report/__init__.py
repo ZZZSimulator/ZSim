@@ -3,6 +3,7 @@ import json
 import logging
 import os
 import threading
+from concurrent.futures import TimeoutError as FutureTimeoutError
 from datetime import datetime
 from typing import TYPE_CHECKING
 
@@ -26,6 +27,10 @@ __all__ = [
 
 __result_id: str = "Unknown"
 __event_loop: asyncio.AbstractEventLoop | None = None  # 存储事件循环的引用
+__loop_thread: threading.Thread | None = None
+__writer_tasks: set[asyncio.Task[None]] = set()
+__lifecycle_lock = threading.RLock()
+__active_report_sessions = 0
 
 
 if TYPE_CHECKING:
@@ -137,33 +142,110 @@ def regen_result_id(sim_cfg: "ExecAttrCurveCfg | ExecWeaponCfg | None", *, sessi
 
 def start_async_tasks():
     """启动异步任务处理日志和结果写入"""
+    global __loop_thread
 
-    # 在新线程中运行事件循环
-    def run_event_loop():
-        global __event_loop
+    with __lifecycle_lock:
+        # 在新线程中运行事件循环
+        def run_event_loop(ready_event: threading.Event):
+            global __event_loop, __writer_tasks
+
+            loop = asyncio.new_event_loop()
+            __event_loop = loop
+            asyncio.set_event_loop(loop)
+            __writer_tasks = {
+                loop.create_task(async_log_writer(__result_id)),
+                loop.create_task(async_result_writer(__result_id)),
+            }
+            ready_event.set()
+            try:
+                loop.run_forever()
+            finally:
+                pending_tasks = [task for task in __writer_tasks if not task.done()]
+                for task in pending_tasks:
+                    task.cancel()
+                if pending_tasks:
+                    loop.run_until_complete(
+                        asyncio.gather(*pending_tasks, return_exceptions=True)
+                    )
+                loop.run_until_complete(loop.shutdown_asyncgens())
+                asyncio.set_event_loop(None)
+                loop.close()
+                __writer_tasks = set()
+                if __event_loop is loop:
+                    __event_loop = None
 
         # 如果已有事件循环在运行，则不再创建新的
-        if __event_loop is not None:
+        if __event_loop is not None and __event_loop.is_running():
+            return
+        if __loop_thread is not None and __loop_thread.is_alive():
             return
 
-        # 创建新的事件循环
-        __event_loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(__event_loop)
-        __event_loop.create_task(async_log_writer(__result_id))
-        __event_loop.create_task(async_result_writer(__result_id))
-        __event_loop.run_forever()
+        ready_event = threading.Event()
+        __loop_thread = threading.Thread(target=run_event_loop, args=(ready_event,), daemon=True)
+        __loop_thread.start()
+        ready_event.wait(timeout=1.0)
 
-    loop_thread = threading.Thread(target=run_event_loop, daemon=True)
-    loop_thread.start()
+
+async def _cancel_writer_tasks() -> None:
+    tasks = [task for task in __writer_tasks if not task.done()]
+    for task in tasks:
+        task.cancel()
+    if tasks:
+        await asyncio.gather(*tasks, return_exceptions=True)
+
+
+def _stop_async_tasks(timeout: float = 2.0) -> None:
+    global __active_report_sessions, __event_loop, __loop_thread, __writer_tasks
+
+    with __lifecycle_lock:
+        __active_report_sessions = 0
+        loop = __event_loop
+        loop_thread = __loop_thread
+        if loop is None:
+            if loop_thread is not None and not loop_thread.is_alive():
+                __loop_thread = None
+            return
+
+        if loop.is_running():
+            future = asyncio.run_coroutine_threadsafe(_cancel_writer_tasks(), loop)
+            try:
+                future.result(timeout=timeout)
+            except (FutureTimeoutError, RuntimeError):
+                pass
+            if loop.is_running():
+                loop.call_soon_threadsafe(loop.stop)
+        elif not loop.is_closed():
+            loop.close()
+
+        if loop_thread is not None and loop_thread.is_alive():
+            loop_thread.join(timeout=timeout)
+
+        if loop_thread is None or not loop_thread.is_alive():
+            __loop_thread = None
+        if __event_loop is loop and not loop.is_running():
+            __event_loop = None
+            __writer_tasks = set()
 
 
 def start_report_threads(sim_cfg, *, session_id=None):
     """用于在开始模拟时启动线程以处理日志和结果写入。"""
-    regen_result_id(sim_cfg, session_id=session_id)
-    start_async_tasks()
+    global __active_report_sessions
+
+    with __lifecycle_lock:
+        regen_result_id(sim_cfg, session_id=session_id)
+        start_async_tasks()
+        __active_report_sessions += 1
 
 
 def stop_report_threads():
-    dump_buff_csv(__result_id)
-    log_queue.join()
-    result_queue.join()
+    global __active_report_sessions
+
+    with __lifecycle_lock:
+        dump_buff_csv(__result_id)
+        log_queue.join()
+        result_queue.join()
+        if __active_report_sessions > 1:
+            __active_report_sessions -= 1
+            return
+        __active_report_sessions = 0
+        _stop_async_tasks()

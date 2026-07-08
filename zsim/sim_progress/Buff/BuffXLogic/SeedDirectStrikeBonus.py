@@ -1,6 +1,8 @@
 # 这是席德明攻Buff的脚本
-from .. import Buff, JudgeTools, check_preparation
+from .. import Buff, check_preparation
+from ..JudgeTools import build_preparation_context_from_buff
 from ._buff_record_base_class import BuffRecordBaseClass as BRBC
+from ._preparation_helpers import ensure_owner_template_record, prepare_with_context
 
 
 class SeedDirectStrikeBonusRecord(BRBC):
@@ -19,19 +21,20 @@ class SeedDirectStrikeBonus(Buff.BuffLogic):
         self.record: BRBC | None = None
 
     def get_prepared(self, **kwargs):
-        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
+        return prepare_with_context(
+            self,
+            check_preparation_func=check_preparation,
+            context_builder=build_preparation_context_from_buff,
+            **kwargs,
+        )
 
     def check_record_module(self):
-        if self.buff_0 is None:
-            self.buff_0 = JudgeTools.find_exist_buff_dict(
-                sim_instance=self.buff_instance.sim_instance
-            )["席德"][self.buff_instance.ft.index]
-        assert self.buff_0 is not None, (
-            "【Buff初始化警告】席德的复杂逻辑模块未正确初始化，请检查函数"
+        ensure_owner_template_record(
+            self,
+            owner_name="席德",
+            record_factory=SeedDirectStrikeBonusRecord,
+            context_builder=build_preparation_context_from_buff,
         )
-        if self.buff_0.history.record is None:
-            self.buff_0.history.record = SeedDirectStrikeBonusRecord()
-        self.record = self.buff_0.history.record
 
     def special_exit_logic(self, **kwargs):
         self.check_record_module()

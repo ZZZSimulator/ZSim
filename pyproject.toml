@@ -62,7 +62,14 @@ line-length = 100
 select = ["E", "F", "W", "I", "Q"]
 ignore = ["E501"]
 exclude = ["build", "dist", ".venv", "__pypackages__"]
-per-file-ignores = { "__init__.py" = ["F401"] }
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+"scripts/run_*.py" = ["E402"]
+"tests/simulator/*.py" = ["E402"]
+"zsim/sim_progress/Buff/JudgeTools/__init__.py" = ["I001"]
+"zsim/sim_progress/Preload/APLModule/SubConditionUnit/__init__.py" = ["I001"]
+"zsim/sim_progress/Preload/PreloadEngine/SwapCancelValidateEngine.py" = ["I001"]
 
 [tool.black]
 line-length = 100

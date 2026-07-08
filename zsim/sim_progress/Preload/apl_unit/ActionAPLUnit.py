@@ -41,10 +41,16 @@ class ActionAPLUnit(APLUnit):
         """单行APL的逻辑函数：检查所有子条件并且输出结果"""
         result_box = []
         tick = kwargs.get("tick", None)
+        decision_cache = kwargs.get("decision_cache", None)
         if self.builtin_percond_list:
             for precond_unit in self.builtin_percond_list:
-                if not precond_unit.check_myself(
-                    found_char_dict, game_state, tick=tick, sim_instance=sim_instance
+                if not self.check_sub_condition(
+                    precond_unit,
+                    found_char_dict,
+                    game_state,
+                    sim_instance,
+                    tick,
+                    decision_cache=decision_cache,
                 ):
                     return False, result_box
         if not self.sub_conditions_unit_list:
@@ -55,7 +61,13 @@ class ActionAPLUnit(APLUnit):
             return True, result_box
 
         final_result = self.evaluate_condition_ast(
-            self.sub_conditions_ast, found_char_dict, game_state, sim_instance, tick, result_box
+            self.sub_conditions_ast,
+            found_char_dict,
+            game_state,
+            sim_instance,
+            tick,
+            result_box,
+            decision_cache=decision_cache,
         )
         # 下列代码块是用于检查QTE是否在重复释放上符合规则（即QTE是否已经被响应过了）
         if "QTE" in self.result:

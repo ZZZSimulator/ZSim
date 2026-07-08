@@ -1,19 +1,31 @@
 from typing import TYPE_CHECKING, Any
 
+from zsim.sim_progress.data_struct.schedule_dispatch import (
+    ScheduledEventEmitter,
+    ScheduledEventEmitterProvider,
+)
+
 if TYPE_CHECKING:
     from zsim.sim_progress.Character.character import Character
     from zsim.sim_progress.data_struct.single_hit import SingleHit
     from zsim.sim_progress.Enemy import Enemy
     from zsim.sim_progress.Load.loading_mission import LoadingMission
     from zsim.sim_progress.Preload.SkillsQueue import SkillNode
-    from zsim.simulator.dataclasses import ScheduleData
     from zsim.simulator.simulator_class import Simulator
 
 
 class Decibelmanager:
-    def __init__(self, sim_instance: "Simulator"):
+    def __init__(
+        self,
+        sim_instance: "Simulator",
+        scheduled_event_emitter_provider: ScheduledEventEmitterProvider | None = None,
+    ):
         # 原类属性改为实例属性
         self.sim_instance = sim_instance
+        self._scheduled_event_emitter_provider = (
+            scheduled_event_emitter_provider
+            or ScheduledEventEmitterProvider.from_sim_instance(sim_instance)
+        )
         self.DECIBEL_EVENT_MAP: dict[str | int, list[int]] = {
             "interrupt_enemy": [10],
             4: [20],
@@ -42,6 +54,9 @@ class Decibelmanager:
         self.enemy: "Enemy | None" = None
         self.game_state: dict[str, Any] = {}
 
+    def _scheduled_event_emitter(self) -> ScheduledEventEmitter:
+        return self._scheduled_event_emitter_provider.create_emitter()
+
     def update(self, **kwargs):
         decibel_value, node, output_key = self.get_decibel_value(**kwargs)
         if decibel_value == 0:
@@ -62,8 +77,7 @@ class Decibelmanager:
         from zsim.sim_progress.data_struct import ScheduleRefreshData
 
         refresh_data = ScheduleRefreshData(decibel_target=(char_name,), decibel_value=decibel_value)
-        schedule_data: "ScheduleData" = self.sim_instance.game_state["schedule_data"]
-        schedule_data.event_list.append(refresh_data)
+        self._scheduled_event_emitter().emit_scheduled(refresh_data)
         # print(f"{char_name}因{self.REPORT_MAP[output_key]}获得了{decibel_value}点喧响值！")
 
     def get_decibel_value(
@@ -86,6 +100,7 @@ class Decibelmanager:
             node = single_hit.skill_node
         elif loading_mission is not None:
             node = loading_mission.mission_node
+        output_key: str | int
         if key is None:
             if node is None:
                 raise ValueError("DecibelManager的get_decibel_value函数中，node不能为空！")
@@ -94,7 +109,7 @@ class Decibelmanager:
                 output_key = 0
             else:
                 if node.active_generation:
-                    # EXPLAIN: 这里要筛选重攻击标签——因为像雅这种角色的连携技分3段，如果不筛选主动动作，那么雅就会多次吃到连携技的喧响值奖励
+                    # 说明：这里要筛选重攻击标签——因为像雅这种角色的连携技分3段，如果不筛选主动动作，那么雅就会多次吃到连携技的喧响值奖励
                     #  风险：暂未发现该筛选存在Bug风险。
                     decibel_value = self.DECIBEL_EVENT_MAP[node.skill.trigger_buff_level][0]
                     output_key = node.skill.trigger_buff_level
@@ -122,7 +137,7 @@ class Decibelmanager:
         if node is None:
             raise ValueError("DecibelManager的split_char_list_by_cid函数中，node不能为空！")
         char_id = int(node.skill_tag.strip().split("_")[0])
-        char_dict = {"major": [], "minor": []}
+        char_dict: dict[str, list[str]] = {"major": [], "minor": []}
         if not self.char_obj_list:
             from zsim.sim_progress.Buff import find_char_list
 

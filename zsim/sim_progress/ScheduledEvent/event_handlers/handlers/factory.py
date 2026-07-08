@@ -4,6 +4,7 @@
 该模块定义了事件处理的工厂类，用于管理各种类型的事件处理器。
 """
 
+from collections.abc import Iterable
 from typing import Any
 
 from ..base import EventHandlerABC
@@ -32,6 +33,13 @@ class EventHandlerFactory:
         if event_type in self._handlers:
             raise ValueError(f"事件类型 '{event_type}' 的处理器已存在")
         self._handlers[event_type] = handler
+        self.clear_cache()
+
+    def replace_handlers(self, handlers: Iterable[EventHandlerABC]) -> None:
+        """替换已注册的处理器集合，并重置查找缓存。"""
+        self.clear_handlers()
+        for handler in handlers:
+            self.register_handler(handler)
 
     def get_handler(self, event: Any) -> EventHandlerABC | None:
         """
@@ -83,7 +91,7 @@ class EventHandlerFactory:
     def clear_handlers(self) -> None:
         """清除所有已注册的处理器"""
         self._handlers.clear()
-        self._handler_cache.clear()
+        self.clear_cache()
 
     def get_cache_stats(self) -> dict[str, int | float]:
         """
@@ -116,4 +124,4 @@ class EventHandlerFactory:
 # 全局处理器工厂实例
 event_handler_factory = EventHandlerFactory()
 
-__all__ = ["event_handler_factory"]
+__all__ = ["EventHandlerFactory", "event_handler_factory"]

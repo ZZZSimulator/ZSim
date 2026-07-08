@@ -75,8 +75,8 @@ class ErrorMessages:
     # 参数验证错误
     INVALID_LOADING_BUFF_TYPE = "loading_buff参数必须为字典，但你输入了{}"
     INVALID_TICK_TYPE = "tick参数必须为整数，但你输入了{}"
-    TARGET_NOT_FOUND = "[Schedule] target: {} not found in char_obj_list, check the alloc."
-    CHARACTER_NOT_FOUND = "{} not found in char_obj_list"
+    TARGET_NOT_FOUND = "[Schedule] target: {} 不在 char_obj_list 中，请检查分配逻辑。"
+    CHARACTER_NOT_FOUND = "{} 不在 char_obj_list 中"
     INVALID_EVENT_TYPE = "{}，目前不应存在于 event_list"
 
     # 事件处理错误
@@ -93,13 +93,13 @@ class WarningMessages:
     """警告消息常量"""
 
     # Buff相关警告
-    DYNAMIC_BUFF_NOT_FOUND = "[WARNING] 动态Buff列表内没有角色 {}"
-    BUFF_LIST_EMPTY = "[WARNING] Buff列表为空"
+    DYNAMIC_BUFF_NOT_FOUND = "[警告] 动态Buff列表内没有角色 {}"
+    BUFF_LIST_EMPTY = "[警告] Buff列表为空"
 
     # 事件处理警告
-    EVENT_NOT_HANDLED = "[WARNING] 事件未被处理: {}"
-    HANDLER_NOT_FOUND = "[WARNING] 未找到事件处理器: {}"
+    EVENT_NOT_HANDLED = "[警告] 事件未被处理: {}"
+    HANDLER_NOT_FOUND = "[警告] 未找到事件处理器: {}"
 
     # 性能警告
-    LARGE_EVENT_LIST = "[WARNING] 事件列表过大: {}"
-    SLOW_EVENT_PROCESSING = "[WARNING] 事件处理耗时过长: {}s"
+    LARGE_EVENT_LIST = "[警告] 事件列表过大: {}"
+    SLOW_EVENT_PROCESSING = "[警告] 事件处理耗时过长: {}s"

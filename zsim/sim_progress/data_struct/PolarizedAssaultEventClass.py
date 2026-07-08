@@ -4,6 +4,11 @@ from typing import TYPE_CHECKING
 from zsim.define import ALICE_REPORT
 from zsim.define import ELEMENT_TYPE_MAPPING as ETM
 from zsim.models.event_enums import ListenerBroadcastSignal as LBS
+from zsim.sim_progress.anomaly_bar.CopyAnomalyForOutput import NewAnomaly
+from zsim.sim_progress.data_struct.schedule_dispatch import (
+    ScheduledEventEmitter,
+    ScheduledEventEmitterProvider,
+)
 
 if TYPE_CHECKING:
     from zsim.sim_progress.anomaly_bar import AnomalyBar
@@ -19,6 +24,7 @@ class PolarizedAssaultEvent:
         anomlay_bar: "AnomalyBar",
         char_instance: "Character",
         skill_node: "SkillNode",
+        scheduled_event_emitter_provider: ScheduledEventEmitterProvider | None = None,
     ):
         """这是爱丽丝的极性强击事件，该事件拥有最低的优先级，保证自己能够在本tick的最后才被递归执行
         Args:
@@ -56,17 +62,29 @@ class PolarizedAssaultEvent:
                 f"【极性强击事件警告】构造极性强击事件时，必须传入物理异常条的深拷贝！当前传入的异常条属性为：{ETM[self.anomaly_bar.element_type]}"
             )
         self.sim_instance = self.anomaly_bar.sim_instance
+        self._scheduled_event_emitter_provider = (
+            scheduled_event_emitter_provider
+            or ScheduledEventEmitterProvider.from_sim_instance_getter(lambda: self.sim_instance)
+        )
+
+    def _scheduled_event_emitter(self) -> ScheduledEventEmitter:
+        return self._scheduled_event_emitter_provider.create_emitter()
 
     def execute(self):
         """执行极性强击事件，向EventList添加强击、紊乱事件"""
         # 先添加一次极性强击；
-        event_list = self.sim_instance.schedule_data.event_list
+        emitter = self._scheduled_event_emitter()
         enemy = self.sim_instance.enemy
         self.sim_instance.listener_manager.broadcast_event(
             event=self.anomaly_bar, signal=LBS.POLARIZED_ASSAULT_SPAWN
         )
         # if self.anomaly_bar.settled:
-        event_list.append(self.anomaly_bar)
+        polarized_assault_anomaly = NewAnomaly(
+            self.anomaly_bar,
+            active_by=self.skill_node,
+            sim_instance=self.sim_instance,
+        )
+        emitter.emit_scheduled(polarized_assault_anomaly)
         if ALICE_REPORT:
             self.sim_instance.schedule_data.change_process_state()
             print(
@@ -105,7 +123,7 @@ class PolarizedAssaultEvent:
             mode_number=1,
             sim_instance=self.sim_instance,
         )
-        event_list.append(disorder)
+        emitter.emit_scheduled(disorder)
         if ALICE_REPORT:
             self.sim_instance.schedule_data.change_process_state()
             print(

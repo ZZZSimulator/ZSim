@@ -9,14 +9,14 @@ from .session_run import SessionRun
 
 
 def generate_session_id() -> str:
-    """Generate a unique session ID: YYYYMMDD + first 8 chars of uuid4."""
+    """生成唯一会话 ID：YYYYMMDD + uuid4 前 8 位。"""
     date_str = datetime.now().strftime("%Y%m%d")
     uuid_part = str(uuid4())[:8]
     return f"{date_str}-{uuid_part}"
 
 
 class Session(BaseModel):
-    """Session configuration model."""
+    """会话配置模型。"""
 
     session_id: str = Field(
         default_factory=generate_session_id, description="随机生成的会话ID，为本日日期+8位UUID前缀"

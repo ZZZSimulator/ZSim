@@ -11,8 +11,8 @@
     {
       from: 'resources',
       to: 'resources',
-      filter: ['**/*']
-    }
+      filter: ['**/*'],
+    },
   ],
   win: {
     executableName: 'ZSim',

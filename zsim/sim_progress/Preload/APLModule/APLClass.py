@@ -78,15 +78,15 @@ class APLClass:
     def get_game_state(self) -> dict | None:
         if self.game_state is None:
             try:
-                # 延迟从 sys.modules 获取字典A，假设 main 模块中已定义字典 A
+                # 延迟从 sys.modules 获取状态字典，假设 main 模块中已定义该字典。
                 # main_module = sys.modules["simulator.main_loop"]
                 # if main_module is None:
-                #     raise ImportError("Main module not found.")
-                # self.game_state = main_module.game_state  # 获取 main 中的 A
+                #     raise ImportError("未找到 main 模块。")
+                # self.game_state = main_module.game_state  # 获取 main 中的状态字典。
                 if self.preload_data and self.preload_data.sim_instance:
                     self.game_state = self.preload_data.sim_instance.game_state
             except Exception as e:
-                print(f"Error loading dictionary A: {e}")
+                print(f"加载状态字典失败：{e}")
         return self.game_state
 
     def perform_action(self, CID: int, action: str, tick: int) -> str:

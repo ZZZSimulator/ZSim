@@ -1,6 +1,8 @@
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
+from zsim.sim_progress.Dot.initialization import DotInitializationReadContext
+
 from .. import Dot
 
 if TYPE_CHECKING:
@@ -35,12 +37,10 @@ class Shock(Dot):
             if self.sim_instance is None:
                 raise ValueError("sim_instance is None, but it should not be.")
 
-            self.char_name_box = self.sim_instance.init_data.name_box
-            self.exist_buff_dict = self.sim_instance.load_data.exist_buff_dict
-            if "丽娜" in self.char_name_box:
-                if "Buff-角色-丽娜-组队被动-延长感电" in self.exist_buff_dict["丽娜"]:
-                    self.max_duration = 600 + 180
-                else:
-                    self.max_duration = 600
+            read_context = DotInitializationReadContext.from_sim_instance(self.sim_instance)
+            self.char_name_box = read_context.name_box
+            self.exist_buff_dict = read_context.exist_buff_dict
+            if read_context.has_rina_shock_duration_extension():
+                self.max_duration = 600 + 180
             else:
                 self.max_duration = 600

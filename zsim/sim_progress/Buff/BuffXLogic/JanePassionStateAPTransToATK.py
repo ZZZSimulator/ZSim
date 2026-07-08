@@ -1,13 +1,19 @@
 from math import floor
 
-from zsim.sim_progress.ScheduledEvent.Calculator import (
-    Calculator as Cal,
-)
-from zsim.sim_progress.ScheduledEvent.Calculator import (
-    MultiplierData as Mul,
+from zsim.sim_progress.calculation.calculator import (
+    get_calculator_buff_attribute_reader_service,
 )
 
-from .. import Buff, JudgeTools, check_preparation, find_tick
+from .. import Buff, check_preparation, find_tick
+from ..JudgeTools import (
+    TriggerBuffRef,
+    build_preparation_context_from_buff,
+    create_calculator_runtime_read_context_from_sim_instance,
+    read_trigger_buff_state_active,
+)
+from ._preparation_helpers import ensure_owner_template_record, prepare_with_context
+
+_JANE_PASSION_TRIGGER_REF = TriggerBuffRef.owner("简", "Buff-角色-简-狂热状态触发器")
 
 
 class JanePassionStateAPTransToATKRecord:
@@ -31,38 +37,43 @@ class JanePassionStateAPTransToATK(Buff.BuffLogic):
         self.xexit = self.special_exit_logic
 
     def get_prepared(self, **kwargs):
-        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
+        return prepare_with_context(
+            self,
+            check_preparation_func=check_preparation,
+            context_builder=build_preparation_context_from_buff,
+            **kwargs,
+        )
 
     def check_record_module(self):
-        if self.buff_0 is None:
-            self.buff_0 = JudgeTools.find_exist_buff_dict(
-                sim_instance=self.buff_instance.sim_instance
-            )["简"][self.buff_instance.ft.index]
-        if self.buff_0.history.record is None:
-            self.buff_0.history.record = JanePassionStateAPTransToATKRecord()
-        self.record = self.buff_0.history.record
+        ensure_owner_template_record(
+            self,
+            owner_name="简",
+            record_factory=JanePassionStateAPTransToATKRecord,
+            context_builder=build_preparation_context_from_buff,
+        )
 
     def special_judge_logic(self, **kwargs):
         """精通转攻击力部分的触发行为与触发器对齐；"""
         self.check_record_module()
-        self.get_prepared(char_CID=1261, trigger_buff_0=("简", "Buff-角色-简-狂热状态触发器"))
-        if self.record.trigger_buff_0.dy.active:
-            return True
-        else:
-            return False
+        self.get_prepared(char_CID=1261, trigger_buff_0=_JANE_PASSION_TRIGGER_REF)
+        return read_trigger_buff_state_active(self.record)
 
     def special_hit_logic(self, **kwargs):
         """当触发器激活时，执行self.xhit，计算实时精通，激活自身状态并且更新层数。"""
         self.check_record_module()
         self.get_prepared(
             char_CID=1261,
-            trigger_buff_0=("简", "Buff-角色-简-狂热状态触发器"),
-            dynamic_buff_list=1,
+            trigger_buff_0=_JANE_PASSION_TRIGGER_REF,
             enemy=1,
             sub_exist_buff_dict=1,
         )
-        mul_data = Mul(self.record.enemy, self.record.dynamic_buff_list, self.record.char)
-        ap = Cal.AnomalyMul.cal_ap(mul_data)
+        context = create_calculator_runtime_read_context_from_sim_instance(
+            sim_instance=self.buff_instance.sim_instance,
+            enemy=self.record.enemy,
+            character=self.record.char,
+        )
+        reader_service = get_calculator_buff_attribute_reader_service()
+        ap = reader_service.read_anomaly_proficiency(context)
         count = floor(
             max(ap - 120, 0)
         )  # 超过120点的部分，每1点叠1层，这里应该是向下取证，比如120.1，那就不叠层。

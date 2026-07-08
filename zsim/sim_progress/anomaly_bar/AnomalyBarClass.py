@@ -1,6 +1,6 @@
 import uuid
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Sequence
 
 import numpy as np
 
@@ -10,6 +10,7 @@ if TYPE_CHECKING:
     from zsim.sim_progress.Buff import Buff
     from zsim.sim_progress.data_struct.single_hit import SingleHit
     from zsim.sim_progress.Preload import SkillNode
+    from zsim.sim_progress.ScheduledEvent.buff_runtime import BuffRuntimeReadPort
     from zsim.simulator.simulator_class import Simulator
 
 
@@ -135,7 +136,9 @@ class AnomalyBar:
         self,
         timenow: int,
         skill_node: "SkillNode",
-        dynamic_buff_dict: dict[str, list["Buff"]],
+        dynamic_buff_dict: dict[str, list["Buff"]] | None,
+        *,
+        buff_runtime_view: "BuffRuntimeReadPort | None" = None,
     ):
         """
         属性异常激活时，必要的信息更新
@@ -146,7 +149,11 @@ class AnomalyBar:
         self.last_active = timenow
         self.active = True
         self.activated_by = skill_node
-        self.__get_max_duration(dynamic_buff_dict, char_cid)
+        self.__get_max_duration(
+            dynamic_buff_dict,
+            char_cid,
+            buff_runtime_view=buff_runtime_view,
+        )
         # self.sim_instance.schedule_data.change_process_state()
         # print(
         #     f"{skill_node.char_name}的技能【{self.activated_by.skill_tag}】激活了【{ELEMENT_TYPE_MAPPING[self.element_type]}】属性的异常状态！\n技能为{skill_node.skill_tag}， preload_tick为{skill_node.preload_tick}， end_tick为{skill_node.end_tick}，tick_list为{skill_node.tick_list}"
@@ -181,7 +188,13 @@ class AnomalyBar:
         self.max_anomaly = None
         self.ndarray_box = []
 
-    def __get_max_duration(self, dynamic_buff_list, anomaly_from: int | str) -> None:
+    def __get_max_duration(
+        self,
+        dynamic_buff_list: dict[str, list["Buff"]] | None,
+        anomaly_from: int | str,
+        *,
+        buff_runtime_view: "BuffRuntimeReadPort | None" = None,
+    ) -> None:
         """通过Buff计算当前异常的最大持续时间"""
         if self.duration_buff_list is None:
             self.max_duration = self.basic_max_duration
@@ -189,8 +202,11 @@ class AnomalyBar:
             return
         max_duration_delta_fix = 0
         max_duration_delta_pct = 0
+        enemy_buff_list = self.__get_duration_enemy_buffs(
+            dynamic_buff_list,
+            buff_runtime_view,
+        )
         for _buff_index in self.duration_buff_list:
-            enemy_buff_list = dynamic_buff_list.get("enemy")
             for buffs in enemy_buff_list:
                 if _buff_index == buffs.ft.index and buffs.dy.active:
                     for keys in self.duration_buff_key_list:  # type: ignore
@@ -209,6 +225,21 @@ class AnomalyBar:
             0,
         )
         # print(f'属性类型为{self.element_type}的异常激活了，本次激活的最大时长为{self.max_duration}')
+
+    def __get_duration_enemy_buffs(
+        self,
+        dynamic_buff_list: dict[str, list["Buff"]] | None,
+        buff_runtime_view: "BuffRuntimeReadPort | None",
+    ) -> Sequence["Buff"]:
+        """读取影响异常持续时间的 enemy Buff，优先走 runtime 只读入口。"""
+        if buff_runtime_view is not None:
+            return buff_runtime_view.get_active_buffs("enemy")
+        if dynamic_buff_list is None:
+            return ()
+        enemy_buff_list = dynamic_buff_list.get("enemy")
+        if enemy_buff_list is None:
+            raise TypeError("旧 dynamic_buff_dict 缺少 enemy Buff 列表")
+        return enemy_buff_list
 
     @staticmethod
     def create_new_from_existing(existing_instance):

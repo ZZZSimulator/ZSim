@@ -1,4 +1,12 @@
-from .. import Buff, JudgeTools, check_preparation
+from .. import Buff, check_preparation
+from ..JudgeTools import (
+    TriggerBuffRef,
+    build_preparation_context_from_buff,
+    read_trigger_buff_state,
+)
+from ._preparation_helpers import ensure_owner_template_record, prepare_with_context
+
+_JANE_PASSION_TRIGGER_REF = TriggerBuffRef.owner("简", "Buff-角色-简-狂热状态触发器")
 
 
 class JanePassionStatePhyBuildupBonusRecord:
@@ -18,26 +26,28 @@ class JanePassionStatePhyBuildupBonus(Buff.BuffLogic):
         self.xexit = self.special_exit_logic
 
     def get_prepared(self, **kwargs):
-        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
+        return prepare_with_context(
+            self,
+            check_preparation_func=check_preparation,
+            context_builder=build_preparation_context_from_buff,
+            **kwargs,
+        )
 
     def check_record_module(self):
-        if self.buff_0 is None:
-            self.buff_0 = JudgeTools.find_exist_buff_dict(
-                sim_instance=self.buff_instance.sim_instance
-            )["简"][self.buff_instance.ft.index]
-        if self.buff_0.history.record is None:
-            self.buff_0.history.record = JanePassionStatePhyBuildupBonusRecord()
-        self.record = self.buff_0.history.record
+        ensure_owner_template_record(
+            self,
+            owner_name="简",
+            record_factory=JanePassionStatePhyBuildupBonusRecord,
+            context_builder=build_preparation_context_from_buff,
+        )
 
     def special_judge_logic(self, **kwargs):
         """积蓄效率Buff的判定和触发器有关，其状态和触发器相同"""
         self.check_record_module()
-        self.get_prepared(char_CID=1261, trigger_buff_0=("简", "Buff-角色-简-狂热状态触发器"))
+        self.get_prepared(char_CID=1261, trigger_buff_0=_JANE_PASSION_TRIGGER_REF)
 
-        if self.record.trigger_buff_0.dy.active:
-            return True
-        else:
-            return False
+        trigger_state = read_trigger_buff_state(self.record)
+        return trigger_state.active
 
     def special_exit_logic(self, **kwargs):
         """积蓄效率的退出逻辑与触发器相反"""

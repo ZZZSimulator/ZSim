@@ -1,4 +1,4 @@
-from ...APLModule.APLJudgeTools import check_cid, get_nested_value
+from ...APLModule.APLJudgeTools import get_nested_value
 from ...APLModule.SubConditionUnit import BaseSubConditionUnit
 
 
@@ -65,13 +65,12 @@ class AttributeSubUnit(BaseSubConditionUnit):
     def check_myself(self, found_char_dict, game_state: dict, *args, **kwargs):
         """处理 属性判定类 的子条件"""
         tick = kwargs.get("tick", None)
-        check_cid(self.check_target)
         if self.char is None:
             from zsim.sim_progress.Preload import find_char
 
-            self.char = find_char(found_char_dict, game_state, int(self.check_target))
+            self.char = find_char(found_char_dict, game_state, self.checked_target_cid())
         handler_cls = self.AttributeHandlerMap.get(self.check_stat)
-        handler = handler_cls() if handler_cls else None
+        handler = handler_cls if handler_cls else None
         if not handler:
             raise ValueError(
                 f"当前检查的check_stat为：{self.check_stat}，优先级为{self.priority}，暂无处理该属性的逻辑模块！"

@@ -58,9 +58,10 @@ class SeedEXStateManager:
             return
         if skill_node.skill_tag in self.allowed_list:
             if skill_node.skill_tag == "1461_E_EX_0":
-                assert self.e_ex_state not in [SeedEXState.LOOPING, SeedEXState.FIRST_CAST], (
-                    f"席德的强化E释放状态状态错误, 当前状态为 {self.e_ex_state}"
-                )
+                assert self.e_ex_state not in [
+                    SeedEXState.LOOPING,
+                    SeedEXState.FIRST_CAST,
+                ], f"席德的强化E释放状态状态错误, 当前状态为 {self.e_ex_state}"
                 self.e_ex_state = SeedEXState.FIRST_CAST
                 self.repeat_count = 0  # 在检测到起手式时重置重复次数
             elif skill_node.skill_tag == "1461_E_EX_1":
@@ -79,9 +80,10 @@ class SeedEXStateManager:
                     else SeedEXState.FINISH
                 )
             elif skill_node.skill_tag == "1461_E_EX_2":
-                assert self.e_ex_state in [SeedEXState.LOOPING, SeedEXState.FIRST_CAST], (
-                    f"席德的强化E释放状态状态错误, 当前状态为 {self.e_ex_state}"
-                )
+                assert self.e_ex_state in [
+                    SeedEXState.LOOPING,
+                    SeedEXState.FIRST_CAST,
+                ], f"席德的强化E释放状态状态错误, 当前状态为 {self.e_ex_state}"
                 assert self.repeat_count < self.e_ex_max_repeat_times, (
                     f"席德的强化E释放状态状态错误, 既然打出了E_EX_2就说明提前打断了强化E释放，此时释放次数（{self.repeat_count}次）应小于最大次数{self.e_ex_max_repeat_times}"
                 )
@@ -93,9 +95,10 @@ class SeedEXStateManager:
                     # 若是传入了第一段重击，同时强化E状态为IDLE，说明此次SNA_1和强化E连段无关，直接返回
                     return
                 else:
-                    assert self.e_ex_state in [SeedEXState.FINISH, SeedEXState.INTRUPTED], (
-                        f"席德的强化E释放状态状态错误, 当前状态为 {self.e_ex_state}"
-                    )
+                    assert self.e_ex_state in [
+                        SeedEXState.FINISH,
+                        SeedEXState.INTRUPTED,
+                    ], f"席德的强化E释放状态状态错误, 当前状态为 {self.e_ex_state}"
                     self.e_ex_state = SeedEXState.IDLE
                     if self.char.cinema >= 2:
                         if SEED_REPORT:
@@ -114,9 +117,10 @@ class SeedEXStateManager:
                         )
 
         else:
-            assert self.e_ex_state not in [SeedEXState.LOOPING, SeedEXState.FIRST_CAST], (
-                f"在传入其他无关技能时，席德的强化E状态处于未结算的情况，当前状态为{self.e_ex_state}"
-            )
+            assert self.e_ex_state not in [
+                SeedEXState.LOOPING,
+                SeedEXState.FIRST_CAST,
+            ], f"在传入其他无关技能时，席德的强化E状态处于未结算的情况，当前状态为{self.e_ex_state}"
             if self.e_ex_state in [SeedEXState.FINISH, SeedEXState.INTRUPTED]:
                 self.e_ex_state = SeedEXState.IDLE
 

@@ -30,6 +30,7 @@ class APLArchive:
         self.refresh()
 
     def refresh(self):
+        os.makedirs(COSTOM_APL_DIR, exist_ok=True)
         self.default_apl_map = self.__get_apl_toml(DEFAULT_APL_DIR)
         self.custom_apl_map = self.__get_apl_toml(COSTOM_APL_DIR)
         all_apl_list: list[dict] = list(self.default_apl_map.values()) + list(
@@ -161,19 +162,19 @@ class APLArchive:
         return full_relative_path
 
     def change_title(self, former_title: str, new_title: str, new_comment: str | None = None):
-        # Step 1: Check if the former title exists
+        # 步骤1：检查原标题是否存在
 
         if former_title not in self.title_apl_map.keys():
             st.error(f"错误：原标题 '{former_title}' 不存在。")
             return
 
-        # Step 2: Check if the new title already exists (and is not the same as the former title)
+        # 步骤2：检查新标题是否已被其他 APL 占用
 
         if new_title != former_title and new_title in self.title_apl_map.keys():
             st.error(f"错误：新标题 '{new_title}' 已被其他APL使用。")
             return
 
-        # Step 3: Check if the new title is the same as the former title
+        # 步骤3：检查标题和注释是否确实发生变化
 
         if new_title == former_title and new_comment == self.title_apl_map.get(
             former_title, {}
@@ -181,15 +182,15 @@ class APLArchive:
             st.warning("新旧标题相同，且未提供新注释，无需更改。")
             return
 
-        # Step 4: Get the relative path for the former title
+        # 步骤4：获取原标题对应的相对路径
         relative_path = self.title_file_name_map.get(former_title)
         if not relative_path:
             st.error(
                 f"内部错误：找不到标题 '{former_title}' 对应的文件路径。"
-            )  # Should not happen if step 1 passed
+            )  # 如果步骤1通过，这里理论上不应发生
             return
 
-        # Determine the absolute path
+        # 计算绝对路径
         assert self.default_apl_map is not None and self.custom_apl_map is not None, (
             "APL映射未初始化。请先调用 refresh() 方法。"
         )
@@ -198,12 +199,12 @@ class APLArchive:
         elif relative_path in self.custom_apl_map:
             base_dir = COSTOM_APL_DIR
         else:
-            st.error(f"内部错误：无法确定文件 '{relative_path}' 的所属目录。")  # Should not happen
+            st.error(f"内部错误：无法确定文件 '{relative_path}' 的所属目录。")  # 理论上不应发生
             return
 
         absolute_path = os.path.abspath(os.path.join(base_dir, relative_path))
 
-        # Step 5 & 6: Update the title and comment in the TOML file and save
+        # 步骤5、6：更新 TOML 中的标题和注释并保存
         try:
             with open(absolute_path, "rb") as f:
                 apl_data = tomllib.load(f)
@@ -221,7 +222,7 @@ class APLArchive:
             st.success("正在保存...")
             time.sleep(1)
 
-            # Step 7: Refresh the APL archive
+            # 步骤7：刷新 APL 档案
             self.refresh()
 
         except FileNotFoundError:
@@ -248,7 +249,7 @@ class APLArchive:
                                 relative_path = os.path.basename(base_path)
                                 toml_dict_map[relative_path] = toml_data
                     except Exception as e:
-                        st.exception(Exception(f"Error loading TOML file {base_path}: {e}"))
+                        st.exception(Exception(f"加载 TOML 文件失败：{base_path}，{e}"))
             elif os.path.isdir(base_path):
                 # 如果是目录，遍历所有toml文件
                 for root, _, files in os.walk(base_path):
@@ -262,10 +263,10 @@ class APLArchive:
                                         relative_path = os.path.relpath(file_path, base_path)
                                         toml_dict_map[relative_path] = toml_data
                             except Exception as e:
-                                st.exception(Exception(f"Error loading TOML file {file_path}: {e}"))
+                                st.exception(Exception(f"加载 TOML 文件失败：{file_path}，{e}"))
             else:
                 # 如果路径既不是文件也不是目录，则记录警告或错误
-                st.warning(f"APL path does not exist or is not a file/directory: {apl_path}")
+                st.warning(f"APL 路径不存在，或不是有效的文件/目录：{apl_path}")
             return toml_dict_map
         except Exception as e:
             raise ValueError(f"读取APL文件失败：{str(e)}")
@@ -360,21 +361,20 @@ def display_apl_details(
         return
 
     st.divider()
-    st.subheader(f"编辑 APL：{apl_title}")  # Use title in subheader
+    st.subheader(f"编辑 APL：{apl_title}")  # 在副标题中展示当前标题
 
-    # Initialize session state for edited data if not present
+    # 若尚未存在编辑数据，则初始化 session state
     session_key = f"edited_apl_{apl_title}"
     if session_key not in st.session_state:
-        # Deep copy to avoid modifying the original dict directly
+        # 使用深拷贝，避免直接修改原始字典
         st.session_state[session_key] = copy.deepcopy(apl_data)
 
     edited_data: dict = st.session_state[session_key]
 
-    # --- General 信息编辑 ---
+    # --- 通用信息编辑 ---
     general_info = edited_data.get("general", {})
     cols_general = st.columns(2)
-    # Title editing might need special handling due to its use as an identifier
-    # For now, make it read-only or handle rename separately as per roadmap
+    # 标题同时作为标识符使用，重命名需要走单独入口；这里保持只读。
     cols_general[0].markdown(
         f"**标题:**  (重命名请使用上方按钮)</br>**{general_info.get('title', 'N/A')}**  ",
         unsafe_allow_html=True,
@@ -382,11 +382,11 @@ def display_apl_details(
     general_info["author"] = cols_general[1].text_input(
         "作者", value=general_info.get("author", "")
     )
-    # Display create/change times - typically read-only
+    # 创建/修改时间通常只读，这里只编辑注释。
     general_info["comment"] = st.text_area("注释", value=general_info.get("comment", ""))
-    edited_data["general"] = general_info  # Update the edited data
+    edited_data["general"] = general_info  # 更新编辑数据
 
-    # --- Characters 信息编辑 (Basic Framework) ---
+    # --- 角色信息编辑 ---
     st.markdown("**角色信息**")
     characters_info: dict = edited_data.setdefault("characters", {})  # 使用 setdefault 确保存在
 
@@ -547,7 +547,7 @@ def display_apl_details(
         auto_update=True,  # 自动更新内容
         key=f"{session_key}_apl_logic_editor",  # 添加唯一 key
     )
-    edited_data["apl_logic"] = apl_logic_info  # Update the edited data
+    edited_data["apl_logic"] = apl_logic_info  # 更新编辑数据
 
     # --- 在保存按钮前添加警告 ---
     relative_path = apl_archive.title_file_name_map.get(apl_title)

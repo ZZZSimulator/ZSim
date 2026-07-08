@@ -1,4 +1,7 @@
-from .. import Buff, JudgeTools, check_preparation
+from .. import Buff, check_preparation
+from ..JudgeTools import build_preparation_context_from_buff
+from ._preparation_helpers import ensure_owner_template_record, prepare_with_context
+from .enemy_anomaly_map_read import snapshot_enemy_anomaly_states
 
 anomaly_name_list = ["frostbite", "assault", "shock", "burn", "corruption"]
 
@@ -41,16 +44,20 @@ class MiyabiAdditionalAbility_IgnoreIceRes(Buff.BuffLogic):
         self.record = None
 
     def get_prepared(self, **kwargs):
-        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
+        return prepare_with_context(
+            self,
+            check_preparation_func=check_preparation,
+            context_builder=build_preparation_context_from_buff,
+            **kwargs,
+        )
 
     def check_record_module(self):
-        if self.buff_0 is None:
-            self.buff_0 = JudgeTools.find_exist_buff_dict(
-                sim_instance=self.buff_instance.sim_instance
-            )["雅"][self.buff_instance.ft.index]
-        if self.buff_0.history.record is None:
-            self.buff_0.history.record = MiyabiAdditionalAbility()
-        self.record = self.buff_0.history.record
+        ensure_owner_template_record(
+            self,
+            owner_name="雅",
+            record_factory=MiyabiAdditionalAbility,
+            context_builder=build_preparation_context_from_buff,
+        )
 
     def special_judge_logic(self, **kwargs):
         self.check_record_module()
@@ -59,7 +66,7 @@ class MiyabiAdditionalAbility_IgnoreIceRes(Buff.BuffLogic):
         action_now = self.record.action_stack.peek()
         enemy = self.record.enemy
 
-        current_anomalies = {name: getattr(enemy.dynamic, name) for name in anomaly_name_list}
+        current_anomalies = snapshot_enemy_anomaly_states(enemy, anomaly_name_list)
         # 获取当前状态
         current_count = sum(current_anomalies.values())
         last_count = sum(self.record.anomaly_state.values())

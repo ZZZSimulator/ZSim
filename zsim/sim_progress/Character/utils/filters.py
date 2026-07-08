@@ -4,9 +4,9 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from zsim.sim_progress.anomaly_bar.CopyAnomalyForOutput import NewAnomaly
+    from zsim.sim_progress.calculation.calculator import Calculator
     from zsim.sim_progress.data_struct import SPUpdateData
     from zsim.sim_progress.Preload import SkillNode
-    from zsim.sim_progress.ScheduledEvent.Calculator import Calculator
 
 
 def _skill_node_filter(*args, **kwargs) -> list["SkillNode"]:
@@ -25,7 +25,7 @@ def _skill_node_filter(*args, **kwargs) -> list["SkillNode"]:
 
 def _multiplier_filter(*args, **kwargs) -> list[Calculator.MultiplierData]:
     """过滤出输入的 乘区数据，并作为列表返回"""
-    from zsim.sim_progress.ScheduledEvent.Calculator import Calculator
+    from zsim.sim_progress.calculation.calculator import Calculator
 
     multiplier_data: list[Calculator.MultiplierData] = []
     for arg in args:

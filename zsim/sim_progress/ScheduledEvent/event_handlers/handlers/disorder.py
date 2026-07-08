@@ -2,11 +2,12 @@
 
 from typing import Any
 
+from zsim.define import ANOMALY_MAPPING
 from zsim.models.event_enums import ListenerBroadcastSignal as LBS
 from zsim.sim_progress import Report
 from zsim.sim_progress.anomaly_bar.CopyAnomalyForOutput import Disorder
+from zsim.sim_progress.calculation.anomaly_calculator import CalDisorder
 
-from ...CalAnomaly import CalDisorder
 from ..base import BaseEventHandler
 from ..context import EventContext
 
@@ -23,7 +24,7 @@ class DisorderEventHandler(BaseEventHandler):
     def handle(self, event: Disorder, context: EventContext) -> None:
         """处理紊乱事件"""
         enemy = self._get_context_enemy(context)
-        dynamic_buff = self._get_context_dynamic_buff(context)
+        active_buff_view = self._get_context_active_buff_view(context)
         sim_instance = self._get_context_sim_instance(context)
         tick = self._get_context_tick(context)
 
@@ -34,7 +35,7 @@ class DisorderEventHandler(BaseEventHandler):
         calculator = CalDisorder(
             disorder_obj=event,
             enemy_obj=enemy,
-            dynamic_buff=dynamic_buff,
+            dynamic_buff=active_buff_view,
             sim_instance=sim_instance,
         )
 
@@ -47,6 +48,7 @@ class DisorderEventHandler(BaseEventHandler):
         Report.report_dmg_result(
             tick=tick,
             element_type=event.element_type,
+            skill_tag=ANOMALY_MAPPING[event.element_type],
             dmg_expect=round(damage_disorder, 2),
             dmg_crit=round(damage_disorder, 2),
             is_anomaly=True,

@@ -40,7 +40,7 @@ class APLService:
         config_dict = config_data.model_dump()
         # 验证配置数据
         if not self._validate_apl_config(config_dict):
-            raise ValueError("Invalid APL configuration data")
+            raise ValueError("无效的 APL 配置数据")
 
         config_id = self.db.create_apl_config(config_dict)
         return {"config_id": config_id, "message": "APL configuration created successfully"}
@@ -52,13 +52,13 @@ class APLService:
         config_dict = config_data.model_dump()
         # 验证配置数据
         if not self._validate_apl_config(config_dict):
-            raise ValueError("Invalid APL configuration data")
+            raise ValueError("无效的 APL 配置数据")
 
         success = self.db.update_apl_config(config_id, config_dict)
         if success:
             return {"config_id": config_id, "message": "APL configuration updated successfully"}
         else:
-            raise ValueError("Failed to update APL configuration")
+            raise ValueError("更新 APL 配置失败")
 
     def delete_apl_config(self, config_id: str) -> dict[str, Any]:
         """删除APL配置"""
@@ -66,7 +66,7 @@ class APLService:
         if success:
             return {"config_id": config_id, "message": "APL configuration deleted successfully"}
         else:
-            raise ValueError("Failed to delete APL configuration")
+            raise ValueError("删除 APL 配置失败")
 
     def get_apl_files(self) -> list[APLFileInfo]:
         """获取所有APL文件列表"""
@@ -79,7 +79,7 @@ class APLService:
         if content is not None:
             return APLFileContent(**content)
         else:
-            raise ValueError("APL file not found")
+            raise ValueError("未找到 APL 文件")
 
     def create_apl_file(self, file_data: APLFileCreateRequest) -> dict[str, Any]:
         """创建新的APL文件"""
@@ -94,7 +94,7 @@ class APLService:
         if success:
             return {"file_id": file_id, "message": "APL file updated successfully"}
         else:
-            raise ValueError("Failed to update APL file")
+            raise ValueError("更新 APL 文件失败")
 
     def delete_apl_file(self, file_id: str) -> dict[str, Any]:
         """删除APL文件"""
@@ -102,7 +102,7 @@ class APLService:
         if success:
             return {"file_id": file_id, "message": "APL file deleted successfully"}
         else:
-            raise ValueError("Failed to delete APL file")
+            raise ValueError("删除 APL 文件失败")
 
     def validate_apl_syntax(self, apl_code: str) -> APLValidateResponse:
         """验证APL语法"""
@@ -122,17 +122,17 @@ class APLService:
                 # 检查基本格式：动作角色|动作类型|动作ID|条件...
                 parts = line.split("|")
                 if len(parts) < 3:
-                    errors.append(f"Line {i}: Invalid APL format, expected at least 3 parts")
+                    errors.append(f"第 {i} 行：APL 格式无效，至少需要 3 段")
                     continue
 
                 # 验证各部分不为空
                 character, action_type, action_id = parts[0], parts[1], parts[2]
                 if not character.strip():
-                    errors.append(f"Line {i}: Character name cannot be empty")
+                    errors.append(f"第 {i} 行：角色名称不能为空")
                 if not action_type.strip():
-                    errors.append(f"Line {i}: Action type cannot be empty")
+                    errors.append(f"第 {i} 行：动作类型不能为空")
                 if not action_id.strip():
-                    errors.append(f"Line {i}: Action ID cannot be empty")
+                    errors.append(f"第 {i} 行：动作 ID 不能为空")
 
             if errors:
                 return APLValidateResponse(valid=False, message=None, errors=errors)
@@ -165,9 +165,9 @@ class APLService:
                         "character": parts[0].strip(),
                         "action_type": parts[1].strip(),
                         "action_id": parts[2].strip(),
-                        "conditions": [part.strip() for part in parts[3:]]
-                        if len(parts) > 3
-                        else [],
+                        "conditions": (
+                            [part.strip() for part in parts[3:]] if len(parts) > 3 else []
+                        ),
                     }
                     parsed_actions.append(action)
 

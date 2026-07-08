@@ -1,4 +1,10 @@
-from .. import Buff, JudgeTools, check_preparation
+from .. import Buff, check_preparation
+from ..JudgeTools import (
+    TriggerBuffRef,
+    build_preparation_context_from_buff,
+    read_trigger_buff_state,
+)
+from ._preparation_helpers import ensure_equipper_template_record, prepare_with_context
 
 
 class SharpenedStingerAnomalyBuildupBonusRecord:
@@ -24,20 +30,20 @@ class SharpenedStingerAnomalyBuildupBonus(Buff.BuffLogic):
         self.record = None
 
     def get_prepared(self, **kwargs):
-        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
+        return prepare_with_context(
+            self,
+            check_preparation_func=check_preparation,
+            context_builder=build_preparation_context_from_buff,
+            **kwargs,
+        )
 
     def check_record_module(self):
-        if self.equipper is None:
-            self.equipper = JudgeTools.find_equipper(
-                "淬锋钳刺", sim_instance=self.buff_instance.sim_instance
-            )
-        if self.buff_0 is None:
-            self.buff_0 = JudgeTools.find_exist_buff_dict(
-                sim_instance=self.buff_instance.sim_instance
-            )[self.equipper][self.buff_instance.ft.index]
-        if self.buff_0.history.record is None:
-            self.buff_0.history.record = SharpenedStingerAnomalyBuildupBonusRecord()
-        self.record = self.buff_0.history.record
+        ensure_equipper_template_record(
+            self,
+            item_name="淬锋钳刺",
+            record_factory=SharpenedStingerAnomalyBuildupBonusRecord,
+            context_builder=build_preparation_context_from_buff,
+        )
 
     def special_judge_logic(self, **kwargs):
         """淬锋钳刺的第二特效触发逻辑：触发器Buff为3层时触发。"""
@@ -45,9 +51,10 @@ class SharpenedStingerAnomalyBuildupBonus(Buff.BuffLogic):
         self.get_prepared(
             equipper="淬锋钳刺",
             preload_data=1,
-            trigger_buff_0=("equipper", "淬锋钳刺-猎意"),
+            trigger_buff_0=TriggerBuffRef.equipper("淬锋钳刺-猎意"),
         )
-        if self.record.trigger_buff_0.dy.count == 3:
+        trigger_state = read_trigger_buff_state(self.record)
+        if trigger_state.count == 3:
             return True
         else:
             return False

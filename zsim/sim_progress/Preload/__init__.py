@@ -5,6 +5,7 @@ from .APLModule.APLParser import APLParser
 from .PreloadClass import PreloadClass
 from .PreloadDataClass import PreloadData
 from .SkillsQueue import SkillNode
+from .wakeup import PreloadWakeupSource
 
 __all__ = [
     "watchdog",
@@ -16,4 +17,5 @@ __all__ = [
     "get_game_state",
     "PreloadClass",
     "PreloadData",
+    "PreloadWakeupSource",
 ]

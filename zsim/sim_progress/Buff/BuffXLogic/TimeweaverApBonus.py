@@ -1,4 +1,7 @@
-from .. import Buff, JudgeTools, check_preparation, find_tick
+from .. import Buff, check_preparation, find_tick
+from ..JudgeTools import build_preparation_context_from_buff
+from ._preparation_helpers import ensure_equipper_template_record, prepare_with_context
+from .enemy_anomaly_read import read_enemy_anomaly_active
 
 
 class TimeweaverApBonusRecord:
@@ -20,20 +23,20 @@ class TimeweaverApBonus(Buff.BuffLogic):
         self.record = None
 
     def get_prepared(self, **kwargs):
-        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
+        return prepare_with_context(
+            self,
+            check_preparation_func=check_preparation,
+            context_builder=build_preparation_context_from_buff,
+            **kwargs,
+        )
 
     def check_record_module(self):
-        if self.equipper is None:
-            self.equipper = JudgeTools.find_equipper(
-                "时流贤者", sim_instance=self.buff_instance.sim_instance
-            )
-        if self.buff_0 is None:
-            self.buff_0 = JudgeTools.find_exist_buff_dict(
-                sim_instance=self.buff_instance.sim_instance
-            )[self.equipper][self.buff_instance.ft.index]
-        if self.buff_0.history.record is None:
-            self.buff_0.history.record = TimeweaverApBonusRecord()
-        self.record = self.buff_0.history.record
+        ensure_equipper_template_record(
+            self,
+            item_name="时流贤者",
+            record_factory=TimeweaverApBonusRecord,
+            context_builder=build_preparation_context_from_buff,
+        )
 
     def special_judge_logic(self, **kwargs):
         """时流贤者的电属性积蓄相关Buff的核心逻辑。"""
@@ -50,7 +53,10 @@ class TimeweaverApBonus(Buff.BuffLogic):
             )
 
         # 过滤不是自己的skill_node
-        if self.record.char.NAME != skill_node.char_name:
+        prepared_char_name = (
+            self.record.char.NAME if self.record.char is not None else self.record.equipper
+        )
+        if prepared_char_name != skill_node.char_name:
             return False
 
         # 判断skill node的trigger_buff_level是否为1或2
@@ -64,7 +70,7 @@ class TimeweaverApBonus(Buff.BuffLogic):
             return False
 
         # 判断敌人是否处于异常状态
-        if not self.record.enemy.dynamic.is_under_anomaly():
+        if not read_enemy_anomaly_active(self.record.enemy):
             return False
 
         return True

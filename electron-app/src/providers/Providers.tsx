@@ -1,13 +1,8 @@
-import { FC, PropsWithChildren } from "react";
+import { FC, PropsWithChildren } from 'react';
 import { LanguageProvider } from './LanguageProvider';
 
-
 export const Providers: FC<PropsWithChildren> = ({ children }) => {
-  return (
-    <LanguageProvider>
-      {children}
-    </LanguageProvider>
-  );
+  return <LanguageProvider>{children}</LanguageProvider>;
 };
 
 export default Providers;

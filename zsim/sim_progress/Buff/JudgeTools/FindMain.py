@@ -19,24 +19,9 @@ def find_char_list(sim_instance: "Simulator" = None):
     return char_list
 
 
-def find_dynamic_buff_list(sim_instance: "Simulator" = None):
-    dynamic_buff_list = sim_instance.global_stats.DYNAMIC_BUFF_DICT
-    return dynamic_buff_list
-
-
 def find_tick(sim_instance: "Simulator" = None):
     tick = sim_instance.tick
     return tick
-
-
-def find_exist_buff_dict(sim_instance: "Simulator" = None):
-    exist_buff_dict = sim_instance.load_data.exist_buff_dict
-    return exist_buff_dict
-
-
-def find_event_list(sim_instance: "Simulator" = None):
-    event_list = sim_instance.schedule_data.event_list
-    return event_list
 
 
 def find_stack(sim_instance: "Simulator" = None):
@@ -52,6 +37,14 @@ def find_load_data(sim_instance: "Simulator" = None):
 def find_schedule_data(sim_instance: "Simulator" = None):
     schedule_data = sim_instance.schedule_data
     return schedule_data
+
+
+def _legacy_exist_buff_dict_for_compat(sim_instance: "Simulator" = None):
+    return sim_instance.load_data.exist_buff_dict
+
+
+def find_exist_buff_dict(sim_instance: "Simulator" = None):
+    return _legacy_exist_buff_dict_for_compat(sim_instance)
 
 
 def find_preload_data(sim_instance: "Simulator" = None):

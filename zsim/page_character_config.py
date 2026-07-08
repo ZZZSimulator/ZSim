@@ -33,9 +33,12 @@ def page_character_config():
             st.selectbox(
                 "角色1",
                 profession_chars_map[profession_0],
-                index=profession_chars_map[profession_0].index(default_chars[0])
-                if len(default_chars) > 0 and default_chars[0] in profession_chars_map[profession_0]
-                else 0,
+                index=(
+                    profession_chars_map[profession_0].index(default_chars[0])
+                    if len(default_chars) > 0
+                    and default_chars[0] in profession_chars_map[profession_0]
+                    else 0
+                ),
                 key="char_select_0",
             )
         ]
@@ -51,9 +54,12 @@ def page_character_config():
             st.selectbox(
                 "角色2",
                 profession_chars_map[profession_1],
-                index=profession_chars_map[profession_1].index(default_chars[1])
-                if len(default_chars) > 1 and default_chars[1] in profession_chars_map[profession_1]
-                else 0,
+                index=(
+                    profession_chars_map[profession_1].index(default_chars[1])
+                    if len(default_chars) > 1
+                    and default_chars[1] in profession_chars_map[profession_1]
+                    else 0
+                ),
                 key="char_select_1",
             )
         ]
@@ -69,9 +75,12 @@ def page_character_config():
             st.selectbox(
                 "角色3",
                 profession_chars_map[profession_2],
-                index=profession_chars_map[profession_2].index(default_chars[2])
-                if len(default_chars) > 2 and default_chars[2] in profession_chars_map[profession_2]
-                else 0,
+                index=(
+                    profession_chars_map[profession_2].index(default_chars[2])
+                    if len(default_chars) > 2
+                    and default_chars[2] in profession_chars_map[profession_2]
+                    else 0
+                ),
                 key="char_select_2",
             )
         ]
@@ -166,9 +175,11 @@ def page_character_config():
                     "音擎精炼等级",
                     min_value=1,
                     max_value=5,
-                    value=saved_char_config[name].get("weapon_level", 1)
-                    if name in saved_char_config
-                    else 1,
+                    value=(
+                        saved_char_config[name].get("weapon_level", 1)
+                        if name in saved_char_config
+                        else 1
+                    ),
                     key=f"{name}_weapon_level",
                 )
             with col_cinema:
@@ -176,17 +187,19 @@ def page_character_config():
                     "影画等级",
                     min_value=0,
                     max_value=6,
-                    value=saved_char_config[name].get("cinema", 0)
-                    if name in saved_char_config
-                    else 0,
+                    value=(
+                        saved_char_config[name].get("cinema", 0) if name in saved_char_config else 0
+                    ),
                     key=f"{name}_cinema_level",
                 )
             equip_style = st.radio(
                 "驱动盘搭配方式",
                 ["4+2", "2+2+2"],
-                index=0
-                if name not in saved_char_config or "equip_style" not in saved_char_config[name]
-                else (0 if saved_char_config[name]["equip_style"] == "4+2" else 1),
+                index=(
+                    0
+                    if name not in saved_char_config or "equip_style" not in saved_char_config[name]
+                    else (0 if saved_char_config[name]["equip_style"] == "4+2" else 1)
+                ),
                 key=f"{name}_equip_style",
             )
             col1, col2 = st.columns(2)
@@ -195,50 +208,62 @@ def page_character_config():
                     st.selectbox(
                         "四件套",
                         equip_set4_options,
-                        index=equip_set4_options.index(saved_char_config[name]["equip_set4"])
-                        if name in saved_char_config and "equip_set4" in saved_char_config[name]
-                        else 0,
+                        index=(
+                            equip_set4_options.index(saved_char_config[name]["equip_set4"])
+                            if name in saved_char_config and "equip_set4" in saved_char_config[name]
+                            else 0
+                        ),
                         key=f"{name}_equip_set4",
                     )
                     st.selectbox(
                         "二件套",
                         equip_set2_options,
-                        index=equip_set2_options.index(
-                            saved_char_config[name].get("equip_set2_a", "啄木鸟电音")
-                        )
-                        if name in saved_char_config
-                        else 0,
+                        index=(
+                            equip_set2_options.index(
+                                saved_char_config[name].get("equip_set2_a", "啄木鸟电音")
+                            )
+                            if name in saved_char_config
+                            else 0
+                        ),
                         key=f"{name}_equip_set2",
                     )
                 else:
                     st.selectbox(
                         "二件套A",
                         equip_set2_options,
-                        index=equip_set2_options.index(
-                            saved_char_config[name].get("equip_set2_a", "啄木鸟电音")
-                        )
-                        if name in saved_char_config
-                        else 0,
+                        index=(
+                            equip_set2_options.index(
+                                saved_char_config[name].get("equip_set2_a", "啄木鸟电音")
+                            )
+                            if name in saved_char_config
+                            else 0
+                        ),
                         key=f"{name}_equip_set2A",
                     )
                     st.selectbox(
                         "二件套B",
                         equip_set2_options,
-                        index=equip_set2_options.index(
-                            saved_char_config[name].get("equip_set2_b", "啄木鸟电音")
-                        )
-                        if name in saved_char_config and "equip_set2_b" in saved_char_config[name]
-                        else 0,
+                        index=(
+                            equip_set2_options.index(
+                                saved_char_config[name].get("equip_set2_b", "啄木鸟电音")
+                            )
+                            if name in saved_char_config
+                            and "equip_set2_b" in saved_char_config[name]
+                            else 0
+                        ),
                         key=f"{name}_equip_set2B",
                     )
                     st.selectbox(
                         "二件套C",
                         equip_set2_options,
-                        index=equip_set2_options.index(
-                            saved_char_config[name].get("equip_set2_c", "啄木鸟电音")
-                        )
-                        if name in saved_char_config and "equip_set2_c" in saved_char_config[name]
-                        else 0,
+                        index=(
+                            equip_set2_options.index(
+                                saved_char_config[name].get("equip_set2_c", "啄木鸟电音")
+                            )
+                            if name in saved_char_config
+                            and "equip_set2_c" in saved_char_config[name]
+                            else 0
+                        ),
                         key=f"{name}_equip_set2C",
                     )
             with col2:
@@ -251,27 +276,31 @@ def page_character_config():
                 st.selectbox(
                     "四号位主词条",
                     main_stat4_options,
-                    index=main_stat4_options.index(saved_char_config[name].get("drive4", "攻击力%"))
-                    if name in saved_char_config
-                    else 0,
+                    index=(
+                        main_stat4_options.index(saved_char_config[name].get("drive4", "攻击力%"))
+                        if name in saved_char_config
+                        else 0
+                    ),
                     key=f"{name}_main_stat4",
                 )
                 st.selectbox(
                     "五号位主词条",
                     main_stat5_options,
-                    index=main_stat5_options.index(saved_char_config[name].get("drive5", "攻击力%"))
-                    if name in saved_char_config
-                    else 0,
+                    index=(
+                        main_stat5_options.index(saved_char_config[name].get("drive5", "攻击力%"))
+                        if name in saved_char_config
+                        else 0
+                    ),
                     key=f"{name}_main_stat5",
                 )
                 st.selectbox(
                     "六号位主词条",
                     main_stat6_options,
-                    index=main_stat6_options.index(
-                        saved_char_config[name].get("drive6 ", "攻击力%")
-                    )
-                    if name in saved_char_config
-                    else 0,
+                    index=(
+                        main_stat6_options.index(saved_char_config[name].get("drive6 ", "攻击力%"))
+                        if name in saved_char_config
+                        else 0
+                    ),
                     key=f"{name}_main_stat6",
                 )
             from zsim.lib_webui.constants import sc_max_value
@@ -283,18 +312,20 @@ def page_character_config():
                     "攻击力%",
                     min_value=0,
                     max_value=sc_max_value,
-                    value=saved_char_config[name].get("scATK_percent", 0)
-                    if name in saved_char_config
-                    else 0,
+                    value=(
+                        saved_char_config[name].get("scATK_percent", 0)
+                        if name in saved_char_config
+                        else 0
+                    ),
                     key=f"{name}_scATK_percent",
                 )
                 st.number_input(
                     "攻击力",
                     min_value=0,
                     max_value=sc_max_value,
-                    value=saved_char_config[name].get("scATK", 0)
-                    if name in saved_char_config
-                    else 0,
+                    value=(
+                        saved_char_config[name].get("scATK", 0) if name in saved_char_config else 0
+                    ),
                     key=f"{name}_scATK",
                 )
             with col2:
@@ -302,18 +333,20 @@ def page_character_config():
                     "生命值%",
                     min_value=0,
                     max_value=sc_max_value,
-                    value=saved_char_config[name].get("scHP_percent", 0)
-                    if name in saved_char_config
-                    else 0,
+                    value=(
+                        saved_char_config[name].get("scHP_percent", 0)
+                        if name in saved_char_config
+                        else 0
+                    ),
                     key=f"{name}_scHP_percent",
                 )
                 st.number_input(
                     "生命值",
                     min_value=0,
                     max_value=sc_max_value,
-                    value=saved_char_config[name].get("scHP", 0)
-                    if name in saved_char_config
-                    else 0,
+                    value=(
+                        saved_char_config[name].get("scHP", 0) if name in saved_char_config else 0
+                    ),
                     key=f"{name}_scHP",
                 )
             with col3:
@@ -321,18 +354,20 @@ def page_character_config():
                     "防御力%",
                     min_value=0,
                     max_value=sc_max_value,
-                    value=saved_char_config[name].get("scDEF_percent", 0)
-                    if name in saved_char_config
-                    else 0,
+                    value=(
+                        saved_char_config[name].get("scDEF_percent", 0)
+                        if name in saved_char_config
+                        else 0
+                    ),
                     key=f"{name}_scDEF_percent",
                 )
                 st.number_input(
                     "防御力",
                     min_value=0,
                     max_value=sc_max_value,
-                    value=saved_char_config[name].get("scDEF", 0)
-                    if name in saved_char_config
-                    else 0,
+                    value=(
+                        saved_char_config[name].get("scDEF", 0) if name in saved_char_config else 0
+                    ),
                     key=f"{name}_scDEF",
                 )
             with col4:
@@ -340,18 +375,20 @@ def page_character_config():
                     "暴击率",
                     min_value=0,
                     max_value=sc_max_value,
-                    value=saved_char_config[name].get("scCRIT", 0)
-                    if name in saved_char_config
-                    else 0,
+                    value=(
+                        saved_char_config[name].get("scCRIT", 0) if name in saved_char_config else 0
+                    ),
                     key=f"{name}_scCRIT",
                 )
                 st.number_input(
                     "暴击伤害",
                     min_value=0,
                     max_value=sc_max_value,
-                    value=saved_char_config[name].get("scCRIT_DMG", 0)
-                    if name in saved_char_config
-                    else 0,
+                    value=(
+                        saved_char_config[name].get("scCRIT_DMG", 0)
+                        if name in saved_char_config
+                        else 0
+                    ),
                     key=f"{name}_scCRIT_DMG",
                 )
             with col5:
@@ -359,18 +396,20 @@ def page_character_config():
                     "异常精通",
                     min_value=0,
                     max_value=sc_max_value,
-                    value=saved_char_config[name].get("scAnomalyProficiency", 0)
-                    if name in saved_char_config
-                    else 0,
+                    value=(
+                        saved_char_config[name].get("scAnomalyProficiency", 0)
+                        if name in saved_char_config
+                        else 0
+                    ),
                     key=f"{name}_scAnomalyProficiency",
                 )
                 st.number_input(
                     "穿透值",
                     min_value=0,
                     max_value=sc_max_value,
-                    value=saved_char_config[name].get("scPEN", 0)
-                    if name in saved_char_config
-                    else 0,
+                    value=(
+                        saved_char_config[name].get("scPEN", 0) if name in saved_char_config else 0
+                    ),
                     key=f"{name}_scPEN",
                 )
             col1, col2 = st.columns(2)

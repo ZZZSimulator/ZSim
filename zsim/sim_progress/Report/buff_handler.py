@@ -20,7 +20,7 @@ def report_buff_to_queue(
 
 
 def dump_buff_csv(result_id: str):
-    # Check if buffered_data has any content
+    # 没有缓存数据时无需输出
     if not buffered_data:
         return
 
@@ -47,23 +47,23 @@ def dump_buff_csv(result_id: str):
 
         buff_report_file_path = f"{result_id}/buff_log/{char_name}.csv"
 
-        # Ensure the directory exists
+        # 确保输出目录存在
         try:
             os.makedirs(os.path.dirname(buff_report_file_path), exist_ok=True)
         except Exception:
             continue
 
-        # Create DataFrame and sort columns
+        # 创建 DataFrame 并整理列顺序
         try:
             df = pl.DataFrame(rows)
             if df.is_empty():
                 continue
 
-            # Sort columns: time_tick first, then buff names alphabetically for deterministic output.
+            # time_tick 固定在第一列，其他 Buff 列按名称排序，保证输出稳定。
             buff_columns = sorted([col for col in df.columns if col != "time_tick"])
             df = df.sort("time_tick").select(["time_tick"] + buff_columns)
 
-            # Write CSV file
+            # 写入 CSV 文件
             df.write_csv(buff_report_file_path, include_bom=True)
         except Exception:
             pass

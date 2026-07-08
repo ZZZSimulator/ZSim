@@ -1,4 +1,5 @@
 from .. import Buff, JudgeTools
+from .enemy_anomaly_map_read import read_enemy_anomaly_state
 
 anomaly_statement_dict = {
     "Buff-异常-霜寒": "frostbite",
@@ -32,7 +33,7 @@ class AnomalyDebuffExitJudge(Buff.BuffLogic):
         if self.enemy is None:
             self.enemy = JudgeTools.find_enemy(sim_instance=self.buff_instance.sim_instance)
         anomaly_name = anomaly_statement_dict[self.buff_instance.ft.index]
-        anomaly_now = getattr(self.enemy.dynamic, anomaly_name)
+        anomaly_now = read_enemy_anomaly_state(self.enemy, anomaly_name)
         anomaly_statement = [
             getattr(self.buff_instance.logic, f"last_{anomaly_name}"),
             anomaly_now,

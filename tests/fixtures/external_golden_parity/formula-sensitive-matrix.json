@@ -1,0 +1,95 @@
+{
+  "schema": "zsim-external-golden-matrix-config.v1",
+  "description": "US-006 formula-sensitive matrix registration. Fixture smoke remains provisional; missing user golden rows do not complete formula parity.",
+  "default_tolerance_policy": {
+    "damage_total_abs": 0.0,
+    "damage_row_abs": 0.0,
+    "damage_attribution_abs": 0.0,
+    "buff_timeline": "exact-normalized"
+  },
+  "signoff_metadata": {
+    "label": "formula-sensitive",
+    "story_id": "US-006",
+    "prerequisite_for": [
+      "calculator-formula-parity"
+    ],
+    "formula_parity_status": "protected-incomplete",
+    "user_golden_status": "none-registered-in-machine-state",
+    "required_user_golden_expected_domains": [
+      "damage",
+      "damage_attribution",
+      "buff_timeline"
+    ],
+    "fixture_only_policy": "Fixture rows prove matrix wiring only; user-provided formula-sensitive golden dirs are required before formula parity can be complete.",
+    "calculator_code_policy": "unchanged"
+  },
+  "rows": [
+    {
+      "row_id": "fixture-qingyi-stop1-base-parity-smoke",
+      "row_kind": "fixture",
+      "golden_result_dir": "tests/fixtures/external_golden_parity/qingyi-stop1-golden",
+      "run_config": {
+        "team": "青衣雷属性队"
+      },
+      "apl": "./zsim/data/APLData/青衣-丽娜-雅.toml",
+      "stop_tick": 1,
+      "expected_domains": [
+        "buff_timeline"
+      ],
+      "tolerance_policy": {
+        "damage_total_abs": 0.0,
+        "damage_row_abs": 0.0,
+        "damage_attribution_abs": 0.0,
+        "buff_timeline": "exact-normalized"
+      },
+      "signoff_label": "base-parity",
+      "missing_input_policy": "block"
+    },
+    {
+      "row_id": "user-yixuan-astra-trigger-formula-sensitive",
+      "row_kind": "user-golden-required",
+      "golden_result_dir": "artifacts/external_golden/formula-sensitive/yixuan-astra-trigger",
+      "run_config": {
+        "team": "仪玄-耀嘉音-扳机试点队"
+      },
+      "apl": "./zsim/data/APLData/仪玄-耀嘉音-扳机.toml",
+      "stop_tick": 120,
+      "expected_domains": [
+        "damage",
+        "damage_attribution",
+        "buff_timeline"
+      ],
+      "tolerance_policy": {
+        "damage_total_abs": 0.0,
+        "damage_row_abs": 0.0,
+        "damage_attribution_abs": 0.0,
+        "buff_timeline": "exact-normalized"
+      },
+      "signoff_label": "formula-sensitive",
+      "missing_input_policy": "provisional"
+    },
+    {
+      "row_id": "user-vivian-yanagi-astra-formula-sensitive",
+      "row_kind": "user-golden-required",
+      "golden_result_dir": "artifacts/external_golden/formula-sensitive/vivian-yanagi-astra",
+      "run_config": {
+        "team": "薇薇安物理队"
+      },
+      "apl": "./zsim/data/APLData/薇薇安-柳-耀嘉音.toml",
+      "stop_tick": 120,
+      "expected_domains": [
+        "damage",
+        "damage_attribution",
+        "buff_timeline"
+      ],
+      "tolerance_policy": {
+        "damage_total_abs": 0.0,
+        "damage_row_abs": 0.0,
+        "damage_attribution_abs": 0.0,
+        "buff_timeline": "exact-normalized"
+      },
+      "signoff_label": "formula-sensitive",
+      "missing_input_policy": "provisional"
+    }
+  ]
+}

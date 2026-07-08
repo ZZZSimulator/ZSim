@@ -1,4 +1,7 @@
 from .. import Buff, JudgeTools, check_preparation
+from ..JudgeTools import build_preparation_context_from_buff
+from ._preparation_helpers import ensure_equipper_template_record, prepare_with_context
+from .enemy_edge_state_read import read_enemy_frozen_edge_state
 
 
 class BranchBladeSongCritRateBonusRecord:
@@ -26,29 +29,26 @@ class BranchBladeSongCritRateBonus(Buff.BuffLogic):
         self.record = None
 
     def get_prepared(self, **kwargs):
-        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
+        return prepare_with_context(
+            self,
+            check_preparation_func=check_preparation,
+            context_builder=build_preparation_context_from_buff,
+            **kwargs,
+        )
 
     def check_record_module(self):
-        if self.equipper is None:
-            self.equipper = JudgeTools.find_equipper(
-                "折枝剑歌", sim_instance=self.buff_instance.sim_instance
-            )
-        if self.buff_0 is None:
-            self.buff_0 = JudgeTools.find_exist_buff_dict(
-                sim_instance=self.buff_instance.sim_instance
-            )[self.equipper][self.buff_instance.ft.index]
-        if self.buff_0.history.record is None:
-            self.buff_0.history.record = BranchBladeSongCritRateBonusRecord()
-        self.record = self.buff_0.history.record
+        ensure_equipper_template_record(
+            self,
+            item_name="折枝剑歌",
+            record_factory=BranchBladeSongCritRateBonusRecord,
+            context_builder=build_preparation_context_from_buff,
+        )
 
     def special_judge_logic(self, **kwargs):
         self.check_record_module()
         self.get_prepared(equipper="折枝剑歌", enemy=1)
         tick = JudgeTools.find_tick(sim_instance=self.buff_instance.sim_instance)
-        if self.record.enemy.dynamic.frozen is None:
-            this_tick_freez_statement = False
-        else:
-            this_tick_freez_statement = self.record.enemy.dynamic.frozen
+        this_tick_freez_statement = read_enemy_frozen_edge_state(self.record.enemy)
         if this_tick_freez_statement != self.record.last_tick_freez_statement[1]:
             self.record.last_tick_freez_statement = tick, this_tick_freez_statement
             return True

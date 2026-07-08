@@ -2,31 +2,30 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Mapping, Sequence
 
 from zsim.sim_progress import Report
-from zsim.sim_progress.Buff import ScheduleBuffSettle
+from zsim.sim_progress.calculation.calculator import Calculator
 from zsim.sim_progress.Character import Character
-from zsim.sim_progress.data_struct import (
-    ActionStack,
-    SingleHit,
-)
+from zsim.sim_progress.data_struct import SingleHit
+from zsim.sim_progress.data_struct.schedule_dispatch import create_schedule_dispatch_port
 from zsim.sim_progress.Load.LoadDamageEvent import (
     ProcessFreezLikeDots,
     ProcessHitUpdateDots,
 )
 from zsim.sim_progress.Load.loading_mission import LoadingMission
 from zsim.sim_progress.Preload import SkillNode
-from zsim.sim_progress.Update import update_anomaly
 
-from ...Calculator import Calculator
 from ..base import BaseEventHandler
 from ..context import EventContext
 
 if TYPE_CHECKING:
+    from zsim.sim_progress.Buff import Buff
     from zsim.sim_progress.Enemy import Enemy
     from zsim.simulator.dataclasses import ScheduleData
     from zsim.simulator.simulator_class import Simulator
+
+    from ...runtime_command import RuntimeCommandPort
 
 
 class SkillEventHandler(BaseEventHandler):
@@ -40,19 +39,16 @@ class SkillEventHandler(BaseEventHandler):
 
     def handle(self, event: SkillNode | LoadingMission, context: EventContext) -> None:
         """处理技能事件"""
-        # 验证输入
         self._validate_event(event, (SkillNode, LoadingMission))
         self._validate_context(context)
 
         data = self._get_context_data(context)
         tick = self._get_context_tick(context)
         enemy = self._get_context_enemy(context)
-        dynamic_buff = self._get_context_dynamic_buff(context)
-        exist_buff_dict = self._get_context_exist_buff_dict(context)
-        action_stack = self._get_context_action_stack(context)
+        runtime_active_buff_view = self._get_context_runtime_active_buff_view(context)
+        runtime_command_port = self._get_context_runtime_command_port(context)
         sim_instance = self._get_context_sim_instance(context)
 
-        # 检查是否到达执行时间
         execute_tick = self._get_execute_tick(event, context)
         if execute_tick is None or execute_tick > tick:
             return
@@ -62,19 +58,18 @@ class SkillEventHandler(BaseEventHandler):
             data=data,
             tick=tick,
             enemy=enemy,
-            dynamic_buff=dynamic_buff,
-            exist_buff_dict=exist_buff_dict,
-            action_stack=action_stack,
+            runtime_active_buff_view=runtime_active_buff_view,
+            runtime_command_port=runtime_command_port,
             sim_instance=sim_instance,
         )
 
     def _get_execute_tick(
         self, event: SkillNode | LoadingMission, context: EventContext
     ) -> int | None:
-        """获取事件的执行tick"""
+        """获取事件的执行 tick"""
         if isinstance(event, SkillNode):
             return event.preload_tick
-        elif isinstance(event, LoadingMission):
+        if isinstance(event, LoadingMission):
             return event.mission_node.preload_tick
         return None
 
@@ -84,63 +79,53 @@ class SkillEventHandler(BaseEventHandler):
         data: ScheduleData,
         tick: int,
         enemy: Enemy,
-        dynamic_buff: dict,
-        exist_buff_dict: dict,
-        action_stack: ActionStack,
+        runtime_active_buff_view: Mapping[str, Sequence["Buff"]],
+        runtime_command_port: "RuntimeCommandPort",
         sim_instance: Simulator,
     ) -> None:
-        """处理技能事件的具体逻辑"""
-
-        # 获取技能节点和命中次数
+        """处理技能事件的主体流程"""
         skill_node, hit_count = self._extract_skill_info(event)
-
-        # 查找角色对象
         char_obj = self._find_character(skill_node.skill.char_name, data.char_obj_list)
 
-        # 计算伤害
-        self._calculate_damage(skill_node, char_obj, enemy, dynamic_buff, hit_count, event, tick)
-
-        # 更新异常条
+        self._calculate_damage(
+            skill_node,
+            char_obj,
+            enemy,
+            runtime_active_buff_view,
+            hit_count,
+            event,
+            tick,
+        )
         self._update_anomaly_bar_after_skill_event(
-            skill_node, enemy, tick, data, dynamic_buff, sim_instance
+            skill_node,
+            enemy,
+            tick,
+            runtime_command_port,
+            sim_instance,
         )
-
-        # 处理buff结算
         self._settle_buffs(
-            tick, exist_buff_dict, enemy, dynamic_buff, action_stack, skill_node, sim_instance
+            tick,
+            enemy,
+            skill_node,
+            runtime_command_port,
         )
-
-        # 处理伤害更新
         self._update_damage_effects(tick, enemy, data, event)
         self._broadcast_skill_event_to_char(event=event, sim_instance=sim_instance)
 
     def _broadcast_skill_event_to_char(
         self, event: SkillNode | LoadingMission, sim_instance: Simulator
     ) -> None:
-        """广播技能事件到所有角色以触发特殊资源更新
-
-        Args:
-            event: 当前技能事件
-            sim_instance: 模拟器实例
-        """
+        """广播技能事件到所有角色以触发特殊资源更新"""
         event_to_broadcast = event if isinstance(event, SkillNode) else event.mission_node
         for char_obj in sim_instance.char_data.char_obj_list:
             if hasattr(char_obj, "update_special_resource"):
                 char_obj.update_special_resource(event_to_broadcast)
 
     def _extract_skill_info(self, event: SkillNode | LoadingMission) -> tuple[SkillNode, int]:
-        """提取技能节点和命中次数信息
-
-        Args:
-            event: 技能事件对象
-
-        Returns:
-            tuple[SkillNode, int]: (技能节点, 命中次数)
-        """
+        """提取技能节点和命中次数"""
         if isinstance(event, LoadingMission):
             return event.mission_node, event.hitted_count
-        else:
-            return event, 0
+        return event, 0
 
     def _find_character(self, char_name: str, char_obj_list: list[Character]) -> Character:
         """查找角色对象"""
@@ -154,7 +139,7 @@ class SkillEventHandler(BaseEventHandler):
         skill_node: SkillNode,
         char_obj: Character,
         enemy: Enemy,
-        dynamic_buff: dict,
+        dynamic_buff: Mapping[str, Sequence["Buff"]],
         hit_count: int,
         event: SkillNode | LoadingMission,
         tick: int,
@@ -172,7 +157,6 @@ class SkillEventHandler(BaseEventHandler):
         damage_expect = calculator.cal_dmg_expect()
         damage_crit = calculator.cal_dmg_crit()
 
-        # 获取实际的active_generation值
         if isinstance(event, SkillNode):
             proactive = event.active_generation
         else:
@@ -187,7 +171,6 @@ class SkillEventHandler(BaseEventHandler):
             hitted_count=hit_count,
             proactive=proactive,
         )
-
         hit_result.skill_node = skill_node
 
         if skill_node.skill.follow_by:
@@ -196,10 +179,10 @@ class SkillEventHandler(BaseEventHandler):
         if skill_node.hit_times == hit_count and skill_node.skill.heavy_attack:
             hit_result.heavy_hit = True
 
-        enemy.hit_received(hit_result, tick)  # 使用实际的tick值
+        enemy.hit_received(hit_result, tick)
 
         Report.report_dmg_result(
-            tick=tick,  # 使用实际的tick值
+            tick=tick,
             element_type=skill_node.element_type,
             skill_tag=skill_node.skill_tag,
             dmg_expect=round(damage_expect, 2),
@@ -217,91 +200,55 @@ class SkillEventHandler(BaseEventHandler):
         skill_node: SkillNode,
         enemy: Enemy,
         tick: int,
-        data: ScheduleData,
-        dynamic_buff: dict,
+        runtime_command_port: "RuntimeCommandPort",
         sim_instance: Simulator,
     ) -> None:
-        """
-        在技能事件后更新异常条
-
-        Args:
-            skill_node: 技能节点
-            enemy: 敌人对象
-            tick: 当前时间刻
-            data: 调度数据
-            dynamic_buff: 动态buff
-            sim_instance: 模拟器实例
-        """
-        # 复制原始 __init__.py 中的 update_anomaly_bar_after_skill_event 逻辑
-        _node = skill_node
-
-        # 判断当前Tick的技能是否能够更新异常
+        """在技能事件后更新异常条"""
+        node = skill_node
         should_update = False
-        if not _node.skill.anomaly_update_rule:
-            if _node.loading_mission is None:
-                _loading_mission = LoadingMission(_node)
-                _loading_mission.mission_start(timenow=sim_instance.tick)
-                _node.loading_mission = _loading_mission
-            last_hit = _node.loading_mission.get_last_hit()
+
+        if not node.skill.anomaly_update_rule:
+            if node.loading_mission is None:
+                loading_mission = LoadingMission(node)
+                loading_mission.mission_start(timenow=sim_instance.tick)
+                node.loading_mission = loading_mission
+            last_hit = node.loading_mission.get_last_hit()
             if last_hit is not None and tick - 1 < last_hit <= tick:
                 should_update = True
-        else:
-            if _node.skill.anomaly_update_rule == -1:
-                should_update = True
-            else:
-                if (
-                    _node.loading_mission is not None
-                    and _node.skill.anomaly_update_rule is not None
-                    and (
-                        isinstance(_node.skill.anomaly_update_rule, list)
-                        and _node.loading_mission.hitted_count in _node.skill.anomaly_update_rule
-                        or isinstance(_node.skill.anomaly_update_rule, int)
-                        and _node.loading_mission.hitted_count == _node.skill.anomaly_update_rule
-                    )
-                ):
-                    should_update = True
+        elif node.skill.anomaly_update_rule == -1:
+            should_update = True
+        elif (
+            node.loading_mission is not None
+            and node.skill.anomaly_update_rule is not None
+            and (
+                isinstance(node.skill.anomaly_update_rule, list)
+                and node.loading_mission.hitted_count in node.skill.anomaly_update_rule
+                or isinstance(node.skill.anomaly_update_rule, int)
+                and node.loading_mission.hitted_count == node.skill.anomaly_update_rule
+            )
+        ):
+            should_update = True
 
         if should_update:
-            update_anomaly(
-                _node.element_type,
-                enemy,
-                tick,
-                data.event_list,
-                data.char_obj_list,
-                skill_node=_node,
-                dynamic_buff_dict=dynamic_buff,
-                sim_instance=sim_instance,
+            runtime_command_port.update_anomaly(
+                element_type=node.element_type,
+                enemy=enemy,
+                tick=tick,
+                skill_node=node,
             )
 
     def _settle_buffs(
         self,
         tick: int,
-        exist_buff_dict: dict,
         enemy: Enemy,
-        dynamic_buff: dict,
-        action_stack: ActionStack,
         skill_node: SkillNode,
-        sim_instance: Simulator,
+        runtime_command_port: "RuntimeCommandPort",
     ) -> None:
-        """处理buff结算
-
-        Args:
-            tick: 当前tick
-            exist_buff_dict: 已存在的buff字典
-            enemy: 敌人对象
-            dynamic_buff: 动态buff字典
-            action_stack: 动作栈
-            skill_node: 技能节点
-            sim_instance: 模拟器实例
-        """
-        ScheduleBuffSettle(
-            tick,
-            exist_buff_dict,
-            enemy,
-            dynamic_buff,
-            action_stack,
+        """处理 Buff 结算"""
+        runtime_command_port.settle_buffs(
+            tick=tick,
+            enemy=enemy,
             skill_node=skill_node,
-            sim_instance=sim_instance,
         )
 
     def _update_damage_effects(
@@ -311,13 +258,12 @@ class SkillEventHandler(BaseEventHandler):
         data: ScheduleData,
         event: SkillNode | LoadingMission,
     ) -> None:
-        """处理伤害更新效果
-
-        Args:
-            tick: 当前tick
-            enemy: 敌人对象
-            data: 调度数据
-            event: 技能事件对象
-        """
-        ProcessHitUpdateDots(tick, enemy.dynamic.dynamic_dot_list, data.event_list)
-        ProcessFreezLikeDots(timetick=tick, enemy=enemy, event_list=data.event_list, event=event)
+        """处理伤害后的附带效果更新"""
+        schedule_dispatch_port = create_schedule_dispatch_port(schedule_data=data)
+        ProcessHitUpdateDots(tick, enemy.dynamic.dynamic_dot_list, schedule_dispatch_port)
+        ProcessFreezLikeDots(
+            timetick=tick,
+            enemy=enemy,
+            schedule_publisher=schedule_dispatch_port,
+            event=event,
+        )

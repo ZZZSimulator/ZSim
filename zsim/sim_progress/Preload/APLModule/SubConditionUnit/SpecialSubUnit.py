@@ -45,7 +45,7 @@ class SpecialSubUnit(BaseSubConditionUnit):
                 )
             self.preload_data = preload.preload_data
         handler_cls = self.SpecialHandlerMap.get(self.check_stat)
-        handler = handler_cls() if handler_cls else None
+        handler = handler_cls if handler_cls else None
         if not handler:
             raise ValueError(
                 f"当前检查的check_stat为：{self.check_stat}，优先级为{self.priority}，暂无处理该属性的逻辑模块！"

@@ -20,8 +20,8 @@ async def get_characters(db: CharacterDB = Depends(get_character_db)):
         characters = df.select("name").unique().collect().to_series().to_list()
         return characters
     except Exception as e:
-        logger.error(f"Failed to load character list: {e}")
-        # Fallback to existing example list
+        logger.error(f"加载角色列表失败: {e}")
+        # 读取失败时返回现有示例列表
         return ["Hugo", "Vivian", "AstraYao", "Yixuan", "Trigger", "Yuzuha"]
 
 
@@ -33,11 +33,11 @@ async def get_character_info(name: str, db: CharacterDB = Depends(get_character_
         character_data = df.filter(pl.col("name") == name).collect()
 
         if character_data.height == 0:
-            raise HTTPException(status_code=404, detail=f"Character {name} not found")
+            raise HTTPException(status_code=404, detail=f"未找到角色 {name}")
 
         row = character_data.row(0, named=True)
 
-        # Map element number to element name using the mapping from constants.py
+        # 将元素编号映射为元素名称
         element_mapping = {
             0: "物理",
             1: "火",
@@ -54,7 +54,7 @@ async def get_character_info(name: str, db: CharacterDB = Depends(get_character_
             "element": element_mapping.get(row["角色属性"], "未知"),
             "element_id": row["角色属性"],
             "weapon_type": row["角色特性"],
-            "rarity": 5,  # Placeholder, would need to determine from data
+            "rarity": 5,  # 占位值，后续可从数据源确定
             "base_hp": row["基础生命值"],
             "base_atk": row["基础攻击力"],
             "base_def": row["基础防御力"],
@@ -67,8 +67,8 @@ async def get_character_info(name: str, db: CharacterDB = Depends(get_character_
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Failed to load character info for {name}: {e}")
-        # Fallback to existing example information
+        logger.error(f"加载角色 {name} 信息失败: {e}")
+        # 读取失败时返回现有示例信息
         return {
             "name": name,
             "element": "以太",  # 示例元素类型
@@ -86,8 +86,8 @@ async def get_weapons(db: CharacterDB = Depends(get_character_db)):
         weapons = df.select("名称").unique().collect().to_series().to_list()
         return weapons
     except Exception as e:
-        logger.error(f"Failed to load weapon list: {e}")
-        # Fallback to existing example list
+        logger.error(f"加载音擎列表失败: {e}")
+        # 读取失败时返回现有示例列表
         return ["音擎A", "音擎B", "音擎C", "音擎D"]
 
 
@@ -104,12 +104,12 @@ async def get_equipments(db: CharacterDB = Depends(get_character_db)):
             .to_series()
             .to_list()
         )
-        # Filter out the "0" set which appears to be a placeholder
+        # 过滤看起来像占位值的 "0" 套装
         equipments = [eq for eq in equipments if eq != "0"]
         return equipments
     except Exception as e:
-        logger.error(f"Failed to load equipment list: {e}")
-        # Fallback to existing example list
+        logger.error(f"加载装备列表失败: {e}")
+        # 读取失败时返回现有示例列表
         return ["装备A", "装备B", "装备C", "装备D"]
 
 
@@ -126,12 +126,12 @@ async def get_equipment_sets(db: CharacterDB = Depends(get_character_db)):
             .to_series()
             .to_list()
         )
-        # Filter out the "0" set which appears to be a placeholder
+        # 过滤看起来像占位值的 "0" 套装
         sets = [s for s in sets if s != "0"]
         return sets
     except Exception as e:
-        logger.error(f"Failed to load equipment sets: {e}")
-        # Fallback to existing example list
+        logger.error(f"加载装备套装失败: {e}")
+        # 读取失败时返回现有示例列表
         return ["套装A", "套装B", "套装C", "套装D"]
 
 

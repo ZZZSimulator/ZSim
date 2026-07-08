@@ -2,14 +2,14 @@
 
 from typing import Any
 
+from zsim.define import ANOMALY_MAPPING
 from zsim.sim_progress import Report
 from zsim.sim_progress.anomaly_bar import AnomalyBar as AnB
 from zsim.sim_progress.anomaly_bar.CopyAnomalyForOutput import (
     NewAnomaly,
 )
-from zsim.sim_progress.Buff import ScheduleBuffSettle
+from zsim.sim_progress.calculation.anomaly_calculator import CalAnomaly
 
-from ...CalAnomaly import CalAnomaly
 from ..base import BaseEventHandler
 from ..context import EventContext
 
@@ -36,9 +36,8 @@ class AnomalyEventHandler(BaseEventHandler):
         self._validate_context(context)
 
         enemy = self._get_context_enemy(context)
-        dynamic_buff = self._get_context_dynamic_buff(context)
-        exist_buff_dict = self._get_context_exist_buff_dict(context)
-        action_stack = self._get_context_action_stack(context)
+        active_buff_view = self._get_context_active_buff_view(context)
+        runtime_command_port = self._get_context_runtime_command_port(context)
         sim_instance = self._get_context_sim_instance(context)
         tick = self._get_context_tick(context)
 
@@ -46,7 +45,7 @@ class AnomalyEventHandler(BaseEventHandler):
         calculator = CalAnomaly(
             anomaly_obj=event,
             enemy_obj=enemy,
-            dynamic_buff=dynamic_buff,
+            dynamic_buff=active_buff_view,
             sim_instance=sim_instance,
         )
 
@@ -54,7 +53,7 @@ class AnomalyEventHandler(BaseEventHandler):
 
         Report.report_dmg_result(
             tick=tick,
-            skill_tag=event.rename_tag if event.rename else None,
+            skill_tag=event.rename_tag if event.rename else ANOMALY_MAPPING[event.element_type],
             element_type=event.element_type,
             dmg_expect=round(damage_anomaly, 2),
             is_anomaly=True,
@@ -66,12 +65,8 @@ class AnomalyEventHandler(BaseEventHandler):
         )
 
         # 处理buff结算
-        ScheduleBuffSettle(
-            tick,
-            exist_buff_dict,
-            enemy,
-            dynamic_buff,
-            action_stack,
+        runtime_command_port.settle_buffs(
+            tick=tick,
+            enemy=enemy,
             anomaly_bar=event,
-            sim_instance=sim_instance,
         )

@@ -1,78 +1,103 @@
 import asyncio
+import csv
+import math
 import os
 import queue
-import uuid
-from typing import Literal
+from typing import Any
 
-import aiofiles
-import numpy as np
-import polars as pl
+from zsim.define import ANOMALY_MAPPING, DEBUG
 
-from zsim.define import ANOMALY_MAPPING, ElementType
+result_queue: queue.Queue[dict[str, Any]] = queue.Queue()
 
-result_queue: queue.Queue = queue.Queue()
+_BASE_FIELDNAMES = [
+    "tick",
+    "skill_tag",
+    "element_type",
+    "dmg_expect",
+    "dmg_crit",
+    "stun",
+    "buildup",
+    "is_anomaly",
+    "is_disorder",
+    "UUID",
+    "crit_rate",
+    "crit_dmg",
+]
 
 
-def report_dmg_result(
-    tick: int,
-    element_type: ElementType,
-    skill_tag: str | None = None,
-    dmg_expect: float | np.float64 = 0,
-    dmg_crit: float | np.float64 | None = None,
-    UUID: str | uuid.UUID = "",
-    is_anomaly: bool = False,
-    is_disorder: bool = False,
-    **kwargs,
-):
+class DamageRecordBuffer:
+    def __init__(self) -> None:
+        self._records: list[dict[str, Any]] = []
+        self._fieldnames = list(_BASE_FIELDNAMES)
+        self._seen_fieldnames = set(self._fieldnames)
+
+    @property
+    def records(self) -> list[dict[str, Any]]:
+        return self._records
+
+    @property
+    def fieldnames(self) -> list[str]:
+        return self._fieldnames
+
+    def add(self, record: dict[str, Any]) -> None:
+        self._records.append(record)
+        for key in record:
+            if key not in self._seen_fieldnames:
+                self._seen_fieldnames.add(key)
+                self._fieldnames.append(key)
+
+    def flush(self, report_file_path: str) -> None:
+        if not self._records:
+            return
+        _write_damage_csv(report_file_path, self._records, self._fieldnames)
+
+
+def report_dmg_result(**kwargs: Any) -> None:
+    if not DEBUG:
+        return
+    record = dict(kwargs)
+    skill_tag = record.get("skill_tag")
+    is_anomaly = bool(record.get("is_anomaly", False))
+    is_disorder = bool(record.get("is_disorder", False))
+
     if is_anomaly and skill_tag is None:
-        skill_tag = ANOMALY_MAPPING.get(element_type, skill_tag)
+        skill_tag = ANOMALY_MAPPING.get(record.get("element_type"), skill_tag)
     assert skill_tag is not None, "技能标签不能为空！"
-    if is_disorder and "紊乱" not in skill_tag:
-        skill_tag += "紊乱"
-    if dmg_crit is None:
-        dmg_crit = np.nan
-    result_dict = {
-        "tick": tick,
-        "element_type": element_type,
-        "is_anomaly": is_anomaly,
-        "skill_tag": skill_tag,
-        "dmg_expect": dmg_expect,
-        "dmg_crit": dmg_crit,
-        "UUID": str(UUID),
-    }
-    result_dict.update(kwargs)
-    result_queue.put(result_dict)
+    if is_disorder and "紊乱" not in str(skill_tag):
+        skill_tag = f"{skill_tag}紊乱"
+
+    record["skill_tag"] = skill_tag
+    record["UUID"] = str(record.get("UUID", ""))
+    if record.get("dmg_crit") is None:
+        record["dmg_crit"] = math.nan
+    result_queue.put(record)
 
 
-async def async_result_writer(result_id: str):
-    result_path = f"{result_id}/damage.csv"
-    os.makedirs(os.path.dirname(result_path), exist_ok=True)
-    new_file = not os.path.exists(result_path)
+def _write_damage_csv(
+    report_file_path: str, records: list[dict[str, Any]], fieldnames: list[str]
+) -> None:
+    os.makedirs(os.path.dirname(report_file_path), exist_ok=True)
 
-    buffer = []
-    max_buffer_size = 100
+    with open(report_file_path, "w", newline="", encoding="utf-8-sig") as file:
+        writer = csv.DictWriter(file, fieldnames=fieldnames, extrasaction="ignore")
+        writer.writeheader()
+        for record in records:
+            writer.writerow(record)
 
-    while True:
-        try:
-            result_dict = result_queue.get_nowait()
-            buffer.append(result_dict)
 
-            if len(buffer) >= max_buffer_size or result_queue.empty():
-                await write_result(result_path, new_file, buffer)
-                new_file = False
+async def async_result_writer(result_id: str) -> None:
+    report_file_path = f"{result_id}/damage.csv"
+    buffer = DamageRecordBuffer()
 
+    try:
+        while True:
+            try:
+                record = result_queue.get_nowait()
+            except queue.Empty:
+                await asyncio.sleep(0.01)
+                continue
+
+            buffer.add(record)
             result_queue.task_done()
-        except queue.Empty:
-            await asyncio.sleep(0.01)
-            if buffer:
-                await write_result(result_path, new_file, buffer)
-                new_file = False
-
-
-async def write_result(result_path: str, new_file: bool, buffer: list[dict]):
-    result_df = pl.DataFrame(buffer)
-    csv_data: str = result_df.write_csv(include_header=new_file, separator=",")
-    mode: Literal["w", "a"] = "w" if new_file else "a"
-    async with aiofiles.open(result_path, mode, encoding="utf-8-sig") as file:
-        await file.write(csv_data)
-    buffer.clear()
+    finally:
+        await asyncio.to_thread(buffer.flush, report_file_path)

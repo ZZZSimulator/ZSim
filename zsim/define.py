@@ -18,7 +18,7 @@ from pydantic_settings import (
 ElementType = Literal[0, 1, 2, 3, 4, 5, 6]
 Number = int | float
 
-INVALID_ELEMENT_ERROR = "Invalid element type"
+INVALID_ELEMENT_ERROR = "无效的元素类型"
 NORMAL_MODE_ID_JSON = "results/id_cache.json"
 
 
@@ -130,6 +130,10 @@ class DevConfig(BaseModel):
     new_sim_boot: bool = True
 
 
+class BuffRuntimeConfig(BaseModel):
+    mode: str = "owner_only"
+
+
 class Config(BaseSettings):
     model_config: ClassVar[SettingsConfigDict] = SettingsConfigDict(
         json_file=config_path,
@@ -155,6 +159,7 @@ class Config(BaseSettings):
     na_mode_level: NaModeLevelConfig
     parallel_mode: dict[str, Any] = {}
     dev: DevConfig = DevConfig()
+    buff_runtime: BuffRuntimeConfig = BuffRuntimeConfig()
 
     @classmethod
     def settings_customise_sources(
@@ -190,12 +195,12 @@ def initialize_config_files_with_paths(char_file: Path, data_dir: Path, config_p
     char_config_example_path = Path("zsim/data/character_config_example.toml")
     config_example_path = Path("zsim/config_example.json")
 
-    # TOML config
+    # TOML 配置文件
     if not char_file.exists():
         shutil.copy(char_config_example_path, char_file)
         print(f"已生成配置文件：{char_file}")
 
-    # JSON config
+    # JSON 配置文件
     def update_json_config(template: dict[str, Any], user: dict[str, Any]) -> bool:
         """递归更新用户配置，返回是否被更新"""
         updated = False
@@ -229,7 +234,7 @@ if char_config_file.exists():
     with open(char_config_file, "rb") as f:
         saved_char_config = tomllib.load(f)
 else:
-    raise FileNotFoundError(f"Character config file {char_config_file} not found.")
+    raise FileNotFoundError(f"未找到角色配置文件 {char_config_file}。")
 
 # 确保配置文件目录存在
 config_path.parent.mkdir(exist_ok=True, parents=True)
@@ -273,7 +278,7 @@ PARRY_BASE_PARAMETERS: dict[str, int | float] = {
 # 所以若是在不满足这些条件的情况下强行使用这些招架策略，那么character中的审查函数会报错而中断程序运行。
 CHAR_PARRY_STRATEGY_MAP: dict[int, str] = {1411: "1411_Assault_Aid_A"}
 
-# debug参数，用于检查APL在窗口期间的想法
+# 调试参数，用于检查APL在窗口期间的想法
 APL_THOUGHT_CHECK: bool = config.apl_mode.apl_thought_check
 APL_THOUGHT_CHECK_WINDOW: list[int] = config.apl_mode.apl_thought_check_window
 
@@ -328,7 +333,7 @@ YUZUHA_REPORT: bool = config.char_report.yuzuha
 ALICE_REPORT: bool = config.char_report.alice
 SEED_REPORT: bool = config.char_report.seed
 
-# Cal计算debug
+# 伤害计算调试
 CHECK_SKILL_MUL: bool = config.debug.check_skill_mul
 CHECK_SKILL_MUL_TAG: list[str] = config.debug.check_skill_mul_tag
 
@@ -410,7 +415,7 @@ SUB_STATS_MAPPING: dict[
 
 DOCS_DIR = "docs"
 
-# Version Check
+# 版本检查
 GITHUB_REPO_OWNER = "ZZZSimulator"
 GITHUB_REPO_NAME = "ZSim"
 

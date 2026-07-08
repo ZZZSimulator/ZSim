@@ -1,0 +1,41 @@
+{
+  "schema": "zsim-external-golden-matrix-config.v1",
+  "description": "Strict user Golden matrix for the Buff owner-only hard cutover.",
+  "default_tolerance_policy": {
+    "damage_total_abs": 0.0,
+    "damage_row_abs": 0.0,
+    "damage_attribution_abs": 0.0,
+    "buff_timeline": "exact-normalized"
+  },
+  "signoff_metadata": {
+    "campaign_id": "buff-20260630-new-buff-hard-cutover",
+    "source_result_dir": "results/原zsim数据",
+    "source_system": "old-zsim-user-golden",
+    "strict_equality": true
+  },
+  "rows": [
+    {
+      "row_id": "user-yixuan-astra-trigger-old-zsim-stop10800",
+      "row_kind": "fixture",
+      "golden_result_dir": "tests/fixtures/external_golden_parity/user-yixuan-astra-trigger-old-zsim",
+      "run_config": {
+        "common_cfg": "tests/fixtures/external_golden_parity/user-yixuan-astra-trigger-old-zsim/common_cfg.json"
+      },
+      "apl": "./zsim/data/APLData/仪玄-耀嘉音-扳机.toml",
+      "stop_tick": 10800,
+      "expected_domains": [
+        "damage",
+        "damage_attribution",
+        "buff_timeline"
+      ],
+      "tolerance_policy": {
+        "damage_total_abs": 0.0,
+        "damage_row_abs": 0.0,
+        "damage_attribution_abs": 0.0,
+        "buff_timeline": "exact-normalized"
+      },
+      "signoff_label": "runtime-truth-source",
+      "missing_input_policy": "block"
+    }
+  ]
+}

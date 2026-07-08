@@ -1,0 +1,640 @@
+{
+    "enemy": [
+        {
+            "Task": "Buff-武器-精1索魂影眸-减防",
+            "Start": 438,
+            "Finish": 10799,
+            "Value": 1.0
+        },
+        {
+            "Task": "Buff-角色-扳机-核心被动-失衡易伤",
+            "Start": 438,
+            "Finish": 10799,
+            "Value": 1.0
+        }
+    ],
+    "仪玄": [
+        {
+            "Task": "Buff-武器-精1玲珑妆匣-全队增伤",
+            "Start": 3698,
+            "Finish": 5658,
+            "Value": 2.0
+        },
+        {
+            "Task": "Buff-武器-精1玲珑妆匣-全队增伤",
+            "Start": 649,
+            "Finish": 1848,
+            "Value": 2.0
+        },
+        {
+            "Task": "Buff-武器-精1玲珑妆匣-全队增伤",
+            "Start": 77,
+            "Finish": 648,
+            "Value": 1.0
+        },
+        {
+            "Task": "Buff-武器-精1玲珑妆匣-全队增伤",
+            "Start": 6973,
+            "Finish": 10799,
+            "Value": 2.0
+        },
+        {
+            "Task": "Buff-武器-精1玲珑妆匣-全队增伤",
+            "Start": 3646,
+            "Finish": 3697,
+            "Value": 1.0
+        },
+        {
+            "Task": "Buff-武器-精1玲珑妆匣-全队增伤",
+            "Start": 5907,
+            "Finish": 6972,
+            "Value": 1.0
+        },
+        {
+            "Task": "Buff-武器-精1青溟笼舍-以太伤害提升",
+            "Start": 7641,
+            "Finish": 7684,
+            "Value": 1.0
+        },
+        {
+            "Task": "Buff-武器-精1青溟笼舍-以太伤害提升",
+            "Start": 258,
+            "Finish": 4085,
+            "Value": 2.0
+        },
+        {
+            "Task": "Buff-武器-精1青溟笼舍-以太伤害提升",
+            "Start": 4210,
+            "Finish": 7582,
+            "Value": 2.0
+        },
+        {
+            "Task": "Buff-武器-精1青溟笼舍-以太伤害提升",
+            "Start": 4166,
+            "Finish": 4209,
+            "Value": 1.0
+        },
+        {
+            "Task": "Buff-武器-精1青溟笼舍-以太伤害提升",
+            "Start": 7685,
+            "Finish": 10799,
+            "Value": 2.0
+        },
+        {
+            "Task": "Buff-武器-精1青溟笼舍-暴击率提升",
+            "Start": 258,
+            "Finish": 10799,
+            "Value": 1.0
+        },
+        {
+            "Task": "Buff-武器-精1青溟笼舍-贯穿伤害提升",
+            "Start": 4166,
+            "Finish": 4209,
+            "Value": 1.0
+        },
+        {
+            "Task": "Buff-武器-精1青溟笼舍-贯穿伤害提升",
+            "Start": 7641,
+            "Finish": 7684,
+            "Value": 1.0
+        },
+        {
+            "Task": "Buff-武器-精1青溟笼舍-贯穿伤害提升",
+            "Start": 258,
+            "Finish": 4085,
+            "Value": 2.0
+        },
+        {
+            "Task": "Buff-武器-精1青溟笼舍-贯穿伤害提升",
+            "Start": 7685,
+            "Finish": 10799,
+            "Value": 2.0
+        },
+        {
+            "Task": "Buff-武器-精1青溟笼舍-贯穿伤害提升",
+            "Start": 4210,
+            "Finish": 7582,
+            "Value": 2.0
+        },
+        {
+            "Task": "Buff-角色-仪玄-核心被动-技能增伤",
+            "Start": 10484,
+            "Finish": 10608,
+            "Value": 1.0
+        },
+        {
+            "Task": "Buff-角色-仪玄-核心被动-技能增伤",
+            "Start": 6857,
+            "Finish": 6970,
+            "Value": 1.0
+        },
+        {
+            "Task": "Buff-角色-仪玄-核心被动-技能增伤",
+            "Start": 9529,
+            "Finish": 9763,
+            "Value": 1.0
+        },
+        {
+            "Task": "Buff-角色-仪玄-核心被动-技能增伤",
+            "Start": 3020,
+            "Finish": 3254,
+            "Value": 1.0
+        },
+        {
+            "Task": "Buff-角色-仪玄-核心被动-技能增伤",
+            "Start": 8641,
+            "Finish": 8875,
+            "Value": 1.0
+        },
+        {
+            "Task": "Buff-角色-仪玄-核心被动-技能增伤",
+            "Start": 6517,
+            "Finish": 6751,
+            "Value": 1.0
+        },
+        {
+            "Task": "Buff-角色-仪玄-核心被动-技能增伤",
+            "Start": 7024,
+            "Finish": 7148,
+            "Value": 1.0
+        },
+        {
+            "Task": "Buff-角色-仪玄-核心被动-技能增伤",
+            "Start": 7264,
+            "Finish": 7639,
+            "Value": 1.0
+        },
+        {
+            "Task": "Buff-角色-仪玄-核心被动-技能增伤",
+            "Start": 10253,
+            "Finish": 10430,
+            "Value": 1.0
+        },
+        {
+            "Task": "Buff-角色-仪玄-核心被动-技能增伤",
+            "Start": 3937,
+            "Finish": 4164,
+            "Value": 1.0
+        },
+        {
+            "Task": "Buff-角色-仪玄-核心被动-技能增伤",
+            "Start": 5671,
+            "Finish": 5905,
+            "Value": 1.0
+        },
+        {
+            "Task": "Buff-角色-仪玄-核心被动-技能增伤",
+            "Start": 258,
+            "Finish": 492,
+            "Value": 1.0
+        },
+        {
+            "Task": "Buff-角色-仪玄-核心被动-技能增伤",
+            "Start": 7641,
+            "Finish": 7875,
+            "Value": 1.0
+        },
+        {
+            "Task": "Buff-角色-仪玄-核心被动-技能增伤",
+            "Start": 4166,
+            "Finish": 4400,
+            "Value": 1.0
+        },
+        {
+            "Task": "Buff-角色-仪玄-核心被动-技能增伤",
+            "Start": 4894,
+            "Finish": 5128,
+            "Value": 1.0
+        },
+        {
+            "Task": "Buff-角色-仪玄-核心被动-技能增伤",
+            "Start": 3697,
+            "Finish": 3821,
+            "Value": 1.0
+        },
+        {
+            "Task": "Buff-角色-仪玄-核心被动-技能增伤",
+            "Start": 2034,
+            "Finish": 2268,
+            "Value": 1.0
+        },
+        {
+            "Task": "Buff-角色-仪玄-核心被动-技能增伤",
+            "Start": 3530,
+            "Finish": 3643,
+            "Value": 1.0
+        },
+        {
+            "Task": "Buff-角色-仪玄-核心被动-技能增伤",
+            "Start": 1208,
+            "Finish": 1442,
+            "Value": 1.0
+        },
+        {
+            "Task": "Buff-角色-仪玄-核心被动-技能增伤",
+            "Start": 10724,
+            "Finish": 10799,
+            "Value": 1.0
+        },
+        {
+            "Task": "Buff-角色-仪玄-额外能力-对失衡敌人增伤",
+            "Start": 4166,
+            "Finish": 4400,
+            "Value": 1.0
+        },
+        {
+            "Task": "Buff-角色-仪玄-额外能力-暴伤提升",
+            "Start": 10317,
+            "Finish": 10799,
+            "Value": 1.0
+        },
+        {
+            "Task": "Buff-角色-仪玄-额外能力-暴伤提升",
+            "Start": 6857,
+            "Finish": 8331,
+            "Value": 1.0
+        },
+        {
+            "Task": "Buff-角色-仪玄-额外能力-暴伤提升",
+            "Start": 3530,
+            "Finish": 4856,
+            "Value": 1.0
+        },
+        {
+            "Task": "Buff-角色-耀佳音-咏叹华彩",
+            "Start": 55,
+            "Finish": 10799,
+            "Value": 1.0
+        },
+        {
+            "Task": "Buff-角色-耀佳音-核心被动-攻击力",
+            "Start": 648,
+            "Finish": 1847,
+            "Value": 1200.0
+        },
+        {
+            "Task": "Buff-角色-耀佳音-核心被动-攻击力",
+            "Start": 3697,
+            "Finish": 8496,
+            "Value": 1200.0
+        },
+        {
+            "Task": "Buff-角色-耀佳音-核心被动-攻击力",
+            "Start": 9078,
+            "Finish": 10799,
+            "Value": 1200.0
+        },
+        {
+            "Task": "Buff-驱动盘-云岿如我-四件套-暴击率提升",
+            "Start": 258,
+            "Finish": 301,
+            "Value": 1.0
+        },
+        {
+            "Task": "Buff-驱动盘-云岿如我-四件套-暴击率提升",
+            "Start": 302,
+            "Finish": 423,
+            "Value": 2.0
+        },
+        {
+            "Task": "Buff-驱动盘-云岿如我-四件套-暴击率提升",
+            "Start": 424,
+            "Finish": 10799,
+            "Value": 3.0
+        },
+        {
+            "Task": "Buff-驱动盘-云岿如我-四件套-贯穿伤害提升",
+            "Start": 432,
+            "Finish": 10799,
+            "Value": 1.0
+        },
+        {
+            "Task": "Buff-驱动盘-静听嘉音-嘉音",
+            "Start": 648,
+            "Finish": 1547,
+            "Value": 2.0
+        },
+        {
+            "Task": "Buff-驱动盘-静听嘉音-嘉音",
+            "Start": 76,
+            "Finish": 647,
+            "Value": 1.0
+        },
+        {
+            "Task": "Buff-驱动盘-静听嘉音-嘉音",
+            "Start": 9802,
+            "Finish": 10701,
+            "Value": 2.0
+        },
+        {
+            "Task": "Buff-驱动盘-静听嘉音-嘉音",
+            "Start": 9078,
+            "Finish": 9801,
+            "Value": 1.0
+        },
+        {
+            "Task": "Buff-驱动盘-静听嘉音-嘉音",
+            "Start": 5906,
+            "Finish": 6805,
+            "Value": 1.0
+        },
+        {
+            "Task": "Buff-驱动盘-静听嘉音-嘉音",
+            "Start": 8068,
+            "Finish": 8967,
+            "Value": 1.0
+        },
+        {
+            "Task": "Buff-驱动盘-静听嘉音-嘉音",
+            "Start": 4458,
+            "Finish": 5357,
+            "Value": 1.0
+        }
+    ],
+    "扳机": [
+        {
+            "Task": "Buff-武器-精1玲珑妆匣-全队增伤",
+            "Start": 5907,
+            "Finish": 6972,
+            "Value": 1.0
+        },
+        {
+            "Task": "Buff-武器-精1玲珑妆匣-全队增伤",
+            "Start": 649,
+            "Finish": 1848,
+            "Value": 2.0
+        },
+        {
+            "Task": "Buff-武器-精1玲珑妆匣-全队增伤",
+            "Start": 3698,
+            "Finish": 5658,
+            "Value": 2.0
+        },
+        {
+            "Task": "Buff-武器-精1玲珑妆匣-全队增伤",
+            "Start": 77,
+            "Finish": 648,
+            "Value": 1.0
+        },
+        {
+            "Task": "Buff-武器-精1玲珑妆匣-全队增伤",
+            "Start": 3646,
+            "Finish": 3697,
+            "Value": 1.0
+        },
+        {
+            "Task": "Buff-武器-精1玲珑妆匣-全队增伤",
+            "Start": 6973,
+            "Finish": 10799,
+            "Value": 2.0
+        },
+        {
+            "Task": "Buff-武器-精1索魂影眸-冲击力",
+            "Start": 448,
+            "Finish": 10799,
+            "Value": 1.0
+        },
+        {
+            "Task": "Buff-武器-精1索魂影眸-魂锁",
+            "Start": 443,
+            "Finish": 447,
+            "Value": 2.0
+        },
+        {
+            "Task": "Buff-武器-精1索魂影眸-魂锁",
+            "Start": 4192,
+            "Finish": 4196,
+            "Value": 2.0
+        },
+        {
+            "Task": "Buff-武器-精1索魂影眸-魂锁",
+            "Start": 448,
+            "Finish": 4191,
+            "Value": 3.0
+        },
+        {
+            "Task": "Buff-武器-精1索魂影眸-魂锁",
+            "Start": 4351,
+            "Finish": 4355,
+            "Value": 2.0
+        },
+        {
+            "Task": "Buff-武器-精1索魂影眸-魂锁",
+            "Start": 4197,
+            "Finish": 4201,
+            "Value": 1.0
+        },
+        {
+            "Task": "Buff-武器-精1索魂影眸-魂锁",
+            "Start": 438,
+            "Finish": 442,
+            "Value": 1.0
+        },
+        {
+            "Task": "Buff-武器-精1索魂影眸-魂锁",
+            "Start": 4356,
+            "Finish": 10799,
+            "Value": 3.0
+        },
+        {
+            "Task": "Buff-武器-精1索魂影眸-魂锁",
+            "Start": 4346,
+            "Finish": 4350,
+            "Value": 1.0
+        },
+        {
+            "Task": "Buff-角色-耀佳音-咏叹华彩",
+            "Start": 55,
+            "Finish": 10799,
+            "Value": 1.0
+        },
+        {
+            "Task": "Buff-角色-耀佳音-核心被动-攻击力",
+            "Start": 10432,
+            "Finish": 10799,
+            "Value": 1200.0
+        },
+        {
+            "Task": "Buff-角色-耀佳音-核心被动-攻击力",
+            "Start": 3645,
+            "Finish": 4844,
+            "Value": 1200.0
+        },
+        {
+            "Task": "Buff-角色-耀佳音-核心被动-攻击力",
+            "Start": 76,
+            "Finish": 1275,
+            "Value": 1200.0
+        },
+        {
+            "Task": "Buff-角色-耀佳音-核心被动-攻击力",
+            "Start": 6972,
+            "Finish": 9371,
+            "Value": 1200.0
+        },
+        {
+            "Task": "Buff-驱动盘-如影相随-二件套",
+            "Start": 55,
+            "Finish": 10799,
+            "Value": 1.0
+        },
+        {
+            "Task": "Buff-驱动盘-如影相随-四件套",
+            "Start": 478,
+            "Finish": 10799,
+            "Value": 3.0
+        },
+        {
+            "Task": "Buff-驱动盘-如影相随-四件套",
+            "Start": 458,
+            "Finish": 477,
+            "Value": 2.0
+        },
+        {
+            "Task": "Buff-驱动盘-如影相随-四件套",
+            "Start": 438,
+            "Finish": 457,
+            "Value": 1.0
+        },
+        {
+            "Task": "Buff-驱动盘-静听嘉音-嘉音",
+            "Start": 8068,
+            "Finish": 8967,
+            "Value": 1.0
+        },
+        {
+            "Task": "Buff-驱动盘-静听嘉音-嘉音",
+            "Start": 9802,
+            "Finish": 10701,
+            "Value": 2.0
+        },
+        {
+            "Task": "Buff-驱动盘-静听嘉音-嘉音",
+            "Start": 5906,
+            "Finish": 6805,
+            "Value": 1.0
+        },
+        {
+            "Task": "Buff-驱动盘-静听嘉音-嘉音",
+            "Start": 76,
+            "Finish": 647,
+            "Value": 1.0
+        },
+        {
+            "Task": "Buff-驱动盘-静听嘉音-嘉音",
+            "Start": 648,
+            "Finish": 1547,
+            "Value": 2.0
+        },
+        {
+            "Task": "Buff-驱动盘-静听嘉音-嘉音",
+            "Start": 4458,
+            "Finish": 5357,
+            "Value": 1.0
+        },
+        {
+            "Task": "Buff-驱动盘-静听嘉音-嘉音",
+            "Start": 9078,
+            "Finish": 9801,
+            "Value": 1.0
+        }
+    ],
+    "耀嘉音": [
+        {
+            "Task": "Buff-武器-精1玲珑妆匣-全队增伤",
+            "Start": 649,
+            "Finish": 1848,
+            "Value": 2.0
+        },
+        {
+            "Task": "Buff-武器-精1玲珑妆匣-全队增伤",
+            "Start": 6973,
+            "Finish": 10799,
+            "Value": 2.0
+        },
+        {
+            "Task": "Buff-武器-精1玲珑妆匣-全队增伤",
+            "Start": 77,
+            "Finish": 648,
+            "Value": 1.0
+        },
+        {
+            "Task": "Buff-武器-精1玲珑妆匣-全队增伤",
+            "Start": 3646,
+            "Finish": 3697,
+            "Value": 1.0
+        },
+        {
+            "Task": "Buff-武器-精1玲珑妆匣-全队增伤",
+            "Start": 3698,
+            "Finish": 5658,
+            "Value": 2.0
+        },
+        {
+            "Task": "Buff-武器-精1玲珑妆匣-全队增伤",
+            "Start": 5907,
+            "Finish": 6972,
+            "Value": 1.0
+        },
+        {
+            "Task": "Buff-角色-耀佳音-咏叹华彩",
+            "Start": 55,
+            "Finish": 10799,
+            "Value": 1.0
+        },
+        {
+            "Task": "Buff-角色-耀佳音-核心被动-攻击力",
+            "Start": 3645,
+            "Finish": 10799,
+            "Value": 1200.0
+        },
+        {
+            "Task": "Buff-角色-耀佳音-核心被动-攻击力",
+            "Start": 76,
+            "Finish": 2447,
+            "Value": 1200.0
+        },
+        {
+            "Task": "Buff-驱动盘-静听嘉音-嘉音",
+            "Start": 5906,
+            "Finish": 6805,
+            "Value": 1.0
+        },
+        {
+            "Task": "Buff-驱动盘-静听嘉音-嘉音",
+            "Start": 9802,
+            "Finish": 10701,
+            "Value": 2.0
+        },
+        {
+            "Task": "Buff-驱动盘-静听嘉音-嘉音",
+            "Start": 8068,
+            "Finish": 8967,
+            "Value": 1.0
+        },
+        {
+            "Task": "Buff-驱动盘-静听嘉音-嘉音",
+            "Start": 9078,
+            "Finish": 9801,
+            "Value": 1.0
+        },
+        {
+            "Task": "Buff-驱动盘-静听嘉音-嘉音",
+            "Start": 4458,
+            "Finish": 5357,
+            "Value": 1.0
+        },
+        {
+            "Task": "Buff-驱动盘-静听嘉音-嘉音",
+            "Start": 76,
+            "Finish": 647,
+            "Value": 1.0
+        },
+        {
+            "Task": "Buff-驱动盘-静听嘉音-嘉音",
+            "Start": 648,
+            "Finish": 1547,
+            "Value": 2.0
+        }
+    ]
+}

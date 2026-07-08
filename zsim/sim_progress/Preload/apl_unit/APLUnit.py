@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from zsim.define import compare_methods_mapping
 
@@ -32,31 +32,85 @@ class APLUnit(ABC):
     def check_all_sub_units(self, found_char_dict, game_state, sim_instance: "Simulator", **kwargs):
         pass
 
+    def check_sub_condition(
+        self,
+        sub_condition: "BaseSubConditionUnit",
+        found_char_dict,
+        game_state,
+        sim_instance,
+        tick,
+        decision_cache: dict[tuple[Any, int], bool] | None = None,
+    ) -> bool:
+        if decision_cache is None:
+            return sub_condition.check_myself(
+                found_char_dict, game_state, tick=tick, sim_instance=sim_instance
+            )
+
+        cache_key = (sub_condition.decision_cache_identity, tick)
+        if cache_key not in decision_cache:
+            decision_cache[cache_key] = sub_condition.check_myself(
+                found_char_dict, game_state, tick=tick, sim_instance=sim_instance
+            )
+        return decision_cache[cache_key]
+
     def evaluate_condition_ast(
-        self, node: "ExprNode", found_char_dict, game_state, sim_instance, tick, result_box
+        self,
+        node: "ExprNode",
+        found_char_dict,
+        game_state,
+        sim_instance,
+        tick,
+        result_box,
+        decision_cache: dict[tuple[Any, int], bool] | None = None,
     ):
         """递归地评估逻辑树的表达式节点"""
         if node.is_leaf():
             if not isinstance(node.sub_condition, BaseSubConditionUnit):
                 raise TypeError("逻辑树中包含非 BaseSubConditionUnit 类型的叶子节点")
-            result = node.sub_condition.check_myself(
-                found_char_dict, game_state, tick=tick, sim_instance=sim_instance
+            result = self.check_sub_condition(
+                node.sub_condition,
+                found_char_dict,
+                game_state,
+                sim_instance,
+                tick,
+                decision_cache=decision_cache,
             )
             result_box.append(result)
             return result
-        else:
-            left_result = self.evaluate_condition_ast(
-                node.left, found_char_dict, game_state, sim_instance, tick, result_box
+        left_result = self.evaluate_condition_ast(
+            node.left,
+            found_char_dict,
+            game_state,
+            sim_instance,
+            tick,
+            result_box,
+            decision_cache=decision_cache,
+        )
+        if node.operator == "and":
+            if not left_result:
+                return False
+            return self.evaluate_condition_ast(
+                node.right,
+                found_char_dict,
+                game_state,
+                sim_instance,
+                tick,
+                result_box,
+                decision_cache=decision_cache,
             )
-            right_result = self.evaluate_condition_ast(
-                node.right, found_char_dict, game_state, sim_instance, tick, result_box
+        if node.operator == "or":
+            if left_result:
+                return True
+            return self.evaluate_condition_ast(
+                node.right,
+                found_char_dict,
+                game_state,
+                sim_instance,
+                tick,
+                result_box,
+                decision_cache=decision_cache,
             )
-            if node.operator == "and":
-                return left_result and right_result
-            elif node.operator == "or":
-                return left_result or right_result
-            else:
-                raise ValueError(f"未知逻辑运算符: {node.operator}")
+        raise ValueError(f"未知逻辑运算符: {node.operator}")
 
 
 def spawn_sub_condition(
@@ -124,8 +178,13 @@ class SimpleUnitForForceAdd(APLUnit):
         for sub_units in self.sub_conditions_unit_list:
             if not isinstance(sub_units, BaseSubConditionUnit):
                 raise TypeError("ActionAPLUnit类的sub_conditions_unit_list中的对象构建不正确！")
-            result = sub_units.check_myself(
-                found_char_dict, game_state, tick=tick, sim_instance=sim_instance
+            result = self.check_sub_condition(
+                sub_units,
+                found_char_dict,
+                game_state,
+                sim_instance,
+                tick,
+                decision_cache=kwargs.get("decision_cache", None),
             )
             result_box.append(result)
             if not result:

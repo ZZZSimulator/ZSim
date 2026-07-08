@@ -247,7 +247,7 @@ def __draw_attr_curve(
                     # 确保只使用数值类型的 x 值
                     numeric_x_values = [x for x in x_values if isinstance(x, (int, float))]
                     if not numeric_x_values:
-                        raise ValueError("No numeric x values found")
+                        raise ValueError("未找到可用的数值型 x 轴数据")
                     min_x = min(numeric_x_values)
                     max_x = max(numeric_x_values)
                     # 生成从最小整数到最大整数的所有整数刻度
@@ -378,8 +378,7 @@ async def _read_json_file(file_path: str) -> dict[str, Any]:
             content = await f.read()
         return json.loads(content)
     except (FileNotFoundError, json.JSONDecodeError, IOError) as e:
-        # TODO: 使用更健壮的日志记录
-        print(f"Error reading JSON file {file_path}: {e}")
+        print(f"读取 JSON 文件 {file_path} 失败：{e}")
         return {}
 
 

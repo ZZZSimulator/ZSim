@@ -65,6 +65,25 @@ class SweetScare(EnemySpecialState):
             return True
         return False
 
+    def next_wakeup_tick(self, current_tick: int) -> int | None:
+        if not self.active:
+            return None
+        candidates: list[int] = []
+        end_tick = self.last_update_tick + self.max_duration
+        if end_tick > current_tick:
+            candidates.append(end_tick)
+        if self.sugarburst_sparkless_update_tick == 0:
+            candidates.append(current_tick + 1)
+        else:
+            next_sugarburst_tick = (
+                self.sugarburst_sparkless_update_tick + self.sugarburst_sparkless_cd
+            )
+            if next_sugarburst_tick > current_tick:
+                candidates.append(next_sugarburst_tick)
+            else:
+                candidates.append(current_tick + 1)
+        return min(candidates) if candidates else None
+
     def end(self):
         """甜蜜惊吓的结束逻辑"""
         self.active = False

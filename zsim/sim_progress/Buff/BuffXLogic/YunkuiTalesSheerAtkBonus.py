@@ -1,4 +1,10 @@
-from .. import Buff, JudgeTools, check_preparation
+from .. import Buff, check_preparation
+from ..JudgeTools import (
+    TriggerBuffRef,
+    build_preparation_context_from_buff,
+    read_trigger_buff_state,
+)
+from ._preparation_helpers import ensure_equipper_template_record, prepare_with_context
 
 
 class YunkuiTalesSheerAtkBonusRecord:
@@ -18,29 +24,32 @@ class YunkuiTalesSheerAtkBonus(Buff.BuffLogic):
         self.record = None
 
     def get_prepared(self, **kwargs):
-        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
+        return prepare_with_context(
+            self,
+            check_preparation_func=check_preparation,
+            context_builder=build_preparation_context_from_buff,
+            **kwargs,
+        )
 
     def check_record_module(self):
-        if self.equipper is None:
-            self.equipper = JudgeTools.find_equipper(
-                "云岿如我", sim_instance=self.buff_instance.sim_instance
-            )
-        if self.buff_0 is None:
-            self.buff_0 = JudgeTools.find_exist_buff_dict(
-                sim_instance=self.buff_instance.sim_instance
-            )[self.equipper][self.buff_instance.ft.index]
-        if self.buff_0.history.record is None:
-            self.buff_0.history.record = YunkuiTalesSheerAtkBonusRecord()
-        self.record = self.buff_0.history.record
+        ensure_equipper_template_record(
+            self,
+            item_name="云岿如我",
+            record_factory=YunkuiTalesSheerAtkBonusRecord,
+            context_builder=build_preparation_context_from_buff,
+        )
 
     def special_judge_logic(self, **kwargs):
         self.check_record_module()
         self.get_prepared(
             equipper="云岿如我",
-            trigger_buff_0=(self.equipper, "Buff-驱动盘-云岿如我-四件套-暴击率提升"),
+            trigger_buff_0=TriggerBuffRef.owner(
+                self.equipper,
+                "Buff-驱动盘-云岿如我-四件套-暴击率提升",
+            ),
         )
-        trigger_buff_0: Buff = self.record.trigger_buff_0
-        if trigger_buff_0.dy.active:
-            if trigger_buff_0.dy.count == 3:
+        trigger_state = read_trigger_buff_state(self.record)
+        if trigger_state.active:
+            if trigger_state.count == 3:
                 return True
         return False

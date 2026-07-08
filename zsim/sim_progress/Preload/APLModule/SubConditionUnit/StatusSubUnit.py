@@ -218,7 +218,7 @@ class StatusSubUnit(BaseSubConditionUnit):
                 handler = self.HANDLE_MAP["buildup_pct_delta"](anomaly_number_1, anomaly_number_2)
             else:
                 handler_cls = self.HANDLE_MAP.get(self.check_stat)
-                handler = handler_cls() if handler_cls else None
+                handler = handler_cls if handler_cls else None
             if not handler:
                 raise ValueError(
                     f"当前检查的check_stat为：{self.check_stat}，优先级为{self.priority}，暂无处理该属性的逻辑模块！"
@@ -227,11 +227,16 @@ class StatusSubUnit(BaseSubConditionUnit):
         else:
             """既然check_target不是Enemy，那么一定是char的CID"""
             handler_cls = self.HANDLE_MAP.get(self.check_stat)
-            handler = handler_cls() if handler_cls else None
+            handler = handler_cls if handler_cls else None
             if not handler:
                 raise ValueError(
                     f"当前检查的check_stat为：{self.check_stat}，优先级为{self.priority}，暂无处理该属性的逻辑模块！"
                 )
             return self.spawn_result(
-                handler.handler(int(self.check_target), found_char_dict, game_state, sim_instance)
+                handler.handler(
+                    self.checked_target_cid(),
+                    found_char_dict,
+                    game_state,
+                    sim_instance,
+                )
             )

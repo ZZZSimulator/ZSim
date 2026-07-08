@@ -24,15 +24,15 @@ def generate_parallel_args(
 ) -> Iterator[SimCfg]:
     """生成用于并行模拟的参数。
 
-    Args:
+    参数：
         stop_tick: 模拟停止的 tick 数。
         parallel_cfg: 并行模式的配置字典。
         run_turn_uuid: 当前运行轮次的 UUID。
 
-    Yields:
-        MainArgs: 为每个模拟任务生成的参数对象。
+    生成：
+        SimCfg: 为每个模拟任务生成的参数对象。
     """
-    # Determine the function based on enabled flags
+    # 根据启用标志判断模拟功能
     func = None
     if parallel_cfg.get("adjust_sc", {}).get("enabled", False):
         func = "attr_curve"
@@ -74,7 +74,7 @@ def generate_parallel_args(
             )
             yield args
     else:
-        raise ValueError(f"Unknown func: {func}, full cfg: {parallel_cfg}")
+        raise ValueError(f"未知的并行功能：{func}，完整配置：{parallel_cfg}")
 
 
 def apl_selecter():

@@ -6,6 +6,7 @@ import gc
 import os
 from datetime import datetime
 from pathlib import Path
+from uuid import uuid4
 
 import pytest
 
@@ -22,21 +23,27 @@ from ..teams import auto_register_teams
 class TestIsolatedTeams:
     """隔离的队伍测试类，确保每个队伍在独立环境中运行"""
 
+    @staticmethod
+    def _make_session_id(prefix: str, index: int, team_name: str) -> str:
+        safe_team_name = team_name.replace(" ", "-")
+        run_marker = uuid4().hex[:8]
+        return f"{prefix}-{run_marker}-{index}-{safe_team_name}"
+
     @pytest.fixture(autouse=True)
     def setup_test_environment(self):
-        """Setup test environment before each test."""
-        # Store original working directory
+        """每个测试前准备隔离环境。"""
+        # 保存原始工作目录
         self.original_cwd = os.getcwd()
 
-        # Change to project root directory
+        # 切换到项目根目录
         os.chdir(Path(__file__).parent.parent.parent)
 
         yield
 
-        # Restore original working directory
+        # 恢复原始工作目录
         os.chdir(self.original_cwd)
 
-        # Force garbage collection
+        # 强制回收，降低跨测试状态残留
         gc.collect()
 
     async def run_single_team_simulation(self, team_name: str, common_cfg, session_id: str):
@@ -73,7 +80,7 @@ class TestIsolatedTeams:
             for i, (team_name, common_cfg) in enumerate(team_configs):
                 print(f"\n=== 开始测试队伍: {team_name} ===")
 
-                session_id = f"sequential-test-{i}-{team_name.replace(' ', '-')}"
+                session_id = self._make_session_id("sequential-test", i, team_name)
 
                 # 记录开始时间
                 start_time = datetime.now()
@@ -109,7 +116,7 @@ class TestIsolatedTeams:
             for result in results:
                 try:
                     await db.delete_session(result["session_id"])
-                except:
+                except Exception:
                     pass
 
         # 验证所有队伍都测试成功
@@ -143,7 +150,7 @@ class TestIsolatedTeams:
         for i in range(3):
             print(f"第 {i + 1} 次运行队伍: {team_name}")
 
-            session_id = f"isolation-test-{i}-{team_name.replace(' ', '-')}"
+            session_id = self._make_session_id("isolation-test", i, team_name)
             result = await self.run_single_team_simulation(team_name, common_cfg, session_id)
 
             assert result is not None, f"第 {i + 1} 次运行失败"
@@ -176,7 +183,7 @@ class TestIsolatedTeams:
             controller._queue = asyncio.Queue()
             controller._running_tasks.clear()
 
-            session_id = f"controller-test-{i}-{team_name.replace(' ', '-')}"
+            session_id = self._make_session_id("controller-test", i, team_name)
 
             # 创建会话
             session_run_config = SessionRun(

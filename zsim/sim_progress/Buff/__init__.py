@@ -3,8 +3,6 @@ from .buff_class import Buff, spawn_buff_from_index  # noqa: F401
 from .BuffAdd import buff_add  # noqa: F401
 from .BuffLoad import BuffInitialize, BuffLoadLoop  # noqa: F401
 from .JudgeTools import *  # noqa: F403
-from .ScheduleBuffSettle import ScheduleBuffSettle  # noqa: F401
-
 
 # TODO:
 #  buff.ft.label = {"only_CoAttack": 1, "only_技能skill_tag": 1}

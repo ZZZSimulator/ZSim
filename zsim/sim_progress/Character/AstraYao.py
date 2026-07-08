@@ -161,7 +161,7 @@ class ChordCoattackManager:
                 """触发快速支援！不包含CD判断，只包含触发逻辑。"""
                 if self.manager.preload_data is None:
                     if self.manager.char.sim_instance is None:
-                        raise ValueError("sim_instance is None, cannot find preload_data")
+                        raise ValueError("sim_instance 为空，无法查找 preload_data")
                     self.manager.preload_data = JudgeTools.find_preload_data(
                         sim_instance=self.manager.char.sim_instance
                     )
@@ -230,7 +230,7 @@ class ChordCoattackManager:
             """
             if self.preload_data is None:
                 if self.manager.char.sim_instance is None:
-                    raise ValueError("sim_instance is None, cannot find preload_data")
+                    raise ValueError("sim_instance 为空，无法查找 preload_data")
                 self.preload_data = JudgeTools.find_preload_data(
                     sim_instance=self.manager.char.sim_instance
                 )
@@ -255,7 +255,7 @@ class ChordCoattackManager:
                 ]
                 preload_tick += self.tremolo_tick + self.tone_clusters_tick
                 if self.manager.char.sim_instance is None:
-                    raise ValueError("sim_instance is None, cannot schedule event")
+                    raise ValueError("sim_instance 为空，无法调度事件")
                 schedule_preload_event_factory(
                     skill_tag_list=skill_tag_list,
                     preload_tick_list=skill_preload_tick_list,
@@ -271,7 +271,7 @@ class ChordCoattackManager:
             from zsim.sim_progress.Buff.BuffAddStrategy import buff_add_strategy
 
             if self.manager.char.sim_instance is None:
-                raise ValueError("sim_instance is None, cannot add buff")
+                raise ValueError("sim_instance 为空，无法添加 Buff")
 
             buff_add_strategy(
                 self.core_passive_buff_index,

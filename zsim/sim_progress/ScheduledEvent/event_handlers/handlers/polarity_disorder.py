@@ -5,8 +5,8 @@ from typing import Any
 from zsim.models.event_enums import ListenerBroadcastSignal as LBS
 from zsim.sim_progress import Report
 from zsim.sim_progress.anomaly_bar.CopyAnomalyForOutput import PolarityDisorder
+from zsim.sim_progress.calculation.anomaly_calculator import CalPolarityDisorder
 
-from ...CalAnomaly import CalPolarityDisorder
 from ..base import BaseEventHandler
 from ..context import EventContext
 
@@ -23,7 +23,7 @@ class PolarityDisorderEventHandler(BaseEventHandler):
     def handle(self, event: PolarityDisorder, context: EventContext) -> None:
         """处理极性紊乱事件"""
         enemy = self._get_context_enemy(context)
-        dynamic_buff = self._get_context_dynamic_buff(context)
+        active_buff_view = self._get_context_active_buff_view(context)
         sim_instance = self._get_context_sim_instance(context)
         tick = self._get_context_tick(context)
 
@@ -34,7 +34,7 @@ class PolarityDisorderEventHandler(BaseEventHandler):
         calculator = CalPolarityDisorder(
             disorder_obj=event,
             enemy_obj=enemy,
-            dynamic_buff=dynamic_buff,
+            dynamic_buff=active_buff_view,
             sim_instance=sim_instance,
         )
 

@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 from zsim.models.event_enums import ListenerBroadcastSignal as LBS
 from zsim.sim_progress.Report import report_to_log
@@ -8,7 +8,7 @@ from ..SkillsQueue import SkillNode, spawn_node
 
 if TYPE_CHECKING:
     from zsim.sim_progress.Character import Character
-    from zsim.sim_progress.Preload.PreloadDataClass import PreloadData
+    from zsim.sim_progress.Preload.PreloadDataClass import ExternalSkillTuple, PreloadData
 
 
 class ConfirmEngine(BasePreloadEngine):
@@ -22,7 +22,7 @@ class ConfirmEngine(BasePreloadEngine):
         """
         super().__init__(data)
         self.external_update_signal = False
-        self.external_add_skill_list = []
+        self.external_add_skill_list: list["ExternalSkillTuple"] = []
         self.validators = [self._validate_timing]
         self.name_box_first_change = True  # 首次更改name_box的标志
 
@@ -57,7 +57,7 @@ class ConfirmEngine(BasePreloadEngine):
     def spawn_node_from_tag(
         self,
         tick: int,
-        tuples: tuple[str, bool, int],
+        tuples: "ExternalSkillTuple",
         template_node_from_apl: SkillNode | None = None,
     ):
         """通过skill_tag构造Node"""
@@ -111,27 +111,29 @@ class ConfirmEngine(BasePreloadEngine):
             name_box.append(name_switch)
             name_switch = name_box.pop(0)
             name_box.append(name_switch)
-        for char in char_data.char_obj_list:
-            char: "Character"
-            if name_box[0] == char.NAME:
+        for raw_char_obj in char_data.char_obj_list:
+            char_obj = cast("Character", raw_char_obj)
+            if name_box[0] == char_obj.NAME:
                 if name_box[0] != old_name_box[0]:
                     """在更新name_box的时候，将切人事件对所有监听器进行广播。"""
                     if self.data.sim_instance:
                         self.data.sim_instance.listener_manager.broadcast_event(
-                            event=char, signal=LBS.SWITCHING_IN, skill_node=this_node
+                            event=char_obj, signal=LBS.SWITCHING_IN, skill_node=this_node
                         )
-                    char.dynamic.on_field = True
+                    char_obj.dynamic.on_field = True
                 else:
                     # 首次切人逻辑
                     if self.name_box_first_change:
                         if self.data.sim_instance:
                             self.data.sim_instance.listener_manager.broadcast_event(
-                                event=char, signal=LBS.SWITCHING_IN, skill_node=this_node
+                                event=char_obj,
+                                signal=LBS.SWITCHING_IN,
+                                skill_node=this_node,
                             )
-                        char.dynamic.on_field = True
+                        char_obj.dynamic.on_field = True
                         self.name_box_first_change = False
             else:
-                char.dynamic.on_field = False
+                char_obj.dynamic.on_field = False
 
     def validate_node_execution(self, node: SkillNode, tick: int) -> bool:
         """集中验证节点可执行性"""

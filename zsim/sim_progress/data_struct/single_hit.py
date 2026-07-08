@@ -9,7 +9,7 @@ if TYPE_CHECKING:
 
 @dataclass
 class SingleHit:
-    """Feedback to enemy for a single hit."""
+    """单次命中结算后反馈给敌人的数据。"""
 
     skill_tag: str
     snapshot: tuple[int, np.float64, np.ndarray]
@@ -37,7 +37,7 @@ class SingleHit:
 
 @dataclass
 class AnomalyHit:
-    """Feedback to enemy for a single anomaly hit."""
+    """单次异常伤害结算后反馈给敌人的数据。"""
 
     skill_tag: str
     snapshot: tuple[int, np.float64, np.ndarray]

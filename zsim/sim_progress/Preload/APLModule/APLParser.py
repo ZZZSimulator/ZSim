@@ -11,7 +11,7 @@ class APLParser:
         elif file_path is not None:
             self.apl_code = self._read_apl_from_file(file_path)
         else:
-            raise ValueError("Either apl_code or file_path must be provided.")
+            raise ValueError("必须提供 apl_code 或 file_path 其中之一。")
 
     @staticmethod
     def _read_apl_from_file(file_path: str) -> str:
@@ -59,7 +59,7 @@ class APLParser:
                 # 1. 按 '|' 分割字符串
                 parts = line.split("|")
                 if len(parts) < 3:
-                    raise ValueError(f"Invalid format: {line}")
+                    raise ValueError(f"无效格式：{line}")
 
                 # 2. 提取 CID
                 CID = parts[0]

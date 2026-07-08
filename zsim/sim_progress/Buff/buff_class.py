@@ -21,6 +21,9 @@ with open(config_path, "r", encoding="utf-8") as file:
 debug = config.get("debug")
 with open("./zsim/sim_progress/Buff/buff_config.json", "r", encoding="utf-8") as f:
     _buff_load_config = json.load(f)
+_SPECIAL_LOGIC_CLASS_CACHE: dict[tuple[str, str], type] = {}
+_MISSING_SPECIAL_LOGIC_MODULES: set[tuple[str, str]] = set()
+_REPORTED_MISSING_SPECIAL_LOGIC_BUFFS: set[str] = set()
 # 如果禁用缓存，每次都创建新的实例
 
 # 这个index列表里面装的是乘区类型中所有的项目,也是buff效果作用的范围.
@@ -82,16 +85,30 @@ class Buff:
             if config:
                 module_name = config["module"]
                 class_name = config["class"]
-                # 动态加载模块
-                module = importlib.import_module(module_name, package="zsim.sim_progress.Buff")
-                logic_class = getattr(module, class_name)
+                cache_key = (module_name, class_name)
+                if cache_key in _MISSING_SPECIAL_LOGIC_MODULES:
+                    if self.ft.index not in _REPORTED_MISSING_SPECIAL_LOGIC_BUFFS:
+                        _REPORTED_MISSING_SPECIAL_LOGIC_BUFFS.add(self.ft.index)
+                        print(
+                            f"未找到 {self.ft.index} 对应模块，回退到默认逻辑。"
+                        )
+                    return
+                logic_class = _SPECIAL_LOGIC_CLASS_CACHE.get(cache_key)
+                if logic_class is None:
+                    # 动态加载模块
+                    module = importlib.import_module(module_name, package="zsim.sim_progress.Buff")
+                    logic_class = getattr(module, class_name)
+                    _SPECIAL_LOGIC_CLASS_CACHE[cache_key] = logic_class
                 self.logic = logic_class(self)
             else:
                 # 默认逻辑
                 pass
         except ModuleNotFoundError:
             # 处理模块找不到的情况
-            print(f"Module for {self.ft.index} not found. Falling back to default logic.")
+            _MISSING_SPECIAL_LOGIC_MODULES.add((module_name, class_name))
+            if self.ft.index not in _REPORTED_MISSING_SPECIAL_LOGIC_BUFFS:
+                _REPORTED_MISSING_SPECIAL_LOGIC_BUFFS.add(self.ft.index)
+                print(f"未找到 {self.ft.index} 对应模块，回退到默认逻辑。")
             pass
 
     class BuffFeature:
@@ -430,7 +447,7 @@ class Buff:
             buff = all_buff_js[index]
         except KeyError as e:
             buff = {}
-            report_to_log(f"[WARNING] {e}: 索引{index}没有找到，或buff效果json结构错误", level=4)
+            report_to_log(f"[警告] {e}: 索引{index}没有找到，或buff效果json结构错误", level=4)
         return buff
 
     @staticmethod
@@ -696,7 +713,7 @@ class Buff:
         if not isinstance(buff_0, Buff):
             raise TypeError(f"{buff_0}不是Buff类！")
         if not self.ft.simple_start_logic:
-            # EXAMPLE：Buff触发时，随机获得层数。
+            # 示例：Buff触发时，随机获得层数。
             assert self.logic.xstart is not None, (
                 f"{self.ft.index} 的simple_start_logic参数不为True时，其logic.xstart不能为空"
             )
@@ -718,10 +735,10 @@ class Buff:
                     """
                     单独结算的Buff处理逻辑。
                     """
-                    # EXAMPLE：发动普攻时，使当前招式伤害增加X%，每层效果独立结算。
+                    # 示例：发动普攻时，使当前招式伤害增加X%，每层效果独立结算。
                     self.individual_setteled_update(timecost, timenow)
                 else:
-                    # EXAMPLE：发动普攻时，使当前招式伤害增加X%，
+                    # 示例：发动普攻时，使当前招式伤害增加X%，
                     self.dy.startticks = timenow
                     self.dy.endticks = timenow + timecost
                     self.dy.count = min(buff_0.dy.count + self.ft.step, self.ft.maxcount)
@@ -737,10 +754,10 @@ class Buff:
                 """
                 # FIXME：某个Buff在技能抬手就触发，同时还会因为命中而叠层 的逻辑等待拓展
                 if self.ft.individual_settled:
-                    # EXAMPLE：发动普攻时，使攻击力提升，每次触发独立结算持续时间。
+                    # 示例：发动普攻时，使攻击力提升，每次触发独立结算持续时间。
                     self.individual_setteled_update(self.ft.maxduration, timenow)
                 else:
-                    # EXAMPLE：发动普攻时，使攻击力提升，重复触发刷新持续时间
+                    # 示例：发动普攻时，使攻击力提升，重复触发刷新持续时间
                     self.dy.active = True
                     self.dy.startticks = timenow
                     self.dy.endticks = timenow + self.ft.maxduration
@@ -774,7 +791,7 @@ class Buff:
                 if self.ft.individual_settled:
                     self.individual_setteled_update(self.ft.maxduration, timenow)
                 else:
-                    # EXAMPLE：普攻结束后，伤害增加X%，重复触发刷新持续时间。
+                    # 示例：普攻结束后，伤害增加X%，重复触发刷新持续时间。
                     self.dy.active = True
                     self.dy.startticks = timenow
                     self.dy.endticks = timenow + self.ft.maxduration
@@ -783,7 +800,7 @@ class Buff:
                     self.dy.is_changed = True
             # report_to_log(f"[Buff INFO]:{timenow}:{buff_0.ft.index}第{buff_0.history.active_times}次触发", level=3)
         else:
-            # EXAMPLE：普攻结束后，随机获得1~10层的攻击力Buff。
+            # 示例：普攻结束后，随机获得1~10层的攻击力Buff。
             assert self.logic.xend is not None, f"{self.ft.index}的buff没有初始化xend方法"
             self.logic.xend(beneficiary=beneficiary)
             self.dy.is_changed = True
@@ -816,25 +833,25 @@ class Buff:
             self.update_to_buff_0(buff_0)
             return
         if not self.ft.hitincrease:
-            # EXPLAIN：如果hitincrease是False，则意味着在本函数内完全没有更新的可能，直接return就行。
+            # 说明：如果hitincrease是False，则意味着在本函数内完全没有更新的可能，直接return就行。
             return
         if self.ft.fresh:  # 处理可更新的buff（fresh = True）
-            # EXPLAIN：fresh参数和individual_settled是否等价？不，前者是命中时间完全不修改endticks，而后者则是独立结算机制。
+            # 说明：fresh参数和individual_settled是否等价？不，前者是命中时间完全不修改endticks，而后者则是独立结算机制。
             #  在判定逻辑的优先级上，fresh和individual_settled包含关系，如果fresh为FALSE，那么无论层数是否独立结算，都会表现为相同的结果。
             #  所以，只有fresh为True的buff，才有被区分是否独立结算的意义。
             if self.ft.individual_settled:
-                # EXAMPLE：普攻命中时，攻击力提高3%，层数之间独立结算。
+                # 示例：普攻命中时，攻击力提高3%，层数之间独立结算。
                 self.individual_setteled_update(self.ft.maxduration, timenow)
                 if self.ft.maxduration == 0:
-                    # EXAMPLE：普攻期间命中时，攻击力提高3%，层数之间独立结算。
+                    # 示例：普攻期间命中时，攻击力提高3%，层数之间独立结算。
                     # 如果maxduration是0，那么endticks是不能变的。要还原回来。
                     self.dy.endticks = endticks
                 self.dy.active = True
                 self.dy.is_changed = True
                 self.dy.ready = False
             else:
-                # EXAMPLE: 命中可叠层，且持续时间刷新。
-                # EXAMPLE：所有的具有复杂判断逻辑但是光环类的Debuff会在这里被处理。
+                # 示例：命中可叠层，且持续时间刷新。
+                # 示例：所有的具有复杂判断逻辑但是光环类的Debuff会在这里被处理。
                 self.dy.startticks = timenow
                 """
                 这里还没完呢，startticks虽然更新了，但是endticks要不要更新还得看buff是否是瞬时buff。
@@ -854,7 +871,7 @@ class Buff:
             这些buff都是startticks不允许更新的，endticks也是如此。
             """
             if not self.ft.individual_settled:
-                # EXAMPLE：强化E持续期间，命中一次叠层一次。
+                # 示例：强化E持续期间，命中一次叠层一次。
                 self.dy.count = min(buff_0.dy.count + self.ft.step, self.ft.maxcount)
                 self.dy.active = True
                 self.dy.is_changed = True

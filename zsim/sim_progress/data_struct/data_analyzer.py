@@ -3,7 +3,6 @@ from __future__ import annotations
 from functools import lru_cache
 from typing import TYPE_CHECKING, Any, Sequence
 
-# from charset_normalizer.md import is_arabic_isolated_form
 from zsim.define import BACK_ATTACK_RATE
 from zsim.sim_progress.anomaly_bar.CopyAnomalyForOutput import NewAnomaly
 from zsim.sim_progress.Report import report_to_log
@@ -23,6 +22,14 @@ def cal_buff_total_bonus(
     char_name: str | None = None,
 ) -> dict[str, float]:
     """过滤并计算buff总加成。
+
+    报表与 runtime 共用约定：
+    - 这是报表、数据分析代码与 Calculator runtime 门面共用的纯聚合辅助函数。
+    - 调用方必须传入可哈希快照，通常是 `tuple(active_buffs)`，因为本函数带有 `lru_cache`。
+    - 缓存键会包含 `enabled_buff`、`judge_obj`、`sim_instance` 和 `char_name`，
+      避免标签筛选结果在 runtime 与报表调用点之间串用。
+    - 返回键是 Buff 效果名，返回值是聚合后的数值加成；报表时间线缓存结构归
+      process_buff_result 维护。
 
     该方法首先读取buff效果的键值对，然后遍历提供列表的所有buff（一般为特定角色+怪物，具体参考调用方式）
     对于每个buff，检查其是否为Buff类型，然后根据buff的计数（count）来计算总加成。
@@ -264,9 +271,7 @@ def __check_special_anomly(buff: "Buff", anomaly_node: "AnomalyBar") -> bool:
         IceAnomaly,
         PhysicalAnomaly,
     )
-    from zsim.sim_progress.anomaly_bar.CopyAnomalyForOutput import (
-        DirgeOfDestinyAnomaly as Abloom,
-    )
+    from zsim.sim_progress.anomaly_bar.CopyAnomalyForOutput import DirgeOfDestinyAnomaly as Abloom
     from zsim.sim_progress.anomaly_bar.CopyAnomalyForOutput import (
         Disorder,
         PolarityDisorder,

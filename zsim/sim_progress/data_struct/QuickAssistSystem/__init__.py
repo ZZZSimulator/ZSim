@@ -2,8 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from zsim.sim_progress.Buff import JudgeTools
-
+from ..schedule_dispatch import ScheduledEventEmitter, ScheduledEventEmitterProvider
 from .quick_assist_manager import QuickAssistManager
 
 if TYPE_CHECKING:
@@ -15,12 +14,24 @@ if TYPE_CHECKING:
 class QuickAssistSystem:
     """管理整个小队的系统，需要延迟创建。"""
 
-    def __init__(self, char_obj_list: list, sim_instance: Simulator):
+    def __init__(
+        self,
+        char_obj_list: list,
+        sim_instance: Simulator,
+        scheduled_event_emitter_provider: ScheduledEventEmitterProvider | None = None,
+    ):
         self.sim_instance = sim_instance
+        self._scheduled_event_emitter_provider = (
+            scheduled_event_emitter_provider
+            or ScheduledEventEmitterProvider.from_sim_instance(sim_instance)
+        )
         self.char_obj_list: list["Character"] = char_obj_list
         self.quick_assist_manager_group: dict[str, QuickAssistManager] = {}
         for char_obj in self.char_obj_list:
             self.quick_assist_manager_group[char_obj.NAME] = char_obj.dynamic.quick_assist_manager
+
+    def _scheduled_event_emitter(self) -> ScheduledEventEmitter:
+        return self._scheduled_event_emitter_provider.create_emitter()
 
     def update(self, tick: int, skill_node: "SkillNode", all_name_order_box: dict[str, list[str]]):
         """外部接口，通过传入的skill_node来判断如何激活快速支援。"""
@@ -61,8 +72,7 @@ class QuickAssistSystem:
             manager=manager,
             answer=True,
         )
-        event_list = JudgeTools.find_event_list(sim_instance=self.sim_instance)
-        event_list.append(end_event)
+        self._scheduled_event_emitter().emit_scheduled(end_event)
         # print(f'{skill_node.char_name}响应了快速支援！')
 
     def spawn_event_group(
@@ -84,9 +94,7 @@ class QuickAssistSystem:
         start_event.manager.assist_event_update_tick = tick_now
         start_event.manager.last_update_node = skill_node
         end_event.manager.assist_event_update_tick = tick_now
-        event_list = JudgeTools.find_event_list(sim_instance=self.sim_instance)
-        event_list.append(start_event)
-        event_list.append(end_event)
+        self._scheduled_event_emitter().emit_scheduled_batch([start_event, end_event])
 
     def force_active_quick_assist(self, tick_now: int, skill_node: "SkillNode", char_name: str):
         """强制激活快速支援，主要是服务于外部调用。"""

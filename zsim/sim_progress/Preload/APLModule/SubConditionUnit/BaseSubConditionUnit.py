@@ -32,6 +32,8 @@ class BaseSubConditionUnit(ABC):
         self.check_value = check_number_type(
             sub_condition_dict["value"]
         )  # 参与计算的值 或者调用的函数名
+        self._checked_target_cid: int | None = None
+        self.decision_cache_identity = id(self)
 
     @abstractmethod
     def check_myself(
@@ -60,3 +62,11 @@ class BaseSubConditionUnit(ABC):
             return result
         else:
             return not result
+
+    def checked_target_cid(self) -> int:
+        if self._checked_target_cid is None:
+            from ...APLModule.APLJudgeTools import check_cid
+
+            check_cid(self.check_target)
+            self._checked_target_cid = int(self.check_target)
+        return self._checked_target_cid

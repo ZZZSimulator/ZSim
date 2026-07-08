@@ -30,11 +30,13 @@ class Buff0Manager:
         char_obj_dict: dict | None,
         sim_instance: "Simulator | None",
     ):
+        if sim_instance is None:
+            raise ValueError("Buff0Manager 初始化时必须传入 sim_instance")
         # 加载文件
         self.EXIST_FILE = pd.read_csv(EXIST_FILE_PATH, index_col="BuffName")
         self.JUDGE_FILE = pd.read_csv(JUDGE_FILE_PATH, index_col="BuffName")
         self.CHARACTER_FILE = pd.read_csv(CHARACTER_DATA_PATH, index_col="name")
-        self.sim_instance: "Simulator" = sim_instance
+        self.sim_instance = sim_instance
         self.judge_list_set = judge_list_set
         self.weapon_dict = weapon_dict
         self.cinema_dict = cinema_dict
@@ -52,15 +54,15 @@ class Buff0Manager:
         for _char_name in self.char_name_box:
             self.exist_buff_dict[_char_name] = {}
         # 把处理judge_list_set
-        self.__equip_set2_box = []
+        self.__equip_set2_box: list[str] = []
         self.char_equip_info: dict[str, dict[str, str]] = {}
         self.__process_judge_list_set()
 
         self.total_judge_condition_list = (
             list(itertools.chain.from_iterable(self.judge_list_set)) + self.__equip_set2_box
         )
-        self.__selector = self.__selector(self)
-        self.__selector.select_buff_into_exist_buff_dict()
+        selector = self.__Selector(self)
+        selector.select_buff_into_exist_buff_dict()
         self.__passively_updating_change()
         # self.__process_label()
         """
@@ -205,7 +207,7 @@ class Buff0Manager:
         else:
             return None
 
-    class __selector:
+    class __Selector:
         def __init__(self, buff_0_manager_instance):
             self.buff_0_manager: Buff0Manager = buff_0_manager_instance
             self.__select_strategy_map = {
@@ -215,10 +217,10 @@ class Buff0Manager:
             }
             self.__special_set2_dict = {"如影相随": ["Buff-驱动盘-如影相随-二件套"]}
             self.__buff_0_pool: dict[str, tuple] = {}
-            self.__additional_ability_data = self.__additional_ability_data(self.buff_0_manager)
+            self.__additional_ability_data = self.__AdditionalAbilityData(self.buff_0_manager)
             self.__get_buff_0_pool()
 
-        class __additional_ability_data:
+        class __AdditionalAbilityData:
             """组队被动数据，主要负责组队被动激活相关"""
 
             def __init__(self, buff_0_manager_instance):
@@ -352,7 +354,7 @@ class Buff0Manager:
                     for _name in selected_characters:
                         self.initiate_buff(buff_info_tuple, buff_name, _name, buff_from)
                 elif buff_from == "enemy":
-                    """ 
+                    """
                     进入这一分支的所有buff实际上都是环境或是其他原因而强加给enemy的，
                     由于buffload函数并不会以“enemy”为主视角来判定buff，
                     所有添加给enemy的buff都是在buffload遍历其他角色时产生、或是其他阶段强行添加的，

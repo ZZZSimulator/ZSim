@@ -99,7 +99,7 @@ class EnemyConfig(BaseModel):
 class SimulationConfig(BaseModel):
     """模拟配置参数"""
 
-    # all mode common:
+    # 各运行模式通用配置：
     stop_tick: int | None = Field(None, description="指定模拟的tick数量")
     mode: Literal["normal", "parallel"] | None = Field(None, description="运行模式")
     func: Literal["attr_curve", "weapon"] | None = Field(None, description="功能选择")
@@ -171,7 +171,7 @@ ParallelCfg.WeaponConfig.model_rebuild()
 class SessionRun(BaseModel):
     """模拟器会话配置参数，启动会话的全部数据"""
 
-    # all mode common:
+    # 各运行模式通用配置：
     stop_tick: int | None = Field(None, description="指定模拟的tick数量")
     mode: Literal["normal", "parallel"] | None = Field(None, description="运行模式")
     common_config: CommonCfg

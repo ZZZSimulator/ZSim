@@ -25,17 +25,11 @@ from zsim.models.session.session_run import (
     ParallelCfg,
     SessionRun,
 )
-from zsim.models.session.session_run import (
-    SimulationConfig as SimCfg,
-)
+from zsim.models.session.session_run import SimulationConfig as SimCfg
 from zsim.simulator import Simulator
 from zsim.utils.constants import stats_trans_mapping
-from zsim.utils.process_buff_result import (
-    prepare_buff_data_and_cache as process_buff,
-)
-from zsim.utils.process_dmg_result import (
-    prepare_dmg_data_and_cache as process_dmg,
-)
+from zsim.utils.process_buff_result import prepare_buff_data_and_cache as process_buff
+from zsim.utils.process_dmg_result import prepare_dmg_data_and_cache as process_dmg
 from zsim.utils.process_parallel_data import (
     judge_parallel_result,
     merge_parallel_dmg_data,
@@ -48,6 +42,13 @@ if TYPE_CHECKING:
     from zsim.simulator.simulator_class import Confirmation
 
 logger = logging.getLogger(__name__)
+
+
+def _run_default_runtime_simulator(
+    common_cfg: CommonCfg, sim_cfg: SimCfg | None, stop_tick: int
+) -> "Confirmation":
+    simulator = Simulator(use_indexed_buff_load_loop=True)
+    return simulator.api_run_simulator(common_cfg, sim_cfg, stop_tick)
 
 
 class SimController:
@@ -147,15 +148,13 @@ class SimController:
                     logger.warning(f"会话 {session_id} 未设置 stop_tick，使用默认值 3600")
                     stop_tick = 3600
 
-                def run_simulator(
-                    _common_cfg: CommonCfg, _sim_cfg: SimCfg | None, _stop_tick: int
-                ) -> "Confirmation":
-                    simulator = Simulator()
-                    return simulator.api_run_simulator(_common_cfg, _sim_cfg, _stop_tick)
-
                 # 创建模拟器实例并提交任务
                 future: asyncio.Future["Confirmation"] = event_loop.run_in_executor(
-                    self.executor, run_simulator, common_cfg, sim_cfg, stop_tick
+                    self.executor,
+                    _run_default_runtime_simulator,
+                    common_cfg,
+                    sim_cfg,
+                    stop_tick,
                 )
                 self._running_tasks.add(future)
                 future.add_done_callback(lambda f: self._task_done_callback(f, session_id))
@@ -204,23 +203,22 @@ class SimController:
                     logger.warning(f"会话 {session_id} 未设置 stop_tick，使用默认值 3600")
                     stop_tick = 3600
 
-                def run_simulator(
-                    _common_cfg: CommonCfg, _sim_cfg: SimCfg | None, _stop_tick: int
-                ) -> "Confirmation":
-                    simulator = Simulator()
-                    return simulator.api_run_simulator(_common_cfg, _sim_cfg, _stop_tick)
-
                 # 使用 ThreadPoolExecutor 避免序列化问题
                 with ThreadPoolExecutor() as thread_executor:
                     future: asyncio.Future["Confirmation"] = event_loop.run_in_executor(
-                        thread_executor, run_simulator, common_cfg, sim_cfg, stop_tick
+                        thread_executor,
+                        _run_default_runtime_simulator,
+                        common_cfg,
+                        sim_cfg,
+                        stop_tick,
                     )
 
-                    result = await future  # noqa: F841
+                    result = await future
                     logger.info(f"测试模拟任务 {session_id} 完成")
 
                     # 更新会话状态
                     session.status = "completed"
+                    await self._attach_simulation_result(session, result, session_id)
                     await db.update_session(session)
                     completed_sessions.append(session_id)
 
@@ -270,8 +268,7 @@ class SimController:
             sim_cfg: SimCfg | None,
             stop_tick: int,
         ) -> tuple[str, "Confirmation"]:
-            simulator = Simulator()
-            result = simulator.api_run_simulator(common_cfg, sim_cfg, stop_tick)
+            result = _run_default_runtime_simulator(common_cfg, sim_cfg, stop_tick)
             return session_id_inner, result
 
         # 并行执行所有任务
@@ -342,15 +339,14 @@ class SimController:
         """
         loop = asyncio.get_event_loop()
 
-        # Use ThreadPoolExecutor instead of ProcessPoolExecutor for compatibility
+        # 这里使用 ThreadPoolExecutor，兼容无法被进程序列化的模拟上下文。
         from concurrent.futures import ThreadPoolExecutor
 
         def _run_simulator() -> "Confirmation":
-            simulator = Simulator()
-            return simulator.api_run_simulator(common_cfg, sim_cfg, stop_tick)
+            return _run_default_runtime_simulator(common_cfg, sim_cfg, stop_tick)
 
         if isinstance(self.executor, ProcessPoolExecutor):
-            # For testing, use thread executor to avoid serialization issues
+            # 测试路径下改用线程执行器，避免序列化问题。
             with ThreadPoolExecutor() as thread_executor:
                 return await loop.run_in_executor(thread_executor, _run_simulator)
         else:
@@ -384,23 +380,33 @@ class SimController:
             session.status = "completed"
 
             # 处理模拟结果确认信息
-            if isinstance(result, dict) and "run_turn_uuid" in result:
-                processed_result: (
-                    NormalModeResult | ParallelModeResult
-                ) = await self._process_simulation_result(result)
-                try:
-                    session.session_result = [processed_result]
-                except Exception as e:
-                    logger.error(
-                        f"TODO: 模拟任务 {session_id} 结果处理: {repr(e)}",
-                        exc_info=True,
-                    )
+            await self._attach_simulation_result(session, result, session_id)
 
         except Exception as e:
             logger.error(f"模拟任务 {session_id} 执行失败: {e}", exc_info=True)
             session.status = "failed"
 
         await db.update_session(session)
+
+    async def _attach_simulation_result(
+        self,
+        session: Session,
+        result: "Confirmation",
+        session_id: str,
+    ) -> None:
+        if getattr(result, "session_id", None) is None:
+            return
+
+        try:
+            processed_result: (
+                NormalModeResult | ParallelModeResult
+            ) = await self._process_simulation_result(result)
+            session.session_result = [processed_result]
+        except Exception as e:
+            logger.error(
+                f"模拟任务 {session_id} 的结果处理失败：{repr(e)}",
+                exc_info=True,
+            )
 
     async def _process_simulation_result(
         self, confirmation: "Confirmation"
@@ -415,7 +421,7 @@ class SimController:
                 - timestamp: 完成时间戳
                 - sim_cfg: 模拟配置（包含并行配置信息）
         """
-        rid = confirmation.session_id  # compatible to webui rid logic
+        rid = confirmation.session_id  # 兼容 WebUI 的 rid 逻辑。
         logger.info(f"开始处理模拟结果: session_id={rid}, status={confirmation.status}")
 
         if judge_parallel_result(rid):
@@ -443,7 +449,7 @@ class SimController:
                 mode="parallel", func=func, result=ParallelResultPayload(root=payload)
             )
         else:
-            # Single run.
+            # 单次模拟。
             dmg_result = process_dmg(rid)
             buff_result = await process_buff(rid)
             result = NormalModeResult(

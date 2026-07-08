@@ -19,13 +19,12 @@ class PreloadEventHandler(BaseEventHandler):
 
     def handle(self, event: SchedulePreload, context: EventContext) -> None:
         """处理预加载事件"""
-        data = self._get_context_data(context)
         tick = self._get_context_tick(context)
 
         # 检查是否到达执行时间
         if tick < event.execute_tick:
             # 时间未到，将事件重新加入列表
-            data.event_list.append(event)
+            context.requeue_event(event)
             return
 
         # 执行事件

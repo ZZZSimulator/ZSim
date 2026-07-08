@@ -44,6 +44,7 @@ class AtkResponseAPLUnit(APLUnit):
         """仅供模式下的单行APL的逻辑函数：检查所有子条件并且输出结果"""
         result_box = []
         tick = kwargs.get("tick", None)
+        decision_cache = kwargs.get("decision_cache", None)
         if tick is None:
             tick = self.sim_instance.tick
         if not self.check_atk_response_conditions(tick):
@@ -57,7 +58,13 @@ class AtkResponseAPLUnit(APLUnit):
             return True, result_box
 
         final_result = self.evaluate_condition_ast(
-            self.sub_conditions_ast, found_char_dict, game_state, sim_instance, tick, result_box
+            self.sub_conditions_ast,
+            found_char_dict,
+            game_state,
+            sim_instance,
+            tick,
+            result_box,
+            decision_cache=decision_cache,
         )
         return final_result, result_box
 
@@ -114,7 +121,7 @@ class AtkResponseAPLUnit(APLUnit):
 
             if skill_tick != 0 and skill_tick < ENEMY_ATK_PARAMETER_DICT["Taction"]:
                 print(
-                    f"Warning: 技能 {self.result} 的ticks小于基础参数Taction，这会导致响应窗口的左边界不正确！所以直接于左边界处拦截，直接返回False。"
+                    f"警告：技能 {self.result} 的ticks小于基础参数Taction，这会导致响应窗口的左边界不正确！所以直接于左边界处拦截，直接返回False。"
                 )
                 """
                 但若是这个响应动作的时间小于30tick，则一定会引起响应失败。

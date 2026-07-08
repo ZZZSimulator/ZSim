@@ -4,6 +4,7 @@ import os
 import polars as pl
 
 from zsim.define import ANOMALY_MAPPING
+from zsim.models.session.session_result import normalize_damage_result_schema
 from zsim.sim_progress.Character.skill_class import lookup_name_or_cid
 
 from .constants import SKILL_TAG_MAPPING, results_dir
@@ -30,6 +31,11 @@ def _load_dmg_data(rid: int | str) -> pl.DataFrame | None:
     except FileNotFoundError:
         print(f"未找到文件：{csv_file_path}")
         return None
+
+
+def _normalize_damage_schema(dmg_result_df: pl.DataFrame) -> pl.DataFrame:
+    """补齐旧/新 damage.csv 之间的兼容列。"""
+    return normalize_damage_result_schema(dmg_result_df)
 
 
 def prepare_line_chart_data(dmg_result_df: pl.DataFrame) -> dict[str, pl.DataFrame]:
@@ -374,6 +380,7 @@ def prepare_dmg_data_and_cache(
     dmg_result_df = _load_dmg_data(rid)
     if dmg_result_df is None:
         return None
+    dmg_result_df = _normalize_damage_schema(dmg_result_df)
     uuid_df = sort_df_by_UUID(dmg_result_df)
     char_chart_data = prepare_char_chart_data(uuid_df)
     # st.write(char_chart_data)

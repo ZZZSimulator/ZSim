@@ -31,8 +31,8 @@ app.add_middleware(
 
 if os.getenv("ZSIM_DISABLE_ROUTES") != "1":
     from zsim.api_src.routes import (
-        router as api_router,
-    )  # defer import to avoid side effects in tests
+        router as api_router,  # defer import to avoid side effects in tests
+    )
 
     app.include_router(api_router, prefix="/api", tags=["ZSim API"])
 
@@ -114,7 +114,7 @@ if __name__ == "__main__":
         try:
             port = int(os.getenv("ZSIM_API_PORT", 0))
         except ValueError:
-            logging.error("Invalid port number in ZSIM_API_PORT environment variable.")
+            logging.error("ZSIM_API_PORT 环境变量中的端口号无效。")
             port = 0
         if port == 0:
             port = get_free_port()

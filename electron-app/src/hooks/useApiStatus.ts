@@ -44,20 +44,6 @@ export const useApiStatus = (): UseApiStatusReturn => {
           clearInterval(checkInterval);
           console.log('[useApiStatus] window.apiClient is available:', window.apiClient);
           setApiStatus('API 客户端已就绪');
-
-          (async () => {
-            try {
-              if (window.electron && window.electron.ipcRenderer) {
-                console.log('[useApiStatus] Testing IPC config retrieval...');
-                const config = await window.electron.ipcRenderer.invoke('get-ipc-config');
-                console.log('[useApiStatus] IPC Config:', config);
-              } else {
-                console.log('[useApiStatus] window.electron.ipcRenderer not available');
-              }
-            } catch (error) {
-              console.error('[useApiStatus] IPC config error:', error);
-            }
-          })();
         } else if (attempts >= maxAttempts) {
           clearInterval(checkInterval);
           console.error('[useApiStatus] window.apiClient not available after maximum attempts');

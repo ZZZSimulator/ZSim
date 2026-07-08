@@ -82,7 +82,7 @@ def page_data_analysis():
     if not st.toggle("开启数据分析"):
         st.stop()
 
-    # Ensure selected_key is valid before proceeding
+    # 继续前确保 selected_key 有效
     if not selected_key:
         st.error("无法获取选定的结果键。")
         st.stop()

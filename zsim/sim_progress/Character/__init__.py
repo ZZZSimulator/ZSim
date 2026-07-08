@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING
 
 from .character import Character
 from .skill_class import lookup_name_or_cid
+from .wakeup import CharacterResourceWakeupSource
 
 if TYPE_CHECKING:
     from zsim.models.session.session_run import CharConfig, ExecAttrCurveCfg, ExecWeaponCfg

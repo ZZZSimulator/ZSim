@@ -182,8 +182,8 @@ def page_simulator():
                     )
                     # 模拟功能
                     # TODO 添加额外功能后这里需要default_function
-                    # Determine the default selected function based on config
-                    default_function_index = 0  # Default to the first function
+                    # 根据配置决定默认选中的模拟功能
+                    default_function_index = 0  # 默认选中第一个功能
                     if parallel_cfg["adjust_sc"]["enabled"]:
                         default_function_index = SIMULATION_FUNCTIONS.index("属性收益曲线")
                     elif parallel_cfg["adjust_weapon"]["enabled"]:
@@ -253,7 +253,7 @@ def page_simulator():
                         # 模拟武器列表
                         default_weapon_list_cfg = parallel_cfg["adjust_weapon"]["weapon_list"]
 
-                        # Use a list of selectboxes and number inputs for weapon and level
+                        # 使用选择框和数字输入组合配置音擎与等级
                         weapon_configs = []
                         st.write("模拟音擎及等级")
                         num_weapons = st.number_input(
@@ -332,7 +332,7 @@ def page_simulator():
                                 }
                                 config["parallel_mode"]["adjust_weapon"] = {
                                     "enabled": True,
-                                    "weapon_list": weapon_configs,  # Save the list of dictionaries
+                                    "weapon_list": weapon_configs,  # 保存字典列表
                                 }
                             else:
                                 config["parallel_mode"]["adjust_sc"] = {

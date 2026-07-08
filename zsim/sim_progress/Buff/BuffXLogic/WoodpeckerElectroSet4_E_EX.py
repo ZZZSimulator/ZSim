@@ -1,7 +1,12 @@
+from zsim.sim_progress.calculation.calculator import (
+    create_calculator_runtime_read_context_from_sim_instance,
+    get_calculator_buff_attribute_reader_service,
+)
 from zsim.sim_progress.RandomNumberGenerator import RNG
-from zsim.sim_progress.ScheduledEvent.Calculator import Calculator, MultiplierData
 
-from .. import Buff, JudgeTools, check_preparation
+from .. import Buff, check_preparation
+from ..JudgeTools import build_preparation_context_from_buff
+from ._preparation_helpers import ensure_equipper_template_record, prepare_with_context
 
 
 class WoodpeckerElectroEXRecord:
@@ -24,24 +29,24 @@ class WoodpeckerElectroSet4_E_EX(Buff.BuffLogic):
         self.equipper = None
 
     def get_prepared(self, **kwargs):
-        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
+        return prepare_with_context(
+            self,
+            check_preparation_func=check_preparation,
+            context_builder=build_preparation_context_from_buff,
+            **kwargs,
+        )
 
     def check_record_module(self):
-        if self.equipper is None:
-            self.equipper = JudgeTools.find_equipper(
-                "啄木鸟电音", sim_instance=self.buff_instance.sim_instance
-            )
-        if self.buff_0 is None:
-            self.buff_0 = JudgeTools.find_exist_buff_dict(
-                sim_instance=self.buff_instance.sim_instance
-            )[self.equipper][self.buff_instance.ft.index]
-        if self.buff_0.history.record is None:
-            self.buff_0.history.record = WoodpeckerElectroEXRecord()
-        self.record = self.buff_0.history.record
+        ensure_equipper_template_record(
+            self,
+            item_name="啄木鸟电音",
+            record_factory=WoodpeckerElectroEXRecord,
+            context_builder=build_preparation_context_from_buff,
+        )
 
     def special_judge_logic(self, **kwargs):
         self.check_record_module()
-        self.get_prepared(equipper="啄木鸟电音", enemy=1, dynamic_buff_list=1, action_stack=1)
+        self.get_prepared(equipper="啄木鸟电音", enemy=1, action_stack=1)
         skill_node = kwargs.get("skill_node", None)
         if skill_node is None:
             return False
@@ -56,11 +61,14 @@ class WoodpeckerElectroSet4_E_EX(Buff.BuffLogic):
             return False
         if str(self.record.char.CID) not in skill_node.skill_tag:
             return False
-        mul_data = MultiplierData(
-            self.record.enemy, self.record.dynamic_buff_list, self.record.char
+        context = create_calculator_runtime_read_context_from_sim_instance(
+            sim_instance=self.buff_instance.sim_instance,
+            enemy=self.record.enemy,
+            character=self.record.char,
         )
         if skill_node.skill.trigger_buff_level == 2:
-            cric_rate = Calculator.RegularMul.cal_crit_rate(mul_data)
+            reader_service = get_calculator_buff_attribute_reader_service()
+            cric_rate = reader_service.read_full_crit_rate(context)
             rng: RNG = self.buff_instance.sim_instance.rng_instance
             normalized_value = rng.random_float()
             if normalized_value <= cric_rate:

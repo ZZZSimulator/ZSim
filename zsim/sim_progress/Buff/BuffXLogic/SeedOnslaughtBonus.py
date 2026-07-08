@@ -1,7 +1,9 @@
 from zsim.sim_progress.Character.Seed import Seed
 
-from .. import Buff, JudgeTools, check_preparation
+from .. import Buff, check_preparation
+from ..JudgeTools import build_preparation_context_from_buff
 from ._buff_record_base_class import BuffRecordBaseClass as BRBC
+from ._preparation_helpers import ensure_owner_template_record, prepare_with_context
 
 
 class SeedOnslaughtBonusRecord(BRBC):
@@ -21,19 +23,20 @@ class SeedOnslaughtBonus(Buff.BuffLogic):
         self.record: BRBC | None = None
 
     def get_prepared(self, **kwargs):
-        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
+        return prepare_with_context(
+            self,
+            check_preparation_func=check_preparation,
+            context_builder=build_preparation_context_from_buff,
+            **kwargs,
+        )
 
     def check_record_module(self):
-        if self.buff_0 is None:
-            self.buff_0 = JudgeTools.find_exist_buff_dict(
-                sim_instance=self.buff_instance.sim_instance
-            )["席德"][self.buff_instance.ft.index]
-        assert self.buff_0 is not None, (
-            "【Buff初始化警告】席德的复杂逻辑模块未正确初始化，请检查函数"
+        ensure_owner_template_record(
+            self,
+            owner_name="席德",
+            record_factory=SeedOnslaughtBonusRecord,
+            context_builder=build_preparation_context_from_buff,
         )
-        if self.buff_0.history.record is None:
-            self.buff_0.history.record = SeedOnslaughtBonusRecord()
-        self.record = self.buff_0.history.record
 
     def special_judge_logic(self, **kwargs):
         """席德的强袭状态早就已经记录在席德的特殊资源中了，所以这里不需要重复判断，只需要直接调用方法判断是否生效即可"""

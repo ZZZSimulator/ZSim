@@ -1,9 +1,20 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from zsim.sim_progress import Preload
-from zsim.sim_progress.ScheduledEvent.Calculator import Calculator, MultiplierData
+from zsim.sim_progress.calculation.calculator import (
+    create_calculator_runtime_read_context_from_sim_instance,
+    get_calculator_buff_attribute_reader_service,
+)
+from zsim.sim_progress.data_struct.schedule_dispatch import (
+    ScheduledEventEmitter,
+    ScheduledEventEmitterProvider,
+)
 
 from .. import Buff, JudgeTools, check_preparation
+from ..JudgeTools import build_preparation_context_from_buff
+from ._preparation_helpers import ensure_owner_template_record, prepare_with_context
+from .enemy_debuff_mirror_read import MiyabiFrostburnDebuffMirrorReader
+from .enemy_edge_state_read import read_enemy_frost_frostbite_edge_state
 
 if TYPE_CHECKING:
     from zsim.sim_progress.Preload import SkillNode
@@ -25,26 +36,43 @@ class MiyabiCoreSkill_IceFire(Buff.BuffLogic):
     还需要检索当前enemy_debuff_list中是否含有【霜灼】，如果有就返回False
     """
 
-    def __init__(self, buff_instance):
+    def __init__(
+        self,
+        buff_instance,
+        scheduled_event_emitter_provider: ScheduledEventEmitterProvider | None = None,
+    ):
         super().__init__(buff_instance)
         self.buff_instance: Buff = buff_instance
+        self._scheduled_event_emitter_provider = (
+            scheduled_event_emitter_provider
+            or ScheduledEventEmitterProvider.from_sim_instance_getter(
+                lambda: self.buff_instance.sim_instance
+            )
+        )
         self.xjudge = self.special_judge_logic
         self.xhit = self.special_hit_logic
         self.xexit = self.special_exit_logic
-        self.buff_0 = None
-        self.record = None
+        self.buff_0: Any = None
+        self.record: Any = None
 
     def get_prepared(self, **kwargs):
-        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
+        return prepare_with_context(
+            self,
+            check_preparation_func=check_preparation,
+            context_builder=build_preparation_context_from_buff,
+            **kwargs,
+        )
+
+    def _scheduled_event_emitter(self) -> ScheduledEventEmitter:
+        return self._scheduled_event_emitter_provider.create_emitter()
 
     def check_record_module(self):
-        if self.buff_0 is None:
-            self.buff_0 = JudgeTools.find_exist_buff_dict(
-                sim_instance=self.buff_instance.sim_instance
-            )["雅"][self.buff_instance.ft.index]
-        if self.buff_0.history.record is None:
-            self.buff_0.history.record = MiyabiCoreSkillIF()
-        self.record = self.buff_0.history.record
+        ensure_owner_template_record(
+            self,
+            owner_name="雅",
+            record_factory=MiyabiCoreSkillIF,
+            context_builder=build_preparation_context_from_buff,
+        )
 
     def special_judge_logic(self, **kwargs):
         """
@@ -55,7 +83,7 @@ class MiyabiCoreSkill_IceFire(Buff.BuffLogic):
         self.check_record_module()
         self.get_prepared(char_CID=1091, enemy=1, action_stack=1)
         enemy = self.record.enemy
-        debuff_list = enemy.dynamic.dynamic_debuff_list
+        debuff_reader = MiyabiFrostburnDebuffMirrorReader(enemy)
         skill_node: "SkillNode" = kwargs.get("skill_node")
         if skill_node is None:
             return False
@@ -63,14 +91,9 @@ class MiyabiCoreSkill_IceFire(Buff.BuffLogic):
             return False
         if skill_node.skill.element_type != 5:
             return False
-        else:
-            for debuff in debuff_list:
-                if not isinstance(debuff, Buff):
-                    raise TypeError(f"{debuff}不是Buff类！")
-                if debuff.ft.index == "Buff-角色-雅-核心被动-霜灼":
-                    return False
-            else:
-                return True
+        if debuff_reader.has_miyabi_frostburn_debuff():
+            return False
+        return True
 
     def special_exit_logic(self, **kwargs):
         """
@@ -79,7 +102,7 @@ class MiyabiCoreSkill_IceFire(Buff.BuffLogic):
         self.check_record_module()
         self.get_prepared(char_CID=1091, enemy=1)
         enemy = self.record.enemy
-        frostbite_now = enemy.dynamic.frost_frostbite
+        frostbite_now = read_enemy_frost_frostbite_edge_state(enemy)
         if frostbite_now is None:
             frostbite_now = False
 
@@ -92,10 +115,9 @@ class MiyabiCoreSkill_IceFire(Buff.BuffLogic):
         self.record.last_frostbite = frostbite_now
         # print(f'当前tick，冰焰退出情况：{result}')
         if result:
-            event_list = JudgeTools.find_event_list(sim_instance=self.buff_instance.sim_instance)
             skill_obj = self.record.char.skills_dict["1091_Core_Passive"]
             skill_node = Preload.SkillNode(skill_obj, 0)
-            event_list.append(skill_node)
+            self._scheduled_event_emitter().emit_scheduled(skill_node)
             self.record.char.special_resources(skill_node)
         return result
 
@@ -106,16 +128,19 @@ class MiyabiCoreSkill_IceFire(Buff.BuffLogic):
         但是如果buff判定不通过，那么烈霜伤害，该buff层数的变动就没有实际意义，
         """
         self.check_record_module()
-        self.get_prepared(char_CID=1091, enemy=1, dynamic_buff_list=1, sub_exist_buff_dict=1)
-        enemy = self.record.enemy
-        dynamic_buff = self.record.dynamic_buff_list
+        self.get_prepared(char_CID=1091, enemy=1, sub_exist_buff_dict=1)
         tick_now = JudgeTools.find_tick(sim_instance=self.buff_instance.sim_instance)
         buff_i = self.buff_instance
         buff_i.simple_start(tick_now, self.record.sub_exist_buff_dict)
         buff_i.dy.count -= buff_i.ft.step
 
-        mul_data = MultiplierData(enemy, dynamic_buff, self.record.char)
-        crit_rate = Calculator.RegularMul.cal_crit_rate(mul_data)
+        context = create_calculator_runtime_read_context_from_sim_instance(
+            sim_instance=self.buff_instance.sim_instance,
+            enemy=self.record.enemy,
+            character=self.record.char,
+        )
+        reader_service = get_calculator_buff_attribute_reader_service()
+        crit_rate = reader_service.read_full_crit_rate(context)
         count = min(crit_rate, 0.8) * 100
 
         # print(crit_rate, count)

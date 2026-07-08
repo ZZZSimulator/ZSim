@@ -1,4 +1,15 @@
-from .. import Buff, JudgeTools, check_preparation
+from .. import Buff, check_preparation
+from ..JudgeTools import (
+    TriggerBuffRef,
+    build_preparation_context_from_buff,
+    read_trigger_buff_state,
+)
+from ._preparation_helpers import ensure_owner_template_record, prepare_with_context
+
+_YANGI_CINEMA1_TRIGGER_REF = TriggerBuffRef.owner(
+    "柳",
+    "Buff-角色-柳-1画-洞悉",
+)
 
 
 class YangiCinema1ApBonusRecord:
@@ -19,25 +30,30 @@ class YangiCinema1ApBonus(Buff.BuffLogic):
         self.record = None
 
     def get_prepared(self, **kwargs):
-        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
+        return prepare_with_context(
+            self,
+            check_preparation_func=check_preparation,
+            context_builder=build_preparation_context_from_buff,
+            **kwargs,
+        )
 
     def check_record_module(self):
-        if self.buff_0 is None:
-            self.buff_0 = JudgeTools.find_exist_buff_dict(
-                sim_instance=self.buff_instance.sim_instance
-            )["柳"][self.buff_instance.ft.index]
-        if self.buff_0.history.record is None:
-            self.buff_0.history.record = YangiCinema1ApBonusRecord()
-        self.record = self.buff_0.history.record
+        ensure_owner_template_record(
+            self,
+            owner_name="柳",
+            record_factory=YangiCinema1ApBonusRecord,
+            context_builder=build_preparation_context_from_buff,
+        )
 
     def special_judge_logic(self, **kwargs):
         """
         检测触发器Buff洞悉的层数，层数>= 1 就触发！
         """
         self.check_record_module()
-        self.get_prepared(char_CID=1221, trigger_buff_0=("柳", "Buff-角色-柳-1画-洞悉"))
-        if self.record.trigger_buff_0.dy.active:
-            if self.record.trigger_buff_0.dy.count >= 1:
+        self.get_prepared(char_CID=1221, trigger_buff_0=_YANGI_CINEMA1_TRIGGER_REF)
+        trigger_state = read_trigger_buff_state(self.record)
+        if trigger_state.active:
+            if trigger_state.count >= 1:
                 return True
         return False
 

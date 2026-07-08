@@ -1,4 +1,7 @@
 from .. import Buff, JudgeTools, check_preparation
+from ..JudgeTools import build_preparation_context_from_buff
+from ._preparation_helpers import ensure_equipper_template_record, prepare_with_context
+from .enemy_edge_state_read import EnemyEdgeStateReadPort
 
 
 class PolarMetalRecord:
@@ -25,31 +28,27 @@ class PolarMetalFreezeBonus(Buff.BuffLogic):
         self.record = None
 
     def get_prepared(self, **kwargs):
-        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
+        return prepare_with_context(
+            self,
+            check_preparation_func=check_preparation,
+            context_builder=build_preparation_context_from_buff,
+            **kwargs,
+        )
 
     def check_record_module(self):
-        if self.equipper is None:
-            self.equipper = JudgeTools.find_equipper(
-                "极地重金属", sim_instance=self.buff_instance.sim_instance
-            )
-        if self.buff_0 is None:
-            self.buff_0 = JudgeTools.find_exist_buff_dict(
-                sim_instance=self.buff_instance.sim_instance
-            )[self.equipper][self.buff_instance.ft.index]
-        if self.buff_0.history.record is None:
-            self.buff_0.history.record = PolarMetalRecord()
-        self.record = self.buff_0.history.record
+        ensure_equipper_template_record(
+            self,
+            item_name="极地重金属",
+            record_factory=PolarMetalRecord,
+            context_builder=build_preparation_context_from_buff,
+        )
 
     def special_judge_logic(self, **kwargs):
         self.check_record_module()
         self.get_prepared(enemy=1)
         enemy = self.record.enemy
         tick = JudgeTools.find_tick(sim_instance=self.buff_instance.sim_instance)
-        if enemy.dynamic.frozen is None:
-            output = False
-        else:
-            output = enemy.dynamic.frozen
-        this_tick_freez_statement = output
+        this_tick_freez_statement = EnemyEdgeStateReadPort(enemy).frozen_edge_state()
         if this_tick_freez_statement != self.record.last_tick_freez_statement[1]:
             self.record.last_tick_freez_statement = tick, this_tick_freez_statement
             return True

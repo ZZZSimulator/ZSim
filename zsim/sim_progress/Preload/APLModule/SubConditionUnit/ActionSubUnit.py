@@ -1,7 +1,6 @@
 from typing import TYPE_CHECKING
 
 from zsim.sim_progress.Preload.APLModule.APLJudgeTools import (
-    check_cid,
     get_personal_node_stack,
 )
 from zsim.sim_progress.Preload.APLModule.SubConditionUnit import BaseSubConditionUnit
@@ -189,8 +188,7 @@ class ActionSubUnit(BaseSubConditionUnit):
         else:
             """check_target 不是 after（其实已经弃用了），就是CID"""
 
-            check_cid(self.check_target)
-            char_cid = int(self.check_target)
+            char_cid = self.checked_target_cid()
             tick = sim_instance.tick
             handler_result = handler.handler(char_cid, game_state, tick)
             # if handler_result is not None:

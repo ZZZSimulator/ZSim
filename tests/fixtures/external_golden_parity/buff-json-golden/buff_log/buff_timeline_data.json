@@ -1,0 +1,16 @@
+{
+  "alpha": [
+    {
+      "Task": "buff-a",
+      "Start": 2,
+      "Finish": 3,
+      "Value": 2.0
+    },
+    {
+      "Task": "buff-b",
+      "Start": 2,
+      "Finish": 2,
+      "Value": 1.5
+    }
+  ]
+}

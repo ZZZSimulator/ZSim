@@ -102,9 +102,9 @@ async def test_run_session(session_data, session_run_data):
     )
     assert response.status_code == 200
     data = response.json()
-    assert data["message"] == "Session started successfully"
+    assert data["message"] == "会话已启动"
 
-    # Check that the session status is now "completed"
+    # 会话应当已经完成。
     response = client.get(f"/api/sessions/{session_data['session_id']}/status")
     assert response.status_code == 200
     data = response.json()

@@ -120,7 +120,7 @@ class ActionStack(BaseStack[NODE_T]):
         else:
             if SWAP_CANCEL and not self._swap_cancel_warning_printed:
                 print(
-                    "Warning: 在开启合轴模式的情况下，在调用ActionStack的peek方法时并未传入key参数！\n这会导致在含有多个动作的tick，peek方法只会返回最后一个动作，从而让部分buff无法正常触发！"
+                    "警告：在开启合轴模式的情况下，在调用ActionStack的peek方法时并未传入key参数！\n这会导致在含有多个动作的tick，peek方法只会返回最后一个动作，从而让部分buff无法正常触发！"
                 )
                 self._swap_cancel_warning_printed = True  # 标记为已打印
             return super().peek()

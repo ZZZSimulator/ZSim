@@ -1,0 +1,10 @@
+{
+  "alpha": {
+    "direct_damage": 10.0,
+    "anomaly_damage": 0.0
+  },
+  "beta": {
+    "direct_damage": 0.0,
+    "anomaly_damage": 25.0
+  }
+}

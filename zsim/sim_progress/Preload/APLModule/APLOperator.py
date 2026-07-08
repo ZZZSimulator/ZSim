@@ -1,10 +1,12 @@
 from typing import TYPE_CHECKING
 
+from zsim.sim_progress.Preload.apl_unit.ActionAPLUnit import ActionAPLUnit
+from zsim.sim_progress.Preload.apl_unit.APLUnit import APLUnit
+from zsim.sim_progress.Preload.apl_unit.AtkResponseAPLUnit import AtkResponseAPLUnit
+
 if TYPE_CHECKING:
     from zsim.simulator.simulator_class import Simulator
 
-    from ..apl_unit.ActionAPLUnit import ActionAPLUnit
-    from ..apl_unit.APLUnit import APLUnit
     from ..PreloadDataClass import PreloadData
 
 
@@ -28,12 +30,23 @@ class APLOperator:
             "action.atk_response_balance+=",
         ]
         self.sim_instance = simulator_instance
-        from zsim.sim_progress.Preload.apl_unit.APLUnit import APLUnit
 
         self.apl_unit_inventory: dict[int, APLUnit] = {}  # 用于装已经解析过的apl子条件实例。
         for unit_dict in all_apl_unit_list:
             self.apl_unit_inventory[unit_dict["priority"]] = self.apl_unit_factory(unit_dict)
             # print(unit_dict["priority"], unit_dict)
+        self._common_apl_units: tuple[tuple[int, ActionAPLUnit], ...] = tuple(
+            (priority, apl_unit)
+            for priority, apl_unit in self.apl_unit_inventory.items()
+            if isinstance(apl_unit, ActionAPLUnit)
+        )
+        self._atk_response_apl_units: tuple[tuple[int, ActionAPLUnit | AtkResponseAPLUnit], ...] = (
+            tuple(
+                (priority, apl_unit)
+                for priority, apl_unit in self.apl_unit_inventory.items()
+                if isinstance(apl_unit, ActionAPLUnit | AtkResponseAPLUnit)
+            )
+        )
 
     def spawn_next_action_in_common_mode(self, tick) -> tuple[int, str, int, "ActionAPLUnit"]:
         """APL执行器的核心功能函数——筛选出优先级最高的下一个动作（普通模式）"""
@@ -41,21 +54,15 @@ class APLOperator:
         if atk_response_mode:
             raise ValueError("在进攻响应模式下，不能调用spawn_next_action_in_common_mode方法！")
 
-        for priority, apl_unit in self.apl_unit_inventory.items():
-            from zsim.sim_progress.Preload.apl_unit.ActionAPLUnit import ActionAPLUnit
-            from zsim.sim_progress.Preload.apl_unit.AtkResponseAPLUnit import (
-                AtkResponseAPLUnit,
-            )
-
-            apl_unit: ActionAPLUnit | AtkResponseAPLUnit
-            if isinstance(apl_unit, AtkResponseAPLUnit):
-                continue
+        decision_cache = {}
+        for priority, apl_unit in self._common_apl_units:
             result, result_box = apl_unit.check_all_sub_units(
                 self.found_char_dict,
                 self.game_state,
                 tick=tick,
                 sim_instance=self.sim_instance,
                 preload_data=self.preload_data,
+                decision_cache=decision_cache,
             )
             if not result:
                 # if priority in [1] and tick <= 1500:
@@ -85,39 +92,31 @@ class APLOperator:
             raise ValueError(
                 "在非进攻响应模式下，不能调用spawn_next_action_in_atk_response_mode方法！"
             )
-        from zsim.sim_progress.Preload.apl_unit.ActionAPLUnit import ActionAPLUnit
-        from zsim.sim_progress.Preload.apl_unit.AtkResponseAPLUnit import (
-            AtkResponseAPLUnit,
-        )
 
-        for priority, apl_unit in self.apl_unit_inventory.items():
-            if isinstance(apl_unit, ActionAPLUnit | AtkResponseAPLUnit):
-                result, result_box = apl_unit.check_all_sub_units(
-                    self.found_char_dict,
-                    self.game_state,
-                    tick=tick,
-                    sim_instance=self.sim_instance,
-                    preload_data=self.preload_data,
+        decision_cache = {}
+        for priority, apl_unit in self._atk_response_apl_units:
+            result, result_box = apl_unit.check_all_sub_units(
+                self.found_char_dict,
+                self.game_state,
+                tick=tick,
+                sim_instance=self.sim_instance,
+                preload_data=self.preload_data,
+                decision_cache=decision_cache,
+            )
+            if not result:
+                continue
+            else:
+                return (
+                    int(apl_unit.char_CID),
+                    apl_unit.result,
+                    apl_unit.priority,
+                    apl_unit,
                 )
-                if not result:
-                    continue
-                else:
-                    return (
-                        int(apl_unit.char_CID),
-                        apl_unit.result,
-                        apl_unit.priority,
-                        apl_unit,
-                    )
         else:
             raise ValueError("没有找到符合要求的APL！")
 
     def apl_unit_factory(self, apl_unit_dict) -> "APLUnit":
         """构造APL子单元的工厂函数"""
-        from zsim.sim_progress.Preload.apl_unit.ActionAPLUnit import ActionAPLUnit
-        from zsim.sim_progress.Preload.apl_unit.AtkResponseAPLUnit import (
-            AtkResponseAPLUnit,
-        )
-
         if apl_unit_dict["type"] in ["action+=", "action.no_swap_cancel+="]:
             return ActionAPLUnit(apl_unit_dict, sim_instance=self.sim_instance)
         elif "action.atk_response" in apl_unit_dict["type"]:
@@ -127,7 +126,7 @@ class APLOperator:
             raise ValueError(f"貌似是拼写错误，当前输入的APL类型为：{apl_unit_dict['type']}")
         else:
             raise ValueError(f"无法识别的APL类型：{apl_unit_dict['type']}")
-        # # Optimized Code:
+        # # 优化版本草稿：
         #
         # if "enemy" not in judge_code:
         #     return False

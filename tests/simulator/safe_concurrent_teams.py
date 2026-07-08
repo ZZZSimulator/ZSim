@@ -41,7 +41,7 @@ def run_simulation_in_process(common_cfg_dict, session_id, stop_tick=1000):
         simulator = Simulator()
 
         # 运行模拟
-        result = simulator.api_run_simulator(common_cfg, None, stop_tick)
+        simulator.api_run_simulator(common_cfg, None, stop_tick)
 
         # 清理
         del simulator
@@ -150,7 +150,7 @@ class TestSafeConcurrentTeams:
             for result in results:
                 try:
                     await db.delete_session(result["session_id"])
-                except:
+                except Exception:
                     pass
 
         # 验证结果
@@ -222,6 +222,7 @@ class TestSafeConcurrentTeams:
         """多次运行同一个队伍，验证结果的一致性"""
 
         team_registry = auto_register_teams()
+        team_configs = team_registry.get_all_team_configs()
         if not team_configs:
             pytest.skip("没有可用的团队配置")
 

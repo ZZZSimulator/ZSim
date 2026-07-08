@@ -34,17 +34,17 @@ def _init_buff_effect_mapping() -> dict[str, str]:
                         try:
                             effect_str += f"{key}: {float(value)}; "
                         except ValueError:
-                            # Handle cases where value is not a valid float
+                            # 处理无法转换为浮点数的值
                             print(
-                                f"Warning: Could not convert value '{value}' to float for buff '{name}', key '{key}'. Skipping this effect."
+                                f"警告：Buff '{name}' 的键 '{key}' 无法将值 '{value}' 转为浮点数，已跳过该效果。"
                             )
                             continue
             if effect_str:
-                # Remove trailing semicolon and space if present
+                # 移除末尾多余的分号和空格
                 buff_effect_map[name] = effect_str.rstrip("; ")
         return buff_effect_map
     except Exception as e:
-        print(f"Warning: Failed to load buff effect mapping: {e}")
+        print(f"警告：加载 Buff 效果映射失败：{e}")
         return {}
 
 
@@ -72,7 +72,7 @@ def _init_skill_tag_mapping() -> dict[str, str]:
             )
         }
     except Exception as e:
-        print(f"Warning: Failed to load skill mapping: {e}")
+        print(f"警告：加载技能映射失败：{e}")
         return {}
 
 
@@ -86,7 +86,7 @@ def _init_char_mapping() -> dict[str, str]:
         mapping = df.select(["name", "CID"]).collect().to_dict(as_series=False)
         return {name: str(cid) for name, cid in zip(mapping["name"], mapping["CID"], strict=False)}
     except Exception as e:
-        print(f"Warning: Failed to load character mapping: {e}")
+        print(f"警告：加载角色映射失败：{e}")
         return {}
 
 

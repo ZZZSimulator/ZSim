@@ -13,6 +13,9 @@ mypy.ini
 pytest.ini
 result*
 /results/
+!zsim/sim_progress/Report/result_handler.py
+!zsim/sim_progress/calculation/results/
+!zsim/sim_progress/calculation/results/*.py
 
 # 开发工具和环境文件
 .idea
@@ -22,6 +25,7 @@ result*
 .ipynb_checkpoints
 .run
 .env
+.codegraph/
 .mypy_cache
 .pytest_cache
 .hypothesis/
@@ -34,8 +38,17 @@ CLAUDE.md
 .mcp.json
 QWEN.md
 AGENTS.md
-# Ai学习用的文件
 knowledge_base*
+
+# 本地工作流产物
+/.agents/
+/.scratch/
+/reports/
+/scripts/
+/tasks/
+/CONTEXT.md
+/skills-lock.json
+
 # 运行时生成的文件
 build*
 dist*
@@ -61,7 +74,11 @@ htmlcov/
 
 # 生成文件
 zsim/data/APLData/custom/*
+!zsim/data/APLData/custom/.gitkeep
 *out*
+!zsim/api_src/routes/
+!zsim/api_src/routes/*.py
+!zsim/sim_progress/anomaly_bar/CopyAnomalyForOutput.py
 .nul
 
 # gemini-cli settings
@@ -69,3 +86,8 @@ zsim/data/APLData/custom/*
 
 # GitHub App credentials
 gha-creds-*.json
+
+# 中文汇报
+summary CN report
+
+artifacts

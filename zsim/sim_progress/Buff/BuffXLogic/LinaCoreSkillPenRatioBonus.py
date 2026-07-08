@@ -1,11 +1,11 @@
-from zsim.sim_progress.ScheduledEvent.Calculator import (
-    Calculator as Cal,
-)
-from zsim.sim_progress.ScheduledEvent.Calculator import (
-    MultiplierData as Mul,
+from zsim.sim_progress.calculation.calculator import (
+    create_calculator_runtime_read_context_from_sim_instance,
+    get_calculator_buff_attribute_reader_service,
 )
 
 from .. import Buff, JudgeTools, check_preparation
+from ..JudgeTools import build_preparation_context_from_buff
+from ._preparation_helpers import ensure_owner_template_record, prepare_with_context
 
 
 class LinaCoreSkillRecord:
@@ -31,16 +31,20 @@ class LinaCoreSkillPenRatioBonus(Buff.BuffLogic):
         self.xexit = self.special_exit_logic
 
     def get_prepared(self, **kwargs):
-        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
+        return prepare_with_context(
+            self,
+            check_preparation_func=check_preparation,
+            context_builder=build_preparation_context_from_buff,
+            **kwargs,
+        )
 
     def check_record_module(self):
-        if self.buff_0 is None:
-            self.buff_0 = JudgeTools.find_exist_buff_dict(
-                sim_instance=self.buff_instance.sim_instance
-            )["丽娜"][self.buff_instance.ft.index]
-        if self.buff_0.history.record is None:
-            self.buff_0.history.record = LinaCoreSkillRecord()
-        self.record = self.buff_0.history.record
+        ensure_owner_template_record(
+            self,
+            owner_name="丽娜",
+            record_factory=LinaCoreSkillRecord,
+            context_builder=build_preparation_context_from_buff,
+        )
 
     def special_judge_logic(self, **kwargs):
         """
@@ -58,16 +62,20 @@ class LinaCoreSkillPenRatioBonus(Buff.BuffLogic):
         self.get_prepared(
             action_stack=1,
             char_CID=1211,
-            dynamic_buff_list=1,
             enemy=1,
             sub_exist_buff_dict=1,
         )
         tick_now = JudgeTools.find_tick(sim_instance=self.buff_instance.sim_instance)
         self.buff_instance.simple_start(tick_now, self.record.sub_exist_buff_dict)
         self.buff_0.dy.count -= self.buff_0.ft.step
-        mul_data = Mul(self.record.enemy, self.record.dynamic_buff_list, self.record.char)
 
-        pen_ratio = Cal.RegularMul.cal_pen_ratio(mul_data)
+        context = create_calculator_runtime_read_context_from_sim_instance(
+            sim_instance=self.buff_instance.sim_instance,
+            enemy=self.record.enemy,
+            character=self.record.char,
+        )
+        reader_service = get_calculator_buff_attribute_reader_service()
+        pen_ratio = reader_service.read_pen_ratio(context)
 
         count = min(pen_ratio * 0.2 * 100 + 12, self.buff_instance.ft.maxcount)
         self.buff_instance.dy.count = count

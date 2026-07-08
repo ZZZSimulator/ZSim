@@ -3,9 +3,15 @@ from contextlib import redirect_stdout
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from zsim.simulator.config_classes import (
-        SimulationConfig as SimCfg,
-    )
+    from zsim.simulator import Simulator
+    from zsim.simulator.config_classes import SimulationConfig as SimCfg
+
+
+def _create_webui_default_runtime_simulator() -> "Simulator":
+    """按默认索引运行路径创建 WebUI 工作进程中的模拟器。"""
+    from zsim.simulator import Simulator  # 真正启动模拟再导入，以优化启动速度
+
+    return Simulator(use_indexed_buff_load_loop=True)
 
 
 def run_single_simulation(stop_tick: int) -> str:
@@ -19,12 +25,10 @@ def run_single_simulation(stop_tick: int) -> str:
     Returns:
         模拟结果字符串
     """
-    from zsim.simulator import Simulator  # 真正启动模拟再导入，以优化启动速度
-
     f = io.StringIO()
     with redirect_stdout(f):
         print("启动子进程")
-        sim_ins = Simulator()
+        sim_ins = _create_webui_default_runtime_simulator()
         sim_ins.main_loop(stop_tick)
     return f.getvalue()
 
@@ -41,12 +45,10 @@ def run_parallel_simulation(sim_cfg: "SimCfg") -> str:
     Returns:
         模拟结果字符串
     """
-    from zsim.simulator import Simulator  # 真正启动模拟再导入，以优化启动速度
-
     f = io.StringIO()
     with redirect_stdout(f):
         print("启动子进程")
-        sim_ins = Simulator()
+        sim_ins = _create_webui_default_runtime_simulator()
         sim_ins.main_loop(
             stop_tick=sim_cfg.stop_tick if sim_cfg.stop_tick is not None else 1000, sim_cfg=sim_cfg
         )

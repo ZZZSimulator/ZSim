@@ -1,4 +1,7 @@
-from .. import Buff, JudgeTools, check_preparation, find_tick
+from .. import Buff, check_preparation, find_tick
+from ..JudgeTools import build_preparation_context_from_buff
+from ._preparation_helpers import ensure_equipper_template_record, prepare_with_context
+from .enemy_edge_state_read import read_enemy_stun_edge_state
 
 
 class WeepingGeminiApBonusRecord:
@@ -25,20 +28,20 @@ class WeepingGeminiApBonus(Buff.BuffLogic):
         self.record = None
 
     def get_prepared(self, **kwargs):
-        return check_preparation(buff_instance=self.buff_instance, buff_0=self.buff_0, **kwargs)
+        return prepare_with_context(
+            self,
+            check_preparation_func=check_preparation,
+            context_builder=build_preparation_context_from_buff,
+            **kwargs,
+        )
 
     def check_record_module(self):
-        if self.equipper is None:
-            self.equipper = JudgeTools.find_equipper(
-                "双生泣星", sim_instance=self.buff_instance.sim_instance
-            )
-        if self.buff_0 is None:
-            self.buff_0 = JudgeTools.find_exist_buff_dict(
-                sim_instance=self.buff_instance.sim_instance
-            )[self.equipper][self.buff_instance.ft.index]
-        if self.buff_0.history.record is None:
-            self.buff_0.history.record = WeepingGeminiApBonusRecord()
-        self.record = self.buff_0.history.record
+        ensure_equipper_template_record(
+            self,
+            item_name="双生泣星",
+            record_factory=WeepingGeminiApBonusRecord,
+            context_builder=build_preparation_context_from_buff,
+        )
 
     def special_judge_logic(self, **kwargs):
         """检测到新属性异常触发，直接放行。"""
@@ -82,10 +85,11 @@ class WeepingGeminiApBonus(Buff.BuffLogic):
         self.check_record_module()
         self.get_prepared(equipper="双生泣星", enemy=1)
         enemy = self.record.enemy
+        current_stun = read_enemy_stun_edge_state(enemy)
         if self.record.last_update_stun:
-            if not enemy.dynamic.stun:
-                self.record.last_update_stun = enemy.dynamic.stun
+            if not current_stun:
+                self.record.last_update_stun = current_stun
                 # print(f'检测到敌人失衡状态的下降沿，Buff清空！')
                 return True
-        self.record.last_update_stun = enemy.dynamic.stun
+        self.record.last_update_stun = current_stun
         return False

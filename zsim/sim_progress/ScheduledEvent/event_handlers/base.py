@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Mapping, Sequence
 
+from ..buff_runtime import BuffRuntimeReadPort
+from ..runtime_command import RuntimeCommandPort
 from .context import EventContext
 
 if TYPE_CHECKING:
+    from zsim.sim_progress.Buff import Buff
     from zsim.sim_progress.Enemy import Enemy
     from zsim.simulator.dataclasses import ScheduleData
 
@@ -22,7 +25,7 @@ class EventHandlerABC(ABC):
             event: 待处理的事件对象
 
         Returns:
-            bool: 如果可以处理该类型事件则返回True，否则返回False
+            bool: 如果可以处理该类型事件则返回 True，否则返回 False
         """
         pass
 
@@ -63,24 +66,72 @@ class BaseEventHandler(EventHandlerABC):
         return self._event_type
 
     def _get_context_data(self, context: EventContext) -> ScheduleData:
-        """从上下文中获取ScheduleData"""
+        """从上下文中获取 ScheduleData"""
         return context.get_data()
 
     def _get_context_tick(self, context: EventContext) -> int:
-        """从上下文中获取当前tick"""
+        """从上下文中获取当前 tick"""
         return context.get_tick()
 
     def _get_context_enemy(self, context: EventContext) -> Enemy:
         """从上下文中获取敌人对象"""
         return context.get_enemy()
 
-    def _get_context_dynamic_buff(self, context: EventContext):
-        """从上下文中获取动态buff"""
-        return context.get_dynamic_buff()
+    def _get_context_buff_runtime_view(self, context: EventContext) -> BuffRuntimeReadPort:
+        """从上下文中获取 Buff runtime 只读视图"""
+        return context.get_buff_runtime_view()
 
-    def _get_context_exist_buff_dict(self, context: EventContext):
-        """从上下文中获取已存在buff字典"""
-        return context.get_exist_buff_dict()
+    def _get_context_runtime_command_port(self, context: EventContext) -> RuntimeCommandPort:
+        """从上下文中获取 Buff runtime 写命令入口"""
+        return context.get_runtime_command_port()
+
+    def _get_context_runtime_active_buffs(
+        self, context: EventContext, beneficiary: str
+    ) -> Sequence["Buff"]:
+        """从上下文中获取某个受益者的 runtime active Buff 只读列表"""
+        return self._get_context_buff_runtime_view(context).get_active_buffs(beneficiary)
+
+    def _get_context_active_buffs(
+        self, context: EventContext, beneficiary: str
+    ) -> Sequence["Buff"]:
+        """从上下文中获取某个受益者的 active Buff 只读列表"""
+        return self._get_context_runtime_active_buffs(context, beneficiary)
+
+    def _get_context_runtime_active_buff_view(
+        self, context: EventContext
+    ) -> Mapping[str, Sequence["Buff"]]:
+        """从上下文中获取所有受益者的 runtime active Buff 只读视图"""
+        return self._get_context_buff_runtime_view(context).get_active_buff_view()
+
+    def _get_context_active_buff_view(
+        self, context: EventContext
+    ) -> Mapping[str, Sequence["Buff"]]:
+        """从上下文中获取所有受益者的 active Buff 只读视图"""
+        return self._get_context_runtime_active_buff_view(context)
+
+    def _get_context_runtime_exist_buff_snapshot(
+        self, context: EventContext, beneficiary: str
+    ) -> Mapping[str, "Buff"]:
+        """从上下文中获取某个受益者的 runtime snapshot Buff 只读视图"""
+        return self._get_context_buff_runtime_view(context).get_exist_buff_snapshot(beneficiary)
+
+    def _get_context_exist_buff_snapshot(
+        self, context: EventContext, beneficiary: str
+    ) -> Mapping[str, "Buff"]:
+        """从上下文中获取某个受益者的 snapshot Buff 只读视图"""
+        return self._get_context_runtime_exist_buff_snapshot(context, beneficiary)
+
+    def _get_context_runtime_exist_buff_snapshot_view(
+        self, context: EventContext
+    ) -> Mapping[str, Mapping[str, "Buff"]]:
+        """从上下文中获取所有受益者的 runtime snapshot Buff 只读视图"""
+        return self._get_context_buff_runtime_view(context).get_exist_buff_snapshot_view()
+
+    def _get_context_exist_buff_snapshot_view(
+        self, context: EventContext
+    ) -> Mapping[str, Mapping[str, "Buff"]]:
+        """从上下文中获取所有受益者的 snapshot Buff 只读视图"""
+        return self._get_context_runtime_exist_buff_snapshot_view(context)
 
     def _get_context_action_stack(self, context: EventContext):
         """从上下文中获取动作栈"""
@@ -98,14 +149,14 @@ class BaseEventHandler(EventHandlerABC):
 
         Args:
             event: 待验证的事件对象
-            expected_type: 期望的事件类型，如果为None则只验证非None
+            expected_type: 期望的事件类型，如果为 None 则只验证非 None
 
         Raises:
             TypeError: 当事件类型不符合期望时
-            ValueError: 当事件为None时
+            ValueError: 当事件为 None 时
         """
         if event is None:
-            raise ValueError("事件对象不能为None")
+            raise ValueError("事件对象不能为空")
 
         if expected_type is not None and not isinstance(event, expected_type):
             if isinstance(expected_type, tuple):
@@ -113,10 +164,9 @@ class BaseEventHandler(EventHandlerABC):
                 raise TypeError(
                     f"期望事件类型为 {expected_names} 之一，实际得到 {type(event).__name__}"
                 )
-            else:
-                raise TypeError(
-                    f"期望事件类型为 {expected_type.__name__}，实际得到 {type(event).__name__}"
-                )
+            raise TypeError(
+                f"期望事件类型为 {expected_type.__name__}，实际得到 {type(event).__name__}"
+            )
 
     def _validate_context(self, context: EventContext) -> None:
         """
@@ -129,9 +179,7 @@ class BaseEventHandler(EventHandlerABC):
             ValueError: 当上下文无效时
         """
         if not isinstance(context, EventContext):  # type: ignore
-            raise TypeError("上下文必须是EventContext类型")
-
-        # Pydantic模型已经确保了数据的完整性和有效性
+            raise TypeError("上下文必须是 EventContext 类型")
 
     def _handle_error(self, error: Exception, operation: str, event: Any = None) -> None:
         """
@@ -140,13 +188,13 @@ class BaseEventHandler(EventHandlerABC):
         Args:
             error: 发生的异常
             operation: 操作描述
-            event: 相关事件对象（可选）
+            event: 相关事件对象，可选
 
         Raises:
             RuntimeError: 包装后的异常信息
         """
         error_msg = f"在 {operation} 时发生错误: {error}"
         if event is not None:
-            error_msg = f"在 {operation} 事件 {type(event)} 时发生错误: {error}"
+            error_msg = f"在处理事件 {type(event)} 时发生错误: {error}"
 
         raise RuntimeError(error_msg) from error

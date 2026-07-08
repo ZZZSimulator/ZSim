@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import math
 from typing import TYPE_CHECKING
 
 import polars as pl
@@ -315,13 +316,13 @@ class Character:
             """
             # 参数有效性验证
             if not (0 <= CRIT_score):
-                raise ValueError("CRIT_score must be above 0")
+                raise ValueError("CRIT_score 必须大于 0")
             if not (0 <= CRIT_rate_numeric):
-                raise ValueError("CRIT_rate_numeric must be above 0")
+                raise ValueError("CRIT_rate_numeric 必须大于 0")
             if not (0 <= CRIT_damage_numeric):
-                raise ValueError("CRIT_damage_numeric must be above 0")
+                raise ValueError("CRIT_damage_numeric 必须大于 0")
             if not (0 <= CRIT_rate_limit <= 1):
-                raise ValueError("CRIT_rate_limit must be between 0 and 1")
+                raise ValueError("CRIT_rate_limit 必须位于 0 到 1 之间")
 
             if balancing:
                 limit_score: float = CRIT_rate_limit * 400
@@ -665,7 +666,7 @@ class Character:
             self.CRIT_rate_numeric += scCRIT * SUB_STATS_MAPPING["scCRIT"]
             self.CRIT_damage_numeric += scCRIT_DMG * SUB_STATS_MAPPING["scCRIT_DMG"]
 
-        # Only for parallel
+        # 仅用于并行模拟
         element_dmg_mapping = {
             0: self.PHY_DMG_bonus,
             1: self.FIRE_DMG_bonus,
@@ -731,7 +732,7 @@ class Character:
             if scCRIT_DMG is not None:
                 self.CRIT_damage_numeric = scCRIT_DMG * SUB_STATS_MAPPING["scCRIT_DMG"]
 
-        # Only for parallel
+        # 仅用于并行模拟
         if DMG_BONUS is not None:
             element_dmg_mapping = {
                 0: "PHY_DMG_bonus",
@@ -763,26 +764,90 @@ class Character:
         if sc_name in ALLOW_SC_LIST:
             adjust_pair = {sc_name: sc_value}
         else:
-            raise RuntimeError(f"Parallel Config Segfault: sc_name: {sc_name} do not exist")
+            raise RuntimeError(f"并行配置错误：sc_name {sc_name} 不存在")
         self.hardset_sub_stats(**adjust_pair)
 
     def update_sp_and_decibel(self, *args, **kwargs):
         """自然更新能量和喧响的方法"""
-        # Preload Skill
+        # Preload 技能
         skill_nodes: list[SkillNode] = _skill_node_filter(*args, **kwargs)
         for node in skill_nodes:
             # SP
             self.update_single_node_sp(node)
-        # SP recovery over time
+        # SP 随时间自然恢复
         self.update_sp_overtime(args, kwargs)
 
     def update_sp_overtime(self, args, kwargs):
         """处理当前tick的自然回能"""
         sp_regen_data: list[SPUpdateData] = _sp_update_data_filter(*args, **kwargs)
+        elapsed_ticks = self.event_driven_elapsed_ticks()
         for mul in sp_regen_data:
             if mul.char_name == self.NAME:
-                sp_change_2 = mul.get_sp_regen() / 60  # 每秒回能转化为每帧回能
+                # 事件驱动推进会在这里批量结算被跳过的整数 tick。
+                sp_change_2 = mul.get_sp_regen() / 60 * elapsed_ticks
                 self.update_sp(sp_change_2)
+
+    def event_driven_elapsed_ticks(self) -> int:
+        sim_instance = getattr(self, "sim_instance", None)
+        elapsed_ticks = getattr(sim_instance, "_event_driven_elapsed_ticks", 1)
+        try:
+            return max(0, int(elapsed_ticks))
+        except (TypeError, ValueError):
+            return 1
+
+    def next_resource_wakeup_tick(
+        self,
+        current_tick: int,
+        *,
+        thresholds: object | None = None,
+    ) -> int | None:
+        if self.sp >= self.sp_limit:
+            return None
+        per_tick_regen = self.statement.sp_regen / 60
+        energy_thresholds = getattr(thresholds, "energy", ())
+        return self._next_linear_resource_wakeup_tick(
+            current_tick=current_tick,
+            current_value=float(self.sp),
+            limit=float(self.sp_limit),
+            per_tick_regen=float(per_tick_regen),
+            thresholds=energy_thresholds,
+        )
+
+    @staticmethod
+    def _next_linear_resource_wakeup_tick(
+        *,
+        current_tick: int,
+        current_value: float,
+        limit: float,
+        per_tick_regen: float,
+        thresholds: object = (),
+    ) -> int | None:
+        if current_value >= limit or per_tick_regen <= 0:
+            return None
+        numeric_thresholds: list[float] = []
+        recently_crossed_thresholds: list[float] = []
+        for threshold in thresholds or ():
+            try:
+                threshold_value = float(threshold)
+            except (TypeError, ValueError):
+                continue
+            if current_value < threshold_value <= limit:
+                numeric_thresholds.append(threshold_value)
+            elif (
+                threshold_value <= current_value
+                and current_value - per_tick_regen < threshold_value
+            ):
+                recently_crossed_thresholds.append(threshold_value)
+        if recently_crossed_thresholds:
+            return current_tick + 1
+        if numeric_thresholds:
+            next_value = min(numeric_thresholds)
+        else:
+            next_value = min(limit, math.floor(current_value) + 1.0)
+            if next_value <= current_value:
+                next_value = min(limit, current_value + 1.0)
+        ticks_until_change = math.ceil((next_value - current_value) / per_tick_regen)
+        return current_tick + max(1, ticks_until_change) + 1
 
     def update_single_node_sp(self, node):
         """处理单个skill_node的回能"""
@@ -831,12 +896,17 @@ class Character:
         """可外部强制更新喧响的方法"""
         # if self.decibel == 3000 and self.NAME == '仪玄':
         #     print(f"{self.NAME} 释放技能时喧响值已满3000点！")
-        from zsim.sim_progress.ScheduledEvent.Calculator import cal_buff_total_bonus
+        from zsim.sim_progress.calculation.calculator import (
+            create_calculator_buff_bonus_context_from_sim_instance,
+            get_calculator_buff_attribute_reader_service,
+        )
 
-        dynamic_buff = self.sim_instance.global_stats.DYNAMIC_BUFF_DICT
-        enabled_buff = tuple(dynamic_buff[self.NAME])
-        buff_bonus_dict = cal_buff_total_bonus(
-            enabled_buff=enabled_buff, judge_obj=None, sim_instance=self.sim_instance
+        bonus_context = create_calculator_buff_bonus_context_from_sim_instance(
+            sim_instance=self.sim_instance,
+            beneficiary=self.NAME,
+        )
+        buff_bonus_dict = get_calculator_buff_attribute_reader_service().calculate_buff_total_bonus(
+            bonus_context
         )
         decibel_get_ratio = buff_bonus_dict.get("喧响获得效率", 0)
         final_decibel_change_value = decibel_value * (1 + decibel_get_ratio)

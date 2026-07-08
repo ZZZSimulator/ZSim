@@ -29,7 +29,7 @@ async def read_session(session_id: str, db: SessionDB = Depends(get_session_db))
     """根据 session_id 获取单个会话。"""
     session = await db.get_session(session_id)
     if session is None:
-        raise HTTPException(status_code=404, detail="Session not found")
+        raise HTTPException(status_code=404, detail="会话不存在")
     return session
 
 
@@ -38,7 +38,7 @@ async def get_session_status(session_id: str, db: SessionDB = Depends(get_sessio
     """获取会话的当前状态。"""
     session = await db.get_session(session_id)
     if session is None:
-        raise HTTPException(status_code=404, detail="Session not found")
+        raise HTTPException(status_code=404, detail="会话不存在")
     return {"status": session.status, "result": session.session_result}
 
 
@@ -53,10 +53,10 @@ async def run_session(
     """启动一个会话模拟。"""
     session = await db.get_session(session_id)
     if not session:
-        raise HTTPException(status_code=404, detail="Session not found")
+        raise HTTPException(status_code=404, detail="会话不存在")
 
     if session.status == "running":
-        raise HTTPException(status_code=400, detail="Session is already running")
+        raise HTTPException(status_code=400, detail="会话正在运行中")
 
     session.session_run = session_run
     session.status = "running"
@@ -77,26 +77,24 @@ async def run_session(
     else:
         await sim_controller.put_into_queue(session.session_id, session_run.common_config, None)
 
-    return {"code": 0, "message": "Session started successfully", "session_id": session.session_id}
+    return {"code": 0, "message": "会话已启动", "session_id": session.session_id}
 
 
 @router.post("/sessions/{session_id}/stop", response_model=Session)
 async def stop_session(session_id: str, db: SessionDB = Depends(get_session_db)):
     """停止一个正在运行的会话。"""
-    # This is a placeholder for now, as stopping a running process
-    # from another process is complex and requires IPC.
+    # 这里暂时只做状态占位；跨进程停止正在运行的任务需要 IPC 配合。
     session = await db.get_session(session_id)
     if not session:
-        raise HTTPException(status_code=404, detail="Session not found")
+        raise HTTPException(status_code=404, detail="会话不存在")
 
     if session.status != "running":
-        raise HTTPException(status_code=400, detail="Session is not running")
+        raise HTTPException(status_code=400, detail="会话未在运行中")
 
-    # Logic to stop the simulation would go here.
-    # For now, we'll just update the status.
+    # 真正的停止逻辑后续接入；当前先更新状态。
     session.status = "stopped"
     await db.update_session(session)
-    logger.warning(f"Stopping session {session_id} is not fully implemented.")
+    logger.warning(f"停止会话 {session_id} 的完整逻辑尚未实现。")
 
     return session
 
@@ -108,11 +106,11 @@ async def update_session(
     """更新一个已有的会话。"""
     # 确保 session_id 匹配
     if session_id != session.session_id:
-        raise HTTPException(status_code=400, detail="Session ID in path does not match ID in body")
+        raise HTTPException(status_code=400, detail="路径中的 session_id 与请求体不一致")
 
     existing_session = await db.get_session(session_id)
     if existing_session is None:
-        raise HTTPException(status_code=404, detail="Session not found")
+        raise HTTPException(status_code=404, detail="会话不存在")
 
     await db.update_session(session)
     return session
@@ -123,7 +121,7 @@ async def delete_session(session_id: str, db: SessionDB = Depends(get_session_db
     """根据 session_id 删除一个会话。"""
     existing_session = await db.get_session(session_id)
     if existing_session is None:
-        raise HTTPException(status_code=404, detail="Session not found")
+        raise HTTPException(status_code=404, detail="会话不存在")
 
     await db.delete_session(session_id)
     return

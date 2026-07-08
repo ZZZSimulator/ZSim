@@ -20,8 +20,8 @@ async def get_enemies(db: EnemyDB = Depends(get_enemy_db)):
         enemies = df.select("CN_enemy_ID").unique().collect().to_series().to_list()
         return enemies
     except Exception as e:
-        logger.error(f"Failed to load enemy list: {e}")
-        # Fallback to existing example list
+        logger.error(f"加载敌人列表失败: {e}")
+        # 读取失败时返回现有示例列表
         return ["敌人A", "敌人B", "敌人C", "敌人D"]
 
 
@@ -33,7 +33,7 @@ async def get_enemy_info(enemy_index_id: str, db: EnemyDB = Depends(get_enemy_db
         enemy_data = df.filter(pl.col("IndexID") == int(enemy_index_id)).collect()
 
         if enemy_data.height == 0:
-            raise HTTPException(status_code=404, detail=f"Enemy {enemy_index_id} not found")
+            raise HTTPException(status_code=404, detail=f"未找到敌人 {enemy_index_id}")
 
         row: dict[str, Any] = enemy_data.row(0, named=True)
 
@@ -64,8 +64,8 @@ async def get_enemy_info(enemy_index_id: str, db: EnemyDB = Depends(get_enemy_db
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Failed to load enemy info for {enemy_index_id}: {e}")
-        # Fallback to existing example information
+        logger.error(f"加载敌人 {enemy_index_id} 信息失败: {e}")
+        # 读取失败时返回现有示例信息
         return {
             "name": enemy_index_id,
             "level": 80,  # 示例等级

@@ -9,6 +9,7 @@
   "homepage": "https://github.com/ZSim-Dev/ZSim",
   "scripts": {
     "dev": "vite",
+    "typecheck": "tsc --noEmit",
     "build": "tsc && vite build",
     "build:win": "npm run build && electron-builder --win",
     "build:mac": "npm run build && electron-builder --mac",
@@ -61,5 +62,5 @@
     "vite-plugin-electron": "^0.29.0",
     "vite-plugin-electron-renderer": "^0.14.6"
   },
-  "main": "dist-electron/main.js"
+  "main": "dist-electron/main.cjs"
 }

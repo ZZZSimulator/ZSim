@@ -45,7 +45,7 @@ class Yanagi(Character):
 
     def update_sp_and_decibel(self, *args, **kwargs):
         """自然更新能量和喧响的方法"""
-        # Preload Skill
+        # Preload 技能
         skill_nodes = _skill_node_filter(*args, **kwargs)
         for node in skill_nodes:
             # SP
@@ -62,9 +62,9 @@ class Yanagi(Character):
                     )
                 sp_change = sp_recovery - sp_consume
                 self.update_sp(sp_change)
-            # Decibel
+            # 喧响值
             self.process_single_node_decibel(node)
-        # SP recovery over time
+        # SP 随时间自然恢复
         self.update_sp_overtime(args, kwargs)
 
     def get_resources(self) -> tuple[str | None, int | float | bool | None]:

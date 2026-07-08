@@ -1,5 +1,4 @@
 from zsim.sim_progress.Preload.APLModule.APLJudgeTools import (
-    check_cid,
     find_buff,
     find_buff_0,
 )
@@ -52,11 +51,10 @@ class BuffSubUnit(BaseSubConditionUnit):
     }
 
     def check_myself(self, found_char_dict, game_state, *args, **kwargs):
-        check_cid(self.check_target)
         if self.char is None:
             from zsim.sim_progress.Preload import find_char
 
-            self.char = find_char(found_char_dict, game_state, int(self.check_target))
+            self.char = find_char(found_char_dict, game_state, self.checked_target_cid())
         if self.buff_0 is None:
             buff_index = self.nested_stat_key_list[0]
             search_resurt = find_buff_0(game_state, self.char, buff_index)
@@ -70,7 +68,7 @@ class BuffSubUnit(BaseSubConditionUnit):
                     self.apl_warnning_dict[self.priority] = True
                 return False
         handler_cls = self.BuffHandlerMap[self.check_stat]
-        handler = handler_cls() if handler_cls else None
+        handler = handler_cls if handler_cls else None
         if not handler:
             raise ValueError(
                 f"当前检查的check_stat为：{self.check_stat}，优先级为{self.priority}，暂无处理该属性的逻辑模块！"

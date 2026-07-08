@@ -1,4 +1,5 @@
 from .BaseDot import Dot
+from .runtime_state import DotRuntimeStateAdapter
 
 
 class DotNode:
@@ -6,4 +7,4 @@ class DotNode:
         pass
 
 
-__all__ = ["Dot", "DotNode"]
+__all__ = ["Dot", "DotNode", "DotRuntimeStateAdapter"]

@@ -2,19 +2,17 @@ import math
 
 from zsim.define import (
     SWAP_CANCEL_DEBUG_TARGET_SKILL,
+)
+from zsim.define import SWAP_CANCEL_MODE_COMPLETION_COEFFICIENT as SCK
+from zsim.define import (
     SWAP_CANCEL_MODE_DEBUG,
 )
-from zsim.define import (
-    SWAP_CANCEL_MODE_COMPLETION_COEFFICIENT as SCK,
-)
-from zsim.define import (
-    SWAP_CANCEL_MODE_LAG_TIME as SCLT,
-)
+from zsim.define import SWAP_CANCEL_MODE_LAG_TIME as SCLT
 
 from ..SkillsQueue import SkillNode
 from .BasePreloadEngine import BasePreloadEngine
 
-# EXPLAIN：关于SCK和LT的作用：
+# 说明：关于SCK和LT的作用：
 """
 以上两个系数分别是：
 ①合轴操作完成度系数 SWAP_CANCEL_MODE_COMPLETION_COEFFICIENT （程序中通常引用为SCK）

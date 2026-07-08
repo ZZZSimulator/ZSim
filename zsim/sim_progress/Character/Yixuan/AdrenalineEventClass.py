@@ -33,19 +33,41 @@ class BaseAdrenalineEvent(ABC):
         在Buff阶段调用，检查自身是否处于激活状态，若自身激活，则调用effect_apply
         """
         simulator: "Simulator" = self.char.sim_instance
+        skipped_refresh = bool(getattr(simulator, "_event_driven_skipped_refresh", False))
+        if skipped_refresh:
+            elapsed_ticks = max(0, int(getattr(simulator, "_event_driven_elapsed_ticks", 0)))
+            if elapsed_ticks <= 0:
+                return
+            end_tick = simulator.tick - 1
+            start_tick = end_tick - elapsed_ticks + 1
+            self.apply_effect_between(start_tick=start_tick, end_tick=end_tick)
+            return
         if self.active:
             self.apply_effect()
-            if simulator.tick >= self.last_active_tick + self.max_duration:
-                self.active = False
-                if YIXUAN_REPORT:
-                    print(
-                        f"第{self.active_times}次【{self.index}】结束了！总计为仪玄恢复了{self.regenerate_value_sum: .2f}点闪能！"
-                    )
-                    self.char.sim_instance.schedule_data.change_process_state()
-                self.regenerate_value_sum = 0
+            self._finish_if_elapsed(simulator.tick)
+
+    def apply_effect_between(self, *, start_tick: int, end_tick: int) -> None:
+        if not self.active or end_tick < start_tick:
+            return
+        active_start = max(start_tick, self.last_active_tick)
+        active_end = min(end_tick, self.last_active_tick + self.max_duration)
+        if active_start <= active_end:
+            self.apply_effect(active_end - active_start + 1)
+        self._finish_if_elapsed(end_tick)
+
+    def _finish_if_elapsed(self, tick: int) -> None:
+        if tick < self.last_active_tick + self.max_duration:
+            return
+        self.active = False
+        if YIXUAN_REPORT:
+            print(
+                f"第{self.active_times}次【{self.index}】结束了！总计为仪玄恢复了{self.regenerate_value_sum: .2f}点闪能！"
+            )
+            self.char.sim_instance.schedule_data.change_process_state()
+        self.regenerate_value_sum = 0
 
     @abstractmethod
-    def apply_effect(self):
+    def apply_effect(self, ticks: int = 1):
         """事件生效一次的方法"""
         pass
 
@@ -85,10 +107,10 @@ class AuricArray(BaseAdrenalineEvent):
                     print(f"检测到技能{skill_node.skill_tag}（玄墨极阵）！【{self.index}】激活")
                     self.char.sim_instance.schedule_data.change_process_state()
 
-    def apply_effect(self):
+    def apply_effect(self, ticks: int = 1):
         """事件生效，恢复一次闪能值"""
-        self.char.update_adrenaline(self.regenerate_value)
-        self.regenerate_value_sum += self.regenerate_value
+        self.char.update_adrenaline(self.regenerate_value * ticks)
+        self.regenerate_value_sum += self.regenerate_value * ticks
 
 
 class AuricInkUndercurrent(BaseAdrenalineEvent):
@@ -120,7 +142,7 @@ class AuricInkUndercurrent(BaseAdrenalineEvent):
                     print(f"检测到队友释放大招：{skill_node.skill_tag}！【{self.index}】激活")
                     self.char.sim_instance.schedule_data.change_process_state()
 
-    def apply_effect(self):
+    def apply_effect(self, ticks: int = 1):
         """事件生效，恢复一次闪能值"""
-        self.char.update_adrenaline(self.regenerate_value_per_tick)
-        self.regenerate_value_sum += self.regenerate_value_per_tick
+        self.char.update_adrenaline(self.regenerate_value_per_tick * ticks)
+        self.regenerate_value_sum += self.regenerate_value_per_tick * ticks

@@ -43,8 +43,8 @@ def watch_reverse_order(
     if current_tag[:-1] == last_tag[:-1]:
         if current_tag[-1] < last_tag[-1]:
             feedback = (
-                f"[WARNING] Watchdog detected a reverse order preload event:"
-                f"Is {current_tag} really behind of {last_tag}?"
+                f"[警告] WatchDog 检测到 Preload 事件顺序反常："
+                f"{current_tag} 是否真的应该排在 {last_tag} 后面？"
             )
             print(feedback)
             report_to_log(feedback, level=0)

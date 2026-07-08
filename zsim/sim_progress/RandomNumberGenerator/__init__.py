@@ -60,7 +60,10 @@ class RNG:
             else:
                 new_seed = int(new_seed) + tick
         (self.seed, self.r) = self.generate_random_number(new_seed)
+        assert self.seed is not None
         random.seed(self.seed)
+        np.random.seed(self.seed % (2**32))
+        self.normal_table = None
 
     def random_float(self) -> float:
         return random.uniform(0.0, 1.0)

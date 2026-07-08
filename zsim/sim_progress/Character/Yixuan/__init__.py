@@ -1,3 +1,4 @@
+import math
 from typing import TYPE_CHECKING
 
 from zsim.define import YIXUAN_REPORT
@@ -161,20 +162,90 @@ class Yixuan(Character):
         """
         sp_regen_data = _sp_update_data_filter(*args, **kwargs)
         if sp_regen_data:
+            skipped_refresh = bool(
+                getattr(self.sim_instance, "_event_driven_skipped_refresh", False)
+            )
             if (
                 self.sim_instance.tick == self.__adrenaline_recover_overtime_update_tick
                 and self.__adrenaline_recover_overtime_update_tick != 0
+                and not skipped_refresh
             ):
                 raise ValueError(
                     "检测到仪玄闪能的自然恢复逻辑在同一个tick被调用了两次！请检查函数！"
                 )
             sp_change_per_tick = 2 / 60
-            self.update_adrenaline(sp_change_per_tick)
-            self.__adrenaline_recover_overtime_update_tick = self.sim_instance.tick
+            self.update_adrenaline(sp_change_per_tick * self.event_driven_elapsed_ticks())
+            if skipped_refresh:
+                self.__adrenaline_recover_overtime_update_tick = self.sim_instance.tick - 1
+            else:
+                self.__adrenaline_recover_overtime_update_tick = self.sim_instance.tick
 
     def refresh_myself(self):
         """回能更新的几个管理器需要每个tick更新一次，所以用这个接口进行更新。"""
         self.adrenaline_manager.refresh()
+
+    def next_resource_wakeup_tick(
+        self,
+        current_tick: int,
+        *,
+        thresholds: object | None = None,
+    ) -> int | None:
+        candidates: list[int] = []
+        event_group = self.adrenaline_manager.adrenaline_recover_event_group
+        if (
+            thresholds is None
+            and event_group
+            and any(getattr(event, "active", False) for event in event_group)
+        ):
+            return current_tick + 1
+        active_event_regen = 0.0
+        if event_group:
+            for event in event_group:
+                if not getattr(event, "active", False):
+                    continue
+                event_end_tick = int(getattr(event, "last_active_tick", current_tick)) + int(
+                    getattr(event, "max_duration", 0)
+                )
+                if event_end_tick > current_tick:
+                    candidates.append(event_end_tick)
+                event_regen = self._adrenaline_event_regen_per_tick(event)
+                if event_regen <= 0:
+                    candidates.append(current_tick + 1)
+                else:
+                    active_event_regen += event_regen
+        special_thresholds = tuple(getattr(thresholds, "special_resource", ())) + tuple(
+            getattr(thresholds, "adrenaline", ())
+        )
+        resource_tick = self._next_linear_resource_wakeup_tick(
+            current_tick=current_tick,
+            current_value=float(self.adrenaline),
+            limit=float(self.adrenaline_limit),
+            per_tick_regen=(2 / 60) + active_event_regen,
+            thresholds=special_thresholds,
+        )
+        if resource_tick is not None:
+            candidates.append(resource_tick)
+        if (
+            not candidates
+            and event_group
+            and any(getattr(event, "active", False) for event in event_group)
+        ):
+            return current_tick + 1
+        if not candidates:
+            return None
+        return min(tick for tick in candidates if tick > current_tick)
+
+    @staticmethod
+    def _adrenaline_event_regen_per_tick(event: object) -> float:
+        for attr_name in ("regenerate_value", "regenerate_value_per_tick"):
+            value = getattr(event, attr_name, None)
+            if value is None:
+                continue
+            try:
+                return float(value)
+            except (TypeError, ValueError):
+                return 0.0
+        return 0.0
 
     def get_resources(self) -> tuple[str, float]:
         return "闪能", self.adrenaline

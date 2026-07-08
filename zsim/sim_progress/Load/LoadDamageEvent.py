@@ -1,24 +1,69 @@
-from zsim.sim_progress.Preload import SkillNode
+from __future__ import annotations
 
-# import Enemy
+from typing import Any, Protocol, cast
+
+from zsim.sim_progress.Preload import SkillNode
 from zsim.sim_progress.Report import report_to_log
 
 from .. import Dot
 from .loading_mission import LoadingMission
 
 
-def SpawnDamageEvent(mission: LoadingMission | Dot.Dot, event_list: list):
+class ScheduledEventPublisher(Protocol):
+    def publish_scheduled(self, event: Any) -> None:
+        """发布一个计划事件载荷。"""
+
+
+SchedulePublisher = ScheduledEventPublisher
+
+
+def _as_schedule_publisher(
+    schedule_publisher: SchedulePublisher | None,
+) -> ScheduledEventPublisher:
+    if schedule_publisher is None:
+        raise ValueError("schedule_publisher 不能为 None")
+    if hasattr(schedule_publisher, "publish_scheduled"):
+        return cast(ScheduledEventPublisher, schedule_publisher)
+    raise TypeError(
+        "schedule_publisher 必须提供 publish_scheduled；原始 event_list 交接已经移除，"
+        "请改用 create_schedule_dispatch_port(...)"
+    )
+
+
+def _legacy_schedule_publisher(
+    schedule_publisher: SchedulePublisher | None,
+    kwargs: dict[str, Any],
+    *,
+    allow_unexpected: bool = False,
+) -> SchedulePublisher | None:
+    if "event_list" in kwargs:
+        kwargs.pop("event_list")
+        raise TypeError(
+            "event_list= 形式的计划队列交接已经移除；请改用 "
+            "schedule_publisher=create_schedule_dispatch_port(...)"
+        )
+    if kwargs and not allow_unexpected:
+        unexpected = ", ".join(sorted(kwargs))
+        raise TypeError(f"收到未支持的关键字参数：{unexpected}")
+    return schedule_publisher
+
+
+def SpawnDamageEvent(
+    mission: LoadingMission | Dot.Dot,
+    schedule_publisher: SchedulePublisher,
+):
     """
-    负责往event_list中添加伤害生成事件，添加的内容是实例：
+    负责发布伤害生成事件，添加的内容是实例：
     要么是SkillNode的实例，要么是Dot的实例。
     """
+    publisher = _as_schedule_publisher(schedule_publisher)
     if isinstance(mission, LoadingMission):
         if mission.hitted_count > mission.mission_node.hit_times:
             raise ValueError(
                 f"{mission.mission_tag}目前是第{mission.hitted_count}，最多{mission.mission_node.hit_times}"
             )
         mission.hitted_count += 1
-        event_list.append(mission)
+        publisher.publish_scheduled(mission)
     elif isinstance(mission, Dot.Dot):
         if (
             mission.dy.effect_times > mission.ft.max_effect_times
@@ -26,15 +71,21 @@ def SpawnDamageEvent(mission: LoadingMission | Dot.Dot, event_list: list):
         ):
             raise ValueError("该Dot任务已经完成，应当被删除！")
         if mission.anomaly_data is not None:
-            event_list.append(mission.anomaly_data)
+            publisher.publish_scheduled(mission.anomaly_data)
         else:
-            event_list.append(mission.skill_node_data)
+            publisher.publish_scheduled(mission.skill_node_data)
 
 
-def ProcessTimeUpdateDots(timetick: int, dot_list: list, event_list: list):
+def ProcessTimeUpdateDots(
+    timetick: int,
+    dot_list: list,
+    schedule_publisher: SchedulePublisher | None = None,
+    **kwargs: Any,
+):
     """
     处理effect_rules == 1的Dot对象，始终检查是否应触发。
     """
+    schedule_publisher = _legacy_schedule_publisher(schedule_publisher, kwargs)
     for dot in dot_list:
         if not isinstance(dot, Dot.Dot):
             raise TypeError(f"{dot}不是Dot类！")
@@ -46,13 +97,19 @@ def ProcessTimeUpdateDots(timetick: int, dot_list: list, event_list: list):
                 dot.dy.last_effect_ticks = timetick
                 dot.dy.ready = False
                 dot.dy.effect_times += 1
-                SpawnDamageEvent(dot, event_list)
+                SpawnDamageEvent(dot, _as_schedule_publisher(schedule_publisher))
 
 
-def ProcessHitUpdateDots(timetick: int, dot_list: list, event_list: list):
+def ProcessHitUpdateDots(
+    timetick: int,
+    dot_list: list,
+    schedule_publisher: SchedulePublisher | None = None,
+    **kwargs: Any,
+):
     """
     处理effect_rules == 2的Dot对象，只在Mission触发或是Schedule进行检查。
     """
+    schedule_publisher = _legacy_schedule_publisher(schedule_publisher, kwargs)
     for dot in dot_list:
         if not isinstance(dot, Dot.Dot):
             raise TypeError(f"{dot}不是Dot类！")
@@ -61,16 +118,23 @@ def ProcessHitUpdateDots(timetick: int, dot_list: list, event_list: list):
         if dot.ft.effect_rules == 2:
             dot.ready_judge(timetick)
             if dot.dy.ready:
-                SpawnDamageEvent(dot, event_list)
+                SpawnDamageEvent(dot, _as_schedule_publisher(schedule_publisher))
                 dot.dy.ready = False
                 dot.dy.last_effect_ticks = timetick
                 dot.dy.effect_times += 1
 
 
-def ProcessFreezLikeDots(timetick: int, enemy, event_list: list, event):
+def ProcessFreezLikeDots(
+    timetick: int,
+    enemy,
+    schedule_publisher: SchedulePublisher | None = None,
+    event=None,
+    **kwargs: Any,
+):
     """
     所有碎冰类逻辑的dot都用此函数结算。
     """
+    schedule_publisher = _legacy_schedule_publisher(schedule_publisher, kwargs)
     dot_list = enemy.dynamic.dynamic_dot_list
     skill_tag: str
     is_heavy_attack: bool
@@ -103,7 +167,7 @@ def ProcessFreezLikeDots(timetick: int, enemy, event_list: list, event):
         dot.ready_judge(timetick)
         if dot.dy.ready:
             print(f"{skill_tag}结算了碎冰！")
-            SpawnDamageEvent(dot, event_list)
+            SpawnDamageEvent(dot, _as_schedule_publisher(schedule_publisher))
             dot.dy.ready = False
             dot.dy.last_effect_ticks = timetick
             dot.dy.effect_times += 1
@@ -116,13 +180,13 @@ def DamageEventJudge(
     timetick: int,
     load_mission_dict: dict,
     enemy,
-    event_list: list,
-    char_obj_list: list,
+    schedule_publisher: SchedulePublisher | None = None,
+    char_obj_list: list | None = None,
     **kwargs,
 ):
     """
     DamageEvent的Judge函数：轮询load_mission_dict以及enemy.dynamic_dot_list，判断是否应生成Hit事件。
-    并且当Hit时间生成时，将对应的实例添加到event_list中。
+    并且当Hit时间生成时，将对应的实例发布到计划队列中。
     当前可能产生Hit的mission类型共有两种，第一种是动作类，第二种是Dot类。
         1-动作类：
             首先应该查询mission.mission_dict，并且查询所有的键值，检查是否有键值需要在本tick处理。
@@ -135,16 +199,21 @@ def DamageEventJudge(
     """
     # 处理 Load.Mission 任务
     # dynamic_buff_dict = kwargs.get("dynamic_buff_dict", None)
+    schedule_publisher = _legacy_schedule_publisher(
+        schedule_publisher,
+        kwargs,
+        allow_unexpected=True,
+    )
     process_overtime_mission(timetick, load_mission_dict)
     for mission in load_mission_dict.values():
         if not isinstance(mission, LoadingMission):
             raise TypeError(f"{mission}不是LoadingMission类！")
         if mission.is_hit_now(timetick):
-            SpawnDamageEvent(mission, event_list)
+            SpawnDamageEvent(mission, _as_schedule_publisher(schedule_publisher))
             # 当Mission触发时，检查 effect_rules == 2 的 Dot
-            # ProcessHitUpdateDots(timetick, enemy.dynamic.dynamic_dot_list, event_list)
+            # ProcessHitUpdateDots(timetick, enemy.dynamic.dynamic_dot_list, schedule_publisher)
     # 始终检查 effect_rules == 1 的 Dot
-    ProcessTimeUpdateDots(timetick, enemy.dynamic.dynamic_dot_list, event_list)
+    ProcessTimeUpdateDots(timetick, enemy.dynamic.dynamic_dot_list, schedule_publisher)
     # TODO：预留接口：处理effect_rules == 3 的buff（但是涉及快照）
 
 

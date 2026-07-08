@@ -6,6 +6,16 @@
 
 from .base import EventHandlerABC
 from .context import EventContext
-from .handlers import event_handler_factory, register_all_handlers
+from .handlers import (
+    create_default_event_handler_factory,
+    event_handler_factory,
+    register_all_handlers,
+)
 
-__all__ = ["EventHandlerABC", "event_handler_factory", "register_all_handlers", "EventContext"]
+__all__ = [
+    "EventHandlerABC",
+    "create_default_event_handler_factory",
+    "event_handler_factory",
+    "register_all_handlers",
+    "EventContext",
+]

@@ -1,0 +1,33 @@
+{
+  "schema": "zsim-external-golden-matrix-config.v1",
+  "description": "Fixture-only smoke matrix for the US-002 external golden matrix runner.",
+  "default_tolerance_policy": {
+    "damage_total_abs": 0.0,
+    "damage_row_abs": 0.0,
+    "damage_attribution_abs": 0.0,
+    "buff_timeline": "exact-normalized"
+  },
+  "rows": [
+    {
+      "row_id": "fixture-qingyi-stop1-buff-timeline",
+      "row_kind": "fixture",
+      "golden_result_dir": "tests/fixtures/external_golden_parity/qingyi-stop1-golden",
+      "run_config": {
+        "team": "青衣雷属性队"
+      },
+      "apl": "./zsim/data/APLData/青衣-丽娜-雅.toml",
+      "stop_tick": 1,
+      "expected_domains": [
+        "buff_timeline"
+      ],
+      "tolerance_policy": {
+        "damage_total_abs": 0.0,
+        "damage_row_abs": 0.0,
+        "damage_attribution_abs": 0.0,
+        "buff_timeline": "exact-normalized"
+      },
+      "signoff_label": "base-parity",
+      "missing_input_policy": "block"
+    }
+  ]
+}
